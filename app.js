@@ -241,13 +241,13 @@ async function saveTaskToSupabase(taskId, data) {
 
 async function setTaskStatusReal(task, newStatus) {
 
-  const { error } = await leleDb
-    .from("tasks")
-    .update({
-      status: newStatus,
-      updated_at: new Date().toISOString()
-    })
-    .eq("id", task.id);
+  const { error } = await leleDb.rpc(
+    "set_task_status",
+    {
+      p_task_id: task.id,
+      p_status: newStatus
+    }
+  );
 
   if (error) {
     console.error("Erro ao atualizar tarefa:", error);
@@ -259,7 +259,6 @@ async function setTaskStatusReal(task, newStatus) {
 
   save();
   render();
-}
 }
 
 // =============================================
