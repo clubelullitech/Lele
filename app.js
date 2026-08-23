@@ -207,7 +207,7 @@ const emojiRules = [
       "dente",
       "dentes"
     ],
-    icon: "😁 🦷"
+    icon: "🦷"
   },
 
   {
