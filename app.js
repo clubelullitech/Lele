@@ -738,68 +738,51 @@ window.addEventListener(
 ============================================= */
 
 function mapTaskFromDb(t) {
-  const localExtra =
-    state.tasks.find(
-      x => x.id === t.id
-    ) || {};
-
   return {
     id: t.id,
 
-    childId:
-      t.member_id,
+    childId: t.member_id,
 
-    title:
-      t.title,
+    title: t.title,
 
-    cat:
-      t.category ||
-      "Casa",
+    cat: t.category || "Casa",
 
-    time:
-      t.scheduled_time
-        ? String(
-            t.scheduled_time
-          ).slice(0, 5)
-        : "",
+    time: t.scheduled_time
+      ? String(t.scheduled_time).slice(0, 5)
+      : "",
 
-    duration:
-      t.duration_minutes ||
-      10,
+    duration: t.duration_minutes || 10,
 
-    type:
-      t.task_type ||
-      "fixed",
+    type: t.task_type || "fixed",
 
-    voice:
-      !!t.voice_enabled,
+    voice: !!t.voice_enabled,
 
-    shared:
-      !!t.shared,
+    shared: !!t.shared,
 
-    needsHelp:
-      !!t.help_enabled,
+    needsHelp: !!t.help_enabled,
 
-    done:
-      t.status === "done",
+    done: t.status === "done",
 
-    status:
-      t.status ||
-      "pending",
+    status: t.status || "pending",
 
     icon:
-      localExtra.icon ||
+      t.icon ||
       suggestEmoji(
         t.title,
         t.category
       ),
 
-    requirePhoto:
-      !!localExtra.requirePhoto,
+    /* AGORA VEM DIRETO DO SUPABASE */
+    requirePhoto: !!t.require_photo,
 
-    photo:
-      localExtra.photo ||
-      null
+    evidencePath:
+      t.evidence_path || null,
+
+    evidenceViewed:
+      !!t.evidence_viewed,
+
+    evidenceViewedAt:
+      t.evidence_viewed_at || null
   };
 }
 
@@ -980,19 +963,22 @@ async function saveTaskToSupabase(
       data.duration ||
       10,
 
-    voice_enabled:
-      !!data.voice,
+voice_enabled:
+  !!data.voice,
 
-    help_enabled:
-      !!data.needsHelp,
+help_enabled:
+  !!data.needsHelp,
 
-    shared:
-      !!data.shared,
+shared:
+  !!data.shared,
 
-    status:
-      data.done
-        ? "done"
-        : "pending",
+require_photo:
+  !!data.requirePhoto,
+
+status:
+  data.done
+    ? "done"
+    : "pending",
 
     created_by:
       usuarioAtual?.id ||
