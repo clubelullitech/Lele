@@ -102,31 +102,85 @@ function daysUntil(s) {
    VOZ
 ============================================= */
 
-function speak(text) {
-  if (
-    !("speechSynthesis" in window)
-  ) {
-    alert(
-      "A voz não está disponível neste navegador."
-    );
+let leleVoices = [];
 
+function carregarVozesLele() {
+  if (!("speechSynthesis" in window)) return;
+
+  leleVoices = speechSynthesis.getVoices();
+}
+
+carregarVozesLele();
+
+if ("speechSynthesis" in window) {
+  speechSynthesis.onvoiceschanged = carregarVozesLele;
+}
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) {
+    alert("A voz não está disponível neste navegador.");
     return;
   }
 
   speechSynthesis.cancel();
 
-  const voz =
-    new SpeechSynthesisUtterance(
-      text
+  const fala = new SpeechSynthesisUtterance(text);
+
+  fala.lang = "pt-BR";
+
+  const vozesBR = leleVoices.filter(voz =>
+    String(voz.lang || "")
+      .toLowerCase()
+      .startsWith("pt-br")
+  );
+
+  /*
+    Prioridade para vozes que normalmente
+    soam mais naturais no Windows/Chrome.
+  */
+  const nomesPreferidos = [
+    "Francisca",
+    "Thalita",
+    "Maria",
+    "Luciana",
+    "Female",
+    "Google português do Brasil",
+    "Microsoft Francisca"
+  ];
+
+  let vozEscolhida = null;
+
+  for (const nome of nomesPreferidos) {
+    vozEscolhida = vozesBR.find(voz =>
+      voz.name
+        .toLowerCase()
+        .includes(nome.toLowerCase())
     );
 
-  voz.lang = "pt-BR";
-  voz.rate = 0.92;
-  voz.pitch = 1;
+    if (vozEscolhida) break;
+  }
 
-  speechSynthesis.speak(
-    voz
-  );
+  /*
+    Se não encontrou uma das preferidas,
+    usa outra voz brasileira disponível.
+  */
+  if (!vozEscolhida && vozesBR.length) {
+    vozEscolhida = vozesBR[0];
+  }
+
+  if (vozEscolhida) {
+    fala.voice = vozEscolhida;
+  }
+
+  /*
+    Um pouco mais leve e jovem,
+    sem acelerar demais.
+  */
+  fala.rate = 0.96;
+  fala.pitch = 1.18;
+  fala.volume = 1;
+
+  speechSynthesis.speak(fala);
 }
 
 /* =============================================
