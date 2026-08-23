@@ -4268,19 +4268,22 @@ function render() {
 ============================================= */
 
 function bindDynamicEvents() {
-$("#enableNotificationsBtn")?.addEventListener(
-  "click",
-  async () => {
-    const allowed =
-      await requestNotificationPermission();
 
-    alert(
-      allowed
-        ? "Notificações ativadas 🔔"
-        : "As notificações não foram autorizadas."
+  $("#enableNotificationsBtn")
+    ?.addEventListener(
+      "click",
+      async () => {
+        const allowed =
+          await requestNotificationPermission();
+
+        alert(
+          allowed
+            ? "Notificações ativadas 🔔"
+            : "As notificações não foram autorizadas."
+        );
+      }
     );
-  }
-);
+
 
   $$(".speak-task-btn").forEach(
     button => {
@@ -4304,6 +4307,7 @@ $("#enableNotificationsBtn")?.addEventListener(
     }
   );
 
+
   $$(".task-done-btn").forEach(
     button => {
       button.addEventListener(
@@ -4326,25 +4330,43 @@ $("#enableNotificationsBtn")?.addEventListener(
     }
   );
 
- $$(".evidence-view-btn").forEach(
-  button => {
-    button.addEventListener(
-      "click",
-      async () => {
-        const task =
-          state.tasks.find(
-            t =>
-              String(t.id) ===
-              String(button.dataset.taskId)
-          );
 
-        if (task) {
-          await viewTaskEvidence(task);
+  $$(".evidence-view-btn").forEach(
+    button => {
+      button.addEventListener(
+        "click",
+        async () => {
+          const task =
+            state.tasks.find(
+              t =>
+                String(t.id) ===
+                String(
+                  button.dataset.taskId
+                )
+            );
+
+          if (task) {
+            await viewTaskEvidence(task);
+          }
         }
-      }
-    );
-  }
-);
+      );
+    }
+  );
+
+
+  $$(".task-help-btn").forEach(
+    button => {
+      button.addEventListener(
+        "click",
+        () => {
+          const task =
+            state.tasks.find(
+              t =>
+                String(t.id) ===
+                String(
+                  button.dataset.taskId
+                )
+            );
 
           if (!task) return;
 
@@ -4359,6 +4381,58 @@ $("#enableNotificationsBtn")?.addEventListener(
       );
     }
   );
+
+
+  $$(".task-edit-btn").forEach(
+    button => {
+      button.addEventListener(
+        "click",
+        () => {
+          const task =
+            state.tasks.find(
+              t =>
+                String(t.id) ===
+                String(
+                  button.dataset.taskId
+                )
+            );
+
+          if (task) {
+            openTaskDialog(task);
+          }
+        }
+      );
+    }
+  );
+
+
+  $("#newTaskBtn")
+    ?.addEventListener(
+      "click",
+      () => {
+        openTaskDialog();
+      }
+    );
+
+
+  $("#newRoutineTaskBtn")
+    ?.addEventListener(
+      "click",
+      () => {
+        openTaskDialog();
+      }
+    );
+
+
+  $("#addWaterBtn")
+    ?.addEventListener(
+      "click",
+      async () => {
+        await addHydrationReal(
+          250
+        );
+      }
+    );
 
   $$(".child-select-btn").forEach(
     button => {
@@ -4378,6 +4452,7 @@ $("#enableNotificationsBtn")?.addEventListener(
     }
   );
 
+
   $$(".suggested-task-checkbox").forEach(
     checkbox => {
       checkbox.addEventListener(
@@ -4393,15 +4468,19 @@ $("#enableNotificationsBtn")?.addEventListener(
           const item =
             suggestions[
               Number(
-                checkbox.dataset.suggestionIndex
+                checkbox.dataset
+                  .suggestionIndex
               )
             ];
 
           if (!item) return;
 
-          checkbox.disabled = true;
+          checkbox.disabled =
+            true;
 
-          await addSuggestedTask(item);
+          await addSuggestedTask(
+            item
+          );
         }
       );
     }
