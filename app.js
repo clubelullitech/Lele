@@ -2305,7 +2305,6 @@ function openPhotoForTask(
     ?.showModal();
 }
 
-
 function handleTaskPhoto(event) {
   const file =
     event.target.files?.[0];
@@ -2321,10 +2320,29 @@ function handleTaskPhoto(event) {
     return;
   }
 
-  /*
-    Guardamos o arquivo somente
-    enquanto a criança confirma.
-  */
+  pendingPhotoData = {
+    file,
+    previewUrl:
+      URL.createObjectURL(file)
+  };
+
+  const preview =
+    $("#photoPreview");
+
+  if (preview) {
+    preview.innerHTML = `
+      <img
+        src="${pendingPhotoData.previewUrl}"
+        alt="Evidência da tarefa"
+      />
+    `;
+
+    preview.classList.remove(
+      "hidden"
+    );
+  }
+}
+
 async function confirmTaskPhoto() {
   if (!pendingPhotoTask) {
     return;
