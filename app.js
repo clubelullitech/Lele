@@ -444,9 +444,25 @@ function speak(text){
 }
 function render(){
   document.body.className=`mode-${state.mode}`;
-  $("#modeBtn").textContent = state.mode==="parent"?"Modo Filho":"Modo Pais";
-  $("#subtitle").textContent = state.mode==="parent" ? `Painel da ${state.familyName}` : `Perfil de ${child().name} • ${child().age} anos`;
-  renderHome(); renderRoutine(); renderSchool(); renderFamily(); renderMessages(); renderSettings();
+
+  if (membroAtual?.role === "child") {
+    $("#modeBtn").classList.add("hidden");
+  } else {
+    $("#modeBtn").classList.remove("hidden");
+    $("#modeBtn").textContent =
+      state.mode === "parent" ? "Ver como filho" : "Voltar ao painel";
+  }
+
+  $("#subtitle").textContent = state.mode==="parent"
+    ? `Painel da ${state.familyName}`
+    : `Perfil de ${child().name} • ${child().age} anos`;
+
+  renderHome();
+  renderRoutine();
+  renderSchool();
+  renderFamily();
+  renderMessages();
+  renderSettings();
 }
 function renderHome(){
   const c=child(), tasks=childTasks(), done=tasks.filter(t=>t.done).length, pct=tasks.length?Math.round(done/tasks.length*100):0;
@@ -647,7 +663,15 @@ $("#projectForm").addEventListener("submit",e=>{
   state.projects.push({id:crypto.randomUUID(),childId:child().id,title:$("#projectTitle").value.trim(),subject:$("#projectSubject").value.trim(),due:$("#projectDue").value,materials:$("#projectMaterials").value.split(",").map(x=>x.trim()).filter(Boolean),notes:$("#projectNotes").value.trim(),steps:["Entender o pedido","Pesquisar","Separar/comprar materiais","Produzir","Revisar","Colocar na mochila"]});
   save();$("#projectDialog").close();e.target.reset();render();
 });
-$("#modeBtn").onclick=()=>{state.mode=state.mode==="parent"?"child":"parent";save();render()};
+$("#modeBtn").onclick = () => {
+  if (!membroAtual || !["owner", "parent"].includes(membroAtual.role)) {
+    return;
+  }
+
+  state.mode = state.mode === "parent" ? "child" : "parent";
+  save();
+  render();
+};
 $$(".nav-btn").forEach(b=>b.onclick=()=>{$$(".nav-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");$$(".view").forEach(v=>v.classList.remove("active"));$("#"+b.dataset.view).classList.add("active")});
 
 let deferredPrompt;
