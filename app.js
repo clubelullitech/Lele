@@ -3250,7 +3250,7 @@ if (
       $("#taskNeedsHelp").checked,
     requirePhoto:
       $("#taskPhoto")?.checked || false,
-    icon
+    icon,
     recurrenceType,
 recurrenceDays,
 recurrenceEndDate,
@@ -3763,7 +3763,6 @@ function renderTaskCard(task) {
 
         <div class="task-title">
           ${task.title}
-          ${evidence}
         </div>
 
         <div class="task-meta">
@@ -4043,7 +4042,7 @@ function renderFamily() {
 
               <div>
                 <div class="task-title">
-                   ${task.title}
+                   ${c.name}
                 </div>
 
                 <div class="task-meta">
