@@ -1,4 +1,4 @@
-const CACHE_NAME = "lele-v12";
+const CACHE_NAME = "lele-v13";
 
 const APP_FILES = [
   "./",
