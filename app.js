@@ -2581,10 +2581,7 @@ async function confirmTaskPhoto() {
   }
 
   if (!pendingPhotoData?.file) {
-    alert(
-      "Tire ou escolha uma foto primeiro."
-    );
-
+    alert("Tire ou escolha uma foto primeiro.");
     return;
   }
 
@@ -2594,29 +2591,61 @@ async function confirmTaskPhoto() {
   const button =
     $("#confirmPhotoBtn");
 
+  const timeout = (
+    promise,
+    milliseconds,
+    message
+  ) =>
+    Promise.race([
+      promise,
+
+      new Promise(
+        (_, reject) =>
+          setTimeout(
+            () =>
+              reject(
+                new Error(message)
+              ),
+            milliseconds
+          )
+      )
+    ]);
+
   if (button) {
     button.disabled = true;
     button.textContent =
-      "Enviando foto...";
+      "1/3 • Enviando foto...";
   }
 
   try {
-    /*
-      1. Envia a evidência temporária.
-    */
-    await uploadTaskEvidence(
-      task,
-      pendingPhotoData.file
+
+    await timeout(
+      uploadTaskEvidence(
+        task,
+        pendingPhotoData.file
+      ),
+      20000,
+      "O envio da foto demorou demais."
     );
 
-    /*
-      2. Só depois do upload
-      permitimos concluir.
-    */
-    await setTaskStatusReal(
-      task,
-      "done"
+    if (button) {
+      button.textContent =
+        "2/3 • Concluindo tarefa...";
+    }
+
+    await timeout(
+      setTaskStatusReal(
+        task,
+        "done"
+      ),
+      20000,
+      "A conclusão da tarefa demorou demais."
     );
+
+    if (button) {
+      button.textContent =
+        "3/3 • Finalizando...";
+    }
 
     if (
       pendingPhotoData.previewUrl
@@ -2631,31 +2660,36 @@ async function confirmTaskPhoto() {
     pendingPhotoTask = null;
     pendingPhotoData = null;
 
-    await loadTasksFromSupabase();
+    await timeout(
+      loadTasksFromSupabase(),
+      15000,
+      "A atualização das tarefas demorou demais."
+    );
 
     save();
     render();
 
   } catch (error) {
+
     console.error(
-      "Erro ao enviar evidência:",
+      "Erro ao concluir com foto:",
       error
     );
 
     alert(
-      "Não foi possível enviar a foto. A tarefa não será concluída. Verifique a internet e tente novamente."
+      error?.message ||
+      "Não foi possível enviar a foto."
     );
 
   } finally {
+
     if (button) {
       button.disabled = false;
       button.textContent =
-        "Enviar e concluir";
+        "Concluir tarefa";
     }
   }
 }
-
-
 /* =============================================
    CONCLUIR TAREFA
 ============================================= */
