@@ -3318,8 +3318,23 @@ function renderTaskCard(task) {
     getTaskEmoji(task);
 
   const evidence =
-    task.photo
-      ? `<span title="Foto enviada">📷</span>`
+  task.evidencePath &&
+  !task.evidenceViewed
+    ? (
+        membroAtual?.role !== "child"
+          ? `
+            <button
+              class="small evidence-view-btn"
+              data-task-id="${task.id}"
+              type="button"
+            >
+              📷 Ver evidência
+            </button>
+          `
+          : `<span>📷 Enviada</span>`
+      )
+    : task.evidenceViewed
+      ? `<span>✓ Evidência visualizada</span>`
       : "";
 
   return `
