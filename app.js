@@ -3127,7 +3127,217 @@ function renderHome() {
 /* =============================================
    CARD DA TAREFA
 ============================================= */
+/* =============================================
+   EVIDÊNCIA — VISUALIZAÇÃO ÚNICA
+============================================= */
 
+async function viewTaskEvidence(task) {
+  if (!task?.evidencePath) {
+    alert("Esta tarefa não possui uma foto disponível.");
+    return;
+  }
+
+  if (task.evidenceViewed) {
+    alert("Esta evidência já foi visualizada e apagada.");
+    return;
+  }
+
+  try {
+    /*
+      Como o bucket é privado,
+      criamos um link temporário.
+    */
+    const {
+      data,
+      error
+    } = await leleDb.storage
+      .from("task-evidence")
+      .createSignedUrl(
+        task.evidencePath,
+        60
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.signedUrl) {
+      throw new Error(
+        "Não foi possível gerar a visualização."
+      );
+    }
+
+    const dialog =
+      $("#evidenceDialog");
+
+    const image =
+      $("#evidenceImage");
+
+    const title =
+      $("#evidenceTaskTitle");
+
+    if (!dialog || !image) {
+      throw new Error(
+        "Janela de evidência não encontrada."
+      );
+    }
+
+    image.src =
+      data.signedUrl;
+
+    image.alt =
+      `Evidência da tarefa ${task.title}`;
+
+    if (title) {
+      title.textContent =
+        task.title;
+    }
+
+    /*
+      Guardamos qual evidência está aberta.
+      A exclusão acontecerá ao fechar.
+    */
+    window.currentEvidenceTask =
+      task;
+
+    window.currentEvidenceOpened =
+      true;
+
+    dialog.showModal();
+
+  } catch (error) {
+    console.error(
+      "Erro ao abrir evidência:",
+      error
+    );
+
+    alert(
+      "Não foi possível abrir a foto."
+    );
+  }
+}
+
+
+/* =============================================
+   APAGAR EVIDÊNCIA APÓS VISUALIZAÇÃO
+============================================= */
+
+async function destroyViewedEvidence() {
+  const task =
+    window.currentEvidenceTask;
+
+  if (
+    !task ||
+    !task.evidencePath ||
+    !window.currentEvidenceOpened
+  ) {
+    return;
+  }
+
+  /*
+    Limpamos primeiro para impedir
+    clique duplo durante a exclusão.
+  */
+  window.currentEvidenceOpened =
+    false;
+
+  const evidencePath =
+    task.evidencePath;
+
+  try {
+    /*
+      1. Apaga a foto do Storage.
+    */
+    const {
+      error: deleteError
+    } =
+      await leleDb.storage
+        .from("task-evidence")
+        .remove([
+          evidencePath
+        ]);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    /*
+      2. Registra apenas que
+      a evidência foi visualizada.
+      A foto não permanece.
+    */
+    const {
+      error: updateError
+    } =
+      await leleDb
+        .from("tasks")
+        .update({
+          evidence_path:
+            null,
+
+          evidence_viewed:
+            true,
+
+          evidence_viewed_at:
+            new Date()
+              .toISOString(),
+
+          updated_at:
+            new Date()
+              .toISOString()
+        })
+        .eq(
+          "id",
+          task.id
+        );
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    task.evidencePath =
+      null;
+
+    task.evidenceViewed =
+      true;
+
+    task.evidenceViewedAt =
+      new Date()
+        .toISOString();
+
+    save();
+
+    await loadTasksFromSupabase();
+
+    render();
+
+  } catch (error) {
+    /*
+      IMPORTANTE:
+      se der erro, não marcamos
+      localmente como visualizada.
+    */
+    console.error(
+      "Erro ao apagar evidência:",
+      error
+    );
+
+    alert(
+      "A foto foi visualizada, mas houve um problema ao finalizar a exclusão. Tente novamente."
+    );
+
+  } finally {
+    window.currentEvidenceTask =
+      null;
+
+    const image =
+      $("#evidenceImage");
+
+    if (image) {
+      image.src = "";
+    }
+  }
+}
 function renderTaskCard(task) {
   const icon =
     getTaskEmoji(task);
