@@ -1829,15 +1829,34 @@ async function fazerLogin(
     "Entrando no Lelê...";
 
 
-  const {
-    error
-  } =
+  let error;
+
+try {
+  const resultado =
     await leleDb.auth
       .signInWithPassword({
         email,
-        password:
-          senha
+        password: senha
       });
+
+  error = resultado.error;
+
+} catch (erro) {
+
+  console.error(
+    "Erro técnico no login:",
+    erro
+  );
+
+  mensagem.textContent =
+    "Erro técnico: " +
+    (
+      erro?.message ||
+      String(erro)
+    );
+
+  return;
+}
 
 
   if (error) {
