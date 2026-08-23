@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#7c5cff" />
+  <title>Lelê — Rotina em família</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <div class="brand">Lelê</div>
+        <div id="subtitle" class="muted">Seu dia com você.</div>
+      </div>
+      <div class="top-actions">
+        <button id="installBtn" class="ghost hidden">Instalar app</button>
+        <button id="modeBtn" class="primary">Modo Pais</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="homeView" class="view active"></section>
+      <section id="routineView" class="view"></section>
+      <section id="schoolView" class="view"></section>
+      <section id="familyView" class="view"></section>
+      <section id="messagesView" class="view"></section>
+      <section id="settingsView" class="view"></section>
+    </main>
+
+    <nav class="bottomnav" aria-label="Navegação principal">
+      <button data-view="homeView" class="nav-btn active">Hoje</button>
+      <button data-view="routineView" class="nav-btn">Rotina</button>
+      <button data-view="schoolView" class="nav-btn">Escola</button>
+      <button data-view="familyView" class="nav-btn">Família</button>
+      <button data-view="messagesView" class="nav-btn">Recados</button>
+      <button data-view="settingsView" class="nav-btn">Ajustes</button>
+    </nav>
+  </div>
+
+  <dialog id="taskDialog">
+    <form method="dialog" id="taskForm" class="modal-card">
+      <div class="modal-head">
+        <h2 id="taskDialogTitle">Nova tarefa</h2>
+        <button value="cancel" class="icon-btn" aria-label="Fechar">✕</button>
+      </div>
+      <input type="hidden" id="taskId" />
+      <label>Título<input id="taskTitle" required maxlength="80" /></label>
+      <label>Categoria
+        <select id="taskCategory">
+          <option>Higiene</option><option>Casa</option><option>Escola</option><option>Água</option>
+          <option>Saúde</option><option>Lazer</option><option>Família</option><option>Autonomia</option>
+          <option>Organização</option><option>Pet</option>
+        </select>
+      </label>
+      <div class="grid2">
+        <label>Horário<input id="taskTime" type="time" /></label>
+        <label>Duração (min)<input id="taskDuration" type="number" min="1" max="240" value="10" /></label>
+      </div>
+      <label>Tipo
+        <select id="taskType">
+          <option value="fixed">Horário fixo</option>
+          <option value="window">Janela de horário</option>
+          <option value="daypart">Momento do dia</option>
+          <option value="reminder">Só lembrete</option>
+        </select>
+      </label>
+      <label class="switch-row"><input id="taskVoice" type="checkbox" checked /> Falar em voz alta</label>
+      <label class="switch-row"><input id="taskShared" type="checkbox" /> Tarefa compartilhada entre irmãos</label>
+      <label class="switch-row"><input id="taskNeedsHelp" type="checkbox" /> Permitir “Preciso de ajuda”</label>
+      <div class="modal-actions">
+        <button value="cancel" class="ghost">Cancelar</button>
+        <button id="saveTaskBtn" value="default" class="primary">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="projectDialog">
+    <form method="dialog" id="projectForm" class="modal-card">
+      <div class="modal-head">
+        <h2>Novo trabalho escolar</h2>
+        <button value="cancel" class="icon-btn">✕</button>
+      </div>
+      <label>Trabalho / atividade<input id="projectTitle" required maxlength="100" /></label>
+      <label>Matéria<input id="projectSubject" maxlength="60" /></label>
+      <label>Data de entrega<input id="projectDue" type="date" required /></label>
+      <label>Materiais necessários<textarea id="projectMaterials" rows="3" placeholder="Ex.: cartolina, cola, tinta"></textarea></label>
+      <label>Descrição<textarea id="projectNotes" rows="3"></textarea></label>
+      <div class="modal-actions">
+        <button value="cancel" class="ghost">Cancelar</button>
+        <button id="saveProjectBtn" value="default" class="primary">Salvar projeto</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
