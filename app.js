@@ -1,4 +1,10 @@
+const SUPABASE_URL = "https://qnrgrkncpmokfixbjyyn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Z97p7XftLP8__CjEefEIPA_KXzvf6Bj";
 
+const leleDb = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const storeKey = "lele-demo-v2";
