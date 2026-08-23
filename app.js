@@ -2325,68 +2325,6 @@ function handleTaskPhoto(event) {
     Guardamos o arquivo somente
     enquanto a criança confirma.
   */
-  pendingPhotoData = {
-    file,
-    previewUrl:
-      URL.createObjectURL(file)
-  };
-
-  const preview =
-    $("#photoPreview");
-
-  if (preview) {
-    preview.innerHTML = `
-      <img
-        src="${pendingPhotoData.previewUrl}"
-        alt="Evidência da tarefa"
-      />
-    `;
-
-    preview.classList.remove(
-      "hidden"
-    );
-  }
-}
-
-
-  const reader =
-    new FileReader();
-
-
-  reader.onload =
-    () => {
-
-      pendingPhotoData =
-        reader.result;
-
-      const preview =
-        $("#photoPreview");
-
-      if (!preview) {
-        return;
-      }
-
-      preview.innerHTML =
-        `
-          <img
-            src="${pendingPhotoData}"
-            alt="Foto da tarefa"
-          />
-        `;
-
-      preview.classList
-        .remove(
-          "hidden"
-        );
-    };
-
-
-  reader.readAsDataURL(
-    file
-  );
-}
-
-
 async function confirmTaskPhoto() {
   if (!pendingPhotoTask) {
     return;
