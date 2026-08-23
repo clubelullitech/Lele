@@ -3862,53 +3862,19 @@ function render() {
 ============================================= */
 
 function bindDynamicEvents() {
-  $("#newTaskBtn")?.addEventListener(
-    "click",
-    () => openTaskDialog()
-  );
+$("#enableNotificationsBtn")?.addEventListener(
+  "click",
+  async () => {
+    const allowed =
+      await requestNotificationPermission();
 
-  $("#newRoutineTaskBtn")?.addEventListener(
-    "click",
-    () => openTaskDialog()
-  );
-
-  $("#addWaterBtn")?.addEventListener(
-    "click",
-    () => addHydrationReal(250)
-  );
-
-  $("#enableNotificationsBtn")?.addEventListener(
-    "click",
-    async () => {
-      const allowed =
-        await requestNotificationPermission();
-
-      alert(
-        allowed
-          ? "Notificações ativadas 🔔"
-          : "As notificações não foram autorizadas."
-      );
-      $$(".evidence-view-btn").forEach(
-  button => {
-    button.addEventListener(
-      "click",
-      async () => {
-        const task =
-          state.tasks.find(
-            t =>
-              String(t.id) ===
-              String(button.dataset.taskId)
-          );
-
-        if (task) {
-          await viewTaskEvidence(task);
-        }
-      }
+    alert(
+      allowed
+        ? "Notificações ativadas 🔔"
+        : "As notificações não foram autorizadas."
     );
   }
 );
-    }
-  );
 
   $$(".speak-task-btn").forEach(
     button => {
@@ -3954,41 +3920,25 @@ function bindDynamicEvents() {
     }
   );
 
-  $$(".task-edit-btn").forEach(
-    button => {
-      button.addEventListener(
-        "click",
-        () => {
-          const task =
-            state.tasks.find(
-              t =>
-                String(t.id) ===
-                String(
-                  button.dataset.taskId
-                )
-            );
+ $$(".evidence-view-btn").forEach(
+  button => {
+    button.addEventListener(
+      "click",
+      async () => {
+        const task =
+          state.tasks.find(
+            t =>
+              String(t.id) ===
+              String(button.dataset.taskId)
+          );
 
-          if (task) {
-            openTaskDialog(task);
-          }
+        if (task) {
+          await viewTaskEvidence(task);
         }
-      );
-    }
-  );
-
-  $$(".task-help-btn").forEach(
-    button => {
-      button.addEventListener(
-        "click",
-        () => {
-          const task =
-            state.tasks.find(
-              t =>
-                String(t.id) ===
-                String(
-                  button.dataset.taskId
-                )
-            );
+      }
+    );
+  }
+);
 
           if (!task) return;
 
