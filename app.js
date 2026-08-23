@@ -4860,7 +4860,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          "./sw.js?v=12"
+          "./sw.js?v=13"
         )
         .catch(
           error =>
