@@ -4637,6 +4637,24 @@ function saveProjectFromForm(event) {
    EVENTOS FIXOS
 ============================================= */
 
+$("#finishEvidenceBtn")
+  ?.addEventListener(
+    "click",
+    async () => {
+      await destroyViewedEvidence();
+      $("#evidenceDialog")?.close();
+    }
+  );
+
+$("#closeEvidenceBtn")
+  ?.addEventListener(
+    "click",
+    async () => {
+      await destroyViewedEvidence();
+      $("#evidenceDialog")?.close();
+    }
+  );
+
 $("#loginForm")?.addEventListener(
   "submit",
   fazerLogin
@@ -4661,6 +4679,16 @@ $("#projectForm")?.addEventListener(
   "submit",
   saveProjectFromForm
 );
+
+$("#evidenceDialog")
+  ?.addEventListener(
+    "cancel",
+    async event => {
+      event.preventDefault();
+      await destroyViewedEvidence();
+      $("#evidenceDialog")?.close();
+    }
+  );
 
 $("#taskTitle")?.addEventListener(
   "input",
