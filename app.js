@@ -620,15 +620,168 @@ function child() {
   );
 }
 
-function childTasks() {
-  const c = child();
+function todayKey() {
+  const now = new Date();
 
-  if (!c) return [];
+  const year =
+    now.getFullYear();
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(2, "0");
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+
+function currentWeekDay() {
+  const jsDay =
+    new Date().getDay();
+
+  /*
+    JavaScript:
+    0 = domingo
+    1 = segunda
+    ...
+
+    Lelê:
+    1 = segunda
+    ...
+    7 = domingo
+  */
+  return jsDay === 0
+    ? 7
+    : jsDay;
+}
+
+
+function taskIsForToday(task) {
+  const today =
+    todayKey();
+
+  /*
+    Se existe data final e ela passou,
+    a tarefa não aparece mais.
+  */
+  if (
+    task.recurrenceEndDate &&
+    today > task.recurrenceEndDate
+  ) {
+    return false;
+  }
+
+  /*
+    Tarefa sem recorrência.
+  */
+  if (
+    !task.recurrenceEnabled ||
+    task.recurrenceType === "once"
+  ) {
+    return true;
+  }
+
+  const weekDay =
+    currentWeekDay();
+
+  /*
+    Todos os dias.
+  */
+  if (
+    task.recurrenceType === "daily"
+  ) {
+    return true;
+  }
+
+  /*
+    Segunda a sexta.
+  */
+  if (
+    task.recurrenceType === "weekdays"
+  ) {
+    return (
+      weekDay >= 1 &&
+      weekDay <= 5
+    );
+  }
+
+  /*
+    Dias específicos.
+  */
+  if (
+    task.recurrenceType === "weekly"
+  ) {
+    return (
+      task.recurrenceDays || []
+    ).includes(
+      weekDay
+    );
+  }
+
+  return true;
+}
+
+
+function normalizeRecurringTask(task) {
+  if (
+    !task.recurrenceEnabled ||
+    task.recurrenceType === "once"
+  ) {
+    return task;
+  }
+
+  const today =
+    todayKey();
+
+  /*
+    Se foi concluída hoje,
+    continua concluída.
+  */
+  if (
+    task.lastCompletedDate ===
+    today
+  ) {
+    task.done = true;
+    task.status = "done";
+
+    return task;
+  }
+
+  /*
+    Se a última conclusão foi
+    em outro dia, hoje ela volta
+    automaticamente como pendente.
+  */
+  task.done = false;
+  task.status = "pending";
+
+  return task;
+}
+
+function childTasks() {
+  const c =
+    child();
+
+  if (!c) {
+    return [];
+  }
 
   return state.tasks
     .filter(
       task =>
         task.childId === c.id
+    )
+    .map(
+      normalizeRecurringTask
+    )
+    .filter(
+      task =>
+        taskIsForToday(task)
     )
     .sort(
       (a, b) =>
@@ -1194,6 +1347,41 @@ async function setTaskStatusReal(
     return;
   }
 
+if (task.recurrenceEnabled) {
+  const completionDate =
+    newStatus === "done"
+      ? todayKey()
+      : null;
+
+  const {
+    error: recurrenceError
+  } =
+    await leleDb
+      .from("tasks")
+      .update({
+        last_completed_date:
+          completionDate,
+
+        updated_at:
+          new Date()
+            .toISOString()
+      })
+      .eq(
+        "id",
+        task.id
+      );
+
+  if (recurrenceError) {
+    console.error(
+      "Erro ao registrar conclusão recorrente:",
+      recurrenceError
+    );
+  }
+
+  task.lastCompletedDate =
+    completionDate;
+}
+  
   await loadTasksFromSupabase();
 
   save();
@@ -2814,6 +3002,73 @@ function openTaskDialog(task = null) {
       task?.requirePhoto ?? false;
   }
 
+if ($("#taskRecurrence")) {
+  const recurrenceType =
+    task?.recurrenceType || "once";
+
+  let recurrenceValue =
+    recurrenceType;
+
+  if (
+    recurrenceType === "weekly" &&
+    task?.recurrenceDays?.length === 1
+  ) {
+    recurrenceValue = "weekly-1";
+  }
+
+  if (
+    recurrenceType === "weekly" &&
+    task?.recurrenceDays?.length === 2
+  ) {
+    recurrenceValue = "weekly-2";
+  }
+
+  if (
+    recurrenceType === "weekly" &&
+    task?.recurrenceDays?.length === 3
+  ) {
+    recurrenceValue = "weekly-3";
+  }
+
+  if (
+    recurrenceType === "weekly" &&
+    (task?.recurrenceDays?.length || 0) > 3
+  ) {
+    recurrenceValue = "custom";
+  }
+
+  $("#taskRecurrence").value =
+    recurrenceValue;
+
+  $$(".recurrence-day").forEach(
+    checkbox => {
+      checkbox.checked =
+        (task?.recurrenceDays || [])
+          .includes(
+            Number(checkbox.value)
+          );
+    }
+  );
+
+  if (
+    task?.recurrenceEndDate
+  ) {
+    $("#taskRecurrenceEndMode").value =
+      "date";
+
+    $("#taskRecurrenceEndDate").value =
+      task.recurrenceEndDate;
+  } else {
+    $("#taskRecurrenceEndMode").value =
+      "never";
+
+    $("#taskRecurrenceEndDate").value =
+      "";
+  }
+
+  updateRecurrenceForm();
+}
+  
   const emoji =
     task?.icon ||
     suggestEmoji(
@@ -2873,6 +3128,108 @@ async function saveTaskFromForm(event) {
     typedEmoji ||
     suggestEmoji(title, cat);
 
+const recurrenceSelection =
+  $("#taskRecurrence")?.value || "once";
+
+const selectedDays =
+  $$(".recurrence-day")
+    .filter(
+      checkbox =>
+        checkbox.checked
+    )
+    .map(
+      checkbox =>
+        Number(checkbox.value)
+    );
+
+let recurrenceType =
+  recurrenceSelection;
+
+let recurrenceDays =
+  [];
+
+if (
+  recurrenceSelection === "weekly-1" ||
+  recurrenceSelection === "weekly-2" ||
+  recurrenceSelection === "weekly-3" ||
+  recurrenceSelection === "custom"
+) {
+  recurrenceType =
+    "weekly";
+
+  recurrenceDays =
+    selectedDays;
+}
+
+if (
+  recurrenceSelection === "weekdays"
+) {
+  recurrenceDays =
+    [1, 2, 3, 4, 5];
+}
+
+if (
+  recurrenceSelection === "daily"
+) {
+  recurrenceDays =
+    [1, 2, 3, 4, 5, 6, 7];
+}
+
+const recurrenceEnabled =
+  recurrenceSelection !== "once";
+
+const recurrenceEndDate =
+  $("#taskRecurrenceEndMode")?.value === "date"
+    ? (
+        $("#taskRecurrenceEndDate")?.value ||
+        null
+      )
+    : null;
+
+
+/*
+  Validação dos dias escolhidos
+*/
+if (
+  recurrenceSelection === "weekly-1" &&
+  recurrenceDays.length !== 1
+) {
+  alert(
+    "Escolha exatamente 1 dia da semana."
+  );
+  return;
+}
+
+if (
+  recurrenceSelection === "weekly-2" &&
+  recurrenceDays.length !== 2
+) {
+  alert(
+    "Escolha exatamente 2 dias da semana."
+  );
+  return;
+}
+
+if (
+  recurrenceSelection === "weekly-3" &&
+  recurrenceDays.length !== 3
+) {
+  alert(
+    "Escolha exatamente 3 dias da semana."
+  );
+  return;
+}
+
+if (
+  recurrenceSelection === "custom" &&
+  !recurrenceDays.length
+) {
+  alert(
+    "Escolha pelo menos um dia da semana."
+  );
+  return;
+}
+  
   const data = {
     childId: c.id,
     title,
@@ -2894,6 +3251,11 @@ async function saveTaskFromForm(event) {
     requirePhoto:
       $("#taskPhoto")?.checked || false,
     icon
+    recurrenceType,
+recurrenceDays,
+recurrenceEndDate,
+recurrenceEnabled,
+    
   };
 
   $("#taskDialog").close();
@@ -4077,6 +4439,41 @@ function updateTaskEmojiSuggestion() {
   }
 }
 
+function updateRecurrenceForm() {
+  const recurrence =
+    $("#taskRecurrence")?.value ||
+    "once";
+
+  const daysBox =
+    $("#recurrenceDaysBox");
+
+  const needsDays =
+    [
+      "weekly-1",
+      "weekly-2",
+      "weekly-3",
+      "custom"
+    ].includes(
+      recurrence
+    );
+
+  daysBox?.classList.toggle(
+    "hidden",
+    !needsDays
+  );
+
+  const endMode =
+    $("#taskRecurrenceEndMode")
+      ?.value ||
+    "never";
+
+  $("#taskRecurrenceEndDateWrap")
+    ?.classList.toggle(
+      "hidden",
+      endMode !== "date"
+    );
+}
+
 /* =============================================
    PROJETO ESCOLAR
 ============================================= */
@@ -4248,7 +4645,17 @@ $$(".nav-btn").forEach(
     );
   }
 );
+$("#taskRecurrence")
+  ?.addEventListener(
+    "change",
+    updateRecurrenceForm
+  );
 
+$("#taskRecurrenceEndMode")
+  ?.addEventListener(
+    "change",
+    updateRecurrenceForm
+  );
 
 /* =============================================
    PWA / INSTALAÇÃO
