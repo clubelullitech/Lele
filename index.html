@@ -612,6 +612,157 @@
 
     </label>
 
+  <div class="recurrence-box">
+
+  <label>
+    Repetição
+
+    <select id="taskRecurrence">
+
+      <option value="once">
+        Uma vez
+      </option>
+
+      <option value="daily">
+        Todos os dias
+      </option>
+
+      <option value="weekdays">
+        Segunda a sexta
+      </option>
+
+      <option value="weekly-1">
+        1x por semana
+      </option>
+
+      <option value="weekly-2">
+        2x por semana
+      </option>
+
+      <option value="weekly-3">
+        3x por semana
+      </option>
+
+      <option value="custom">
+        Dias específicos
+      </option>
+
+    </select>
+
+  </label>
+
+
+  <div
+    id="recurrenceDaysBox"
+    class="recurrence-days hidden"
+  >
+
+    <div class="muted">
+      Escolha os dias
+    </div>
+
+    <div class="weekday-grid">
+
+      <label>
+        <input
+          type="checkbox"
+          class="recurrence-day"
+          value="1"
+        />
+        Seg
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          class="recurrence-day"
+          value="2"
+        />
+        Ter
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          class="recurrence-day"
+          value="3"
+        />
+        Qua
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          class="recurrence-day"
+          value="4"
+        />
+        Qui
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          class="recurrence-day"
+          value="5"
+        />
+        Sex
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          class="recurrence-day"
+          value="6"
+        />
+        Sáb
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          class="recurrence-day"
+          value="7"
+        />
+        Dom
+      </label>
+
+    </div>
+
+  </div>
+
+
+  <label>
+    Até quando?
+
+    <select id="taskRecurrenceEndMode">
+
+      <option value="never">
+        Sem data final
+      </option>
+
+      <option value="date">
+        Até uma data
+      </option>
+
+    </select>
+
+  </label>
+
+
+  <label
+    id="taskRecurrenceEndDateWrap"
+    class="hidden"
+  >
+    Data final
+
+    <input
+      id="taskRecurrenceEndDate"
+      type="date"
+    />
+
+  </label>
+
+</div>
 
     <div class="modal-actions">
 
