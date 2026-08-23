@@ -3670,10 +3670,7 @@ function updateTaskEmojiSuggestion() {
     $("#taskCategory")?.value || "Casa";
 
   const emoji =
-    suggestEmoji(
-      title,
-      cat
-    );
+    suggestEmoji(title, cat);
 
   const input =
     $("#taskEmoji");
@@ -3681,23 +3678,15 @@ function updateTaskEmojiSuggestion() {
   const preview =
     $("#taskEmojiPreview");
 
-  if (
-    input &&
-    (
-      !input.value ||
-      input.dataset.auto === "true"
-    )
-  ) {
+  if (input) {
     input.value = emoji;
     input.dataset.auto = "true";
   }
 
   if (preview) {
-    preview.textContent =
-      input?.value || emoji;
+    preview.textContent = emoji;
   }
 }
-
 
 /* =============================================
    PROJETO ESCOLAR
