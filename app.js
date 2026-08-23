@@ -3,21 +3,34 @@ const SUPABASE_KEY = "sb_publishable_Z97p7XftLP8__CjEefEIPA_KXzvf6Bj";
 
 const leleDb = window.supabase.createClient(
   SUPABASE_URL,
-  SUPABASE_KEY
+  SUPABASE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: window.localStorage
+    }
+  }
 );
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-const storeKey = "lele-demo-v2";
 
-// =============================================
-// LOGIN E PERFIL REAL DO LELÊ
-// =============================================
+const storeKey = "lele-demo-v3";
+const offlineQueueKey = "lele-offline-queue-v1";
 
 let usuarioAtual = null;
 let membroAtual = null;
 let familiaAtual = null;
 let tasksRealtimeChannel = null;
+
+let pendingPhotoTask = null;
+let pendingPhotoData = null;
+
+/* =============================================
+   UTILITÁRIOS
+============================================= */
 
 function calcularIdade(dataNascimento) {
   if (!dataNascimento) return 0;
@@ -25,12 +38,20 @@ function calcularIdade(dataNascimento) {
   const nascimento = new Date(dataNascimento + "T00:00:00");
   const hoje = new Date();
 
-  let idade = hoje.getFullYear() - nascimento.getFullYear();
-  const mes = hoje.getMonth() - nascimento.getMonth();
+  let idade =
+    hoje.getFullYear() -
+    nascimento.getFullYear();
+
+  const mes =
+    hoje.getMonth() -
+    nascimento.getMonth();
 
   if (
     mes < 0 ||
-    (mes === 0 && hoje.getDate() < nascimento.getDate())
+    (
+      mes === 0 &&
+      hoje.getDate() < nascimento.getDate()
+    )
   ) {
     idade--;
   }
@@ -40,218 +61,1052 @@ function calcularIdade(dataNascimento) {
 
 function plusDays(n) {
   const d = new Date();
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+
+  d.setDate(
+    d.getDate() + n
+  );
+
+  return d
+    .toISOString()
+    .slice(0, 10);
 }
 
-const taskLibrary = [
-  {title:"Escovar os dentes",cat:"Higiene",ages:[3,17],icon:"🪥"},
-  {title:"Arrumar a cama",cat:"Casa",ages:[4,17],icon:"🛏️"},
-  {title:"Guardar brinquedos",cat:"Casa",ages:[3,9],icon:"🧸"},
-  {title:"Organizar o quarto",cat:"Casa",ages:[7,17],icon:"🧹"},
-  {title:"Colocar roupa no cesto",cat:"Autonomia",ages:[4,17],icon:"👕"},
-  {title:"Preparar a mochila",cat:"Escola",ages:[6,17],icon:"🎒"},
-  {title:"Fazer a lição de casa",cat:"Escola",ages:[6,17],icon:"📚"},
-  {title:"Ler um livro",cat:"Lazer",ages:[5,17],icon:"📖"},
-  {title:"Beber água",cat:"Água",ages:[3,17],icon:"💧"},
-  {title:"Alimentar o pet",cat:"Pet",ages:[6,17],icon:"🐶"},
-  {title:"Ajudar a pôr a mesa",cat:"Família",ages:[5,17],icon:"🍽️"},
-  {title:"Tomar banho",cat:"Higiene",ages:[4,17],icon:"🚿"},
-  {title:"Separar roupa para amanhã",cat:"Organização",ages:[9,17],icon:"👚"},
-  {title:"Revisar matéria da prova",cat:"Escola",ages:[10,17],icon:"📝"},
-  {title:"Planejar a semana",cat:"Organização",ages:[12,17],icon:"🗓️"},
-  {title:"Preparar lanche simples",cat:"Autonomia",ages:[10,17],icon:"🥪"},
-  {title:"Lavar a louça",cat:"Casa",ages:[11,17],icon:"🍽️"},
-  {title:"Separar material escolar",cat:"Escola",ages:[6,17],icon:"✏️"},
-  {title:"Assistir ao desenho/programa favorito",cat:"Lazer",ages:[3,17],icon:"📺"},
-  {title:"Atividade em família",cat:"Família",ages:[3,17],icon:"❤️"}
+function fmtDate(s) {
+  if (!s) return "";
+
+  const [y, m, d] =
+    s.split("-");
+
+  return `${d}/${m}/${y}`;
+}
+
+function daysUntil(s) {
+  const hoje = new Date();
+
+  hoje.setHours(
+    0, 0, 0, 0
+  );
+
+  const data =
+    new Date(
+      s + "T00:00:00"
+    );
+
+  return Math.ceil(
+    (data - hoje) /
+    86400000
+  );
+}
+
+/* =============================================
+   VOZ
+============================================= */
+
+function speak(text) {
+  if (
+    !("speechSynthesis" in window)
+  ) {
+    alert(
+      "A voz não está disponível neste navegador."
+    );
+
+    return;
+  }
+
+  speechSynthesis.cancel();
+
+  const voz =
+    new SpeechSynthesisUtterance(
+      text
+    );
+
+  voz.lang = "pt-BR";
+  voz.rate = 0.92;
+  voz.pitch = 1;
+
+  speechSynthesis.speak(
+    voz
+  );
+}
+
+/* =============================================
+   EMOJIS
+============================================= */
+
+const categoryIcons = {
+  "Higiene": "🧼",
+  "Casa": "🏠",
+  "Escola": "🎓",
+  "Água": "💧",
+  "Saúde": "❤️",
+  "Lazer": "🎮",
+  "Família": "👨‍👩‍👧",
+  "Autonomia": "🌱",
+  "Organização": "📦",
+  "Pet": "🐾"
+};
+
+const emojiRules = [
+  {
+    words: [
+      "escovar",
+      "dente",
+      "dentes"
+    ],
+    icon: "😁🪥"
+  },
+
+  {
+    words: [
+      "banho",
+      "chuveiro"
+    ],
+    icon: "🚿"
+  },
+
+  {
+    words: [
+      "cama"
+    ],
+    icon: "🛏️"
+  },
+
+  {
+    words: [
+      "quarto",
+      "limpar",
+      "varrer"
+    ],
+    icon: "🧹"
+  },
+
+  {
+    words: [
+      "mochila"
+    ],
+    icon: "🎒"
+  },
+
+  {
+    words: [
+      "lição",
+      "tarefa escolar",
+      "estudar"
+    ],
+    icon: "📚"
+  },
+
+  {
+    words: [
+      "prova",
+      "revisar"
+    ],
+    icon: "📝"
+  },
+
+  {
+    words: [
+      "livro",
+      "ler"
+    ],
+    icon: "📖"
+  },
+
+  {
+    words: [
+      "água",
+      "beber"
+    ],
+    icon: "💧"
+  },
+
+  {
+    words: [
+      "cachorro",
+      "pet",
+      "ração"
+    ],
+    icon: "🐶"
+  },
+
+  {
+    words: [
+      "gato"
+    ],
+    icon: "🐱"
+  },
+
+  {
+    words: [
+      "roupa",
+      "uniforme"
+    ],
+    icon: "👕"
+  },
+
+  {
+    words: [
+      "mesa",
+      "louça"
+    ],
+    icon: "🍽️"
+  },
+
+  {
+    words: [
+      "lanche",
+      "comer"
+    ],
+    icon: "🥪"
+  },
+
+  {
+    words: [
+      "remédio",
+      "medicamento"
+    ],
+    icon: "💊"
+  },
+
+  {
+    words: [
+      "dormir",
+      "sono"
+    ],
+    icon: "😴"
+  },
+
+  {
+    words: [
+      "acordar"
+    ],
+    icon: "⏰"
+  },
+
+  {
+    words: [
+      "escola",
+      "material"
+    ],
+    icon: "🎒"
+  },
+
+  {
+    words: [
+      "celular",
+      "telefone"
+    ],
+    icon: "📱"
+  },
+
+  {
+    words: [
+      "computador"
+    ],
+    icon: "💻"
+  },
+
+  {
+    words: [
+      "jogar",
+      "videogame",
+      "game"
+    ],
+    icon: "🎮"
+  },
+
+  {
+    words: [
+      "televisão",
+      "tv",
+      "assistir"
+    ],
+    icon: "📺"
+  },
+
+  {
+    words: [
+      "exercício",
+      "treino"
+    ],
+    icon: "🏃"
+  }
 ];
 
+function suggestEmoji(
+  title,
+  category = "Casa"
+) {
+  const text =
+    String(title || "")
+      .toLowerCase();
+
+  for (
+    const rule of emojiRules
+  ) {
+    if (
+      rule.words.some(
+        word =>
+          text.includes(word)
+      )
+    ) {
+      return rule.icon;
+    }
+  }
+
+  return (
+    categoryIcons[category] ||
+    "⭐"
+  );
+}
+
+/* =============================================
+   BIBLIOTECA DE TAREFAS
+============================================= */
+
+const taskLibrary = [
+  {
+    title: "Escovar os dentes",
+    cat: "Higiene",
+    ages: [3, 17],
+    icon: "😁🪥"
+  },
+
+  {
+    title: "Tomar banho",
+    cat: "Higiene",
+    ages: [4, 17],
+    icon: "🚿"
+  },
+
+  {
+    title: "Arrumar a cama",
+    cat: "Casa",
+    ages: [4, 17],
+    icon: "🛏️"
+  },
+
+  {
+    title: "Guardar brinquedos",
+    cat: "Casa",
+    ages: [3, 9],
+    icon: "🧸"
+  },
+
+  {
+    title: "Organizar o quarto",
+    cat: "Casa",
+    ages: [7, 17],
+    icon: "🧹"
+  },
+
+  {
+    title: "Colocar roupa no cesto",
+    cat: "Autonomia",
+    ages: [4, 17],
+    icon: "👕"
+  },
+
+  {
+    title: "Preparar a mochila",
+    cat: "Escola",
+    ages: [6, 17],
+    icon: "🎒"
+  },
+
+  {
+    title: "Fazer a lição de casa",
+    cat: "Escola",
+    ages: [6, 17],
+    icon: "📚"
+  },
+
+  {
+    title: "Separar material escolar",
+    cat: "Escola",
+    ages: [6, 17],
+    icon: "✏️"
+  },
+
+  {
+    title: "Revisar matéria da prova",
+    cat: "Escola",
+    ages: [10, 17],
+    icon: "📝"
+  },
+
+  {
+    title: "Ler um livro",
+    cat: "Lazer",
+    ages: [5, 17],
+    icon: "📖"
+  },
+
+  {
+    title: "Beber água",
+    cat: "Água",
+    ages: [3, 17],
+    icon: "💧"
+  },
+
+  {
+    title: "Alimentar o pet",
+    cat: "Pet",
+    ages: [6, 17],
+    icon: "🐶"
+  },
+
+  {
+    title: "Ajudar a pôr a mesa",
+    cat: "Família",
+    ages: [5, 17],
+    icon: "🍽️"
+  },
+
+  {
+    title: "Separar roupa para amanhã",
+    cat: "Organização",
+    ages: [9, 17],
+    icon: "👚"
+  },
+
+  {
+    title: "Planejar a semana",
+    cat: "Organização",
+    ages: [12, 17],
+    icon: "🗓️"
+  },
+
+  {
+    title: "Preparar lanche simples",
+    cat: "Autonomia",
+    ages: [10, 17],
+    icon: "🥪"
+  },
+
+  {
+    title: "Lavar a louça",
+    cat: "Casa",
+    ages: [11, 17],
+    icon: "🍽️"
+  },
+
+  {
+    title: "Organizar o material de estudo",
+    cat: "Organização",
+    ages: [10, 17],
+    icon: "📚"
+  },
+
+  {
+    title: "Organizar o próprio horário",
+    cat: "Autonomia",
+    ages: [12, 17],
+    icon: "🗓️"
+  },
+
+  {
+    title: "Atividade em família",
+    cat: "Família",
+    ages: [3, 17],
+    icon: "❤️"
+  }
+];
+
+/* =============================================
+   ESTADO LOCAL
+============================================= */
+
 const initial = {
-  mode:"child",
-  activeChild:0,
-  familyName:"Família Lelê",
-  children:[],
-  tasks:[],
-  projects:[],
-  messages:[],
-  protectedBlocks:[]
+  mode: "child",
+
+  activeChild: 0,
+
+  familyName:
+    "Família Lelê",
+
+  children: [],
+
+  tasks: [],
+
+  projects: [],
+
+  messages: [],
+
+  protectedBlocks: [],
+
+  avatars: {}
 };
 
 let state =
-  JSON.parse(localStorage.getItem(storeKey) || "null") ||
-  initial;
+  JSON.parse(
+    localStorage.getItem(
+      storeKey
+    ) || "null"
+  ) || initial;
+
+state = {
+  ...initial,
+  ...state
+};
 
 function save() {
-  localStorage.setItem(storeKey, JSON.stringify(state));
+  localStorage.setItem(
+    storeKey,
+    JSON.stringify(state)
+  );
 }
 
 function child() {
-  return state.children[state.activeChild] || state.children[0];
+  return (
+    state.children[
+      state.activeChild
+    ] ||
+    state.children[0]
+  );
 }
 
 function childTasks() {
   const c = child();
+
   if (!c) return [];
 
   return state.tasks
-    .filter(t => t.childId === c.id)
-    .sort((a,b) =>
-      (a.time || "99:99").localeCompare(b.time || "99:99")
+    .filter(
+      task =>
+        task.childId === c.id
+    )
+    .sort(
+      (a, b) =>
+        (a.time || "99:99")
+          .localeCompare(
+            b.time || "99:99"
+          )
     );
 }
 
 function childProjects() {
   const c = child();
+
   if (!c) return [];
-  return state.projects.filter(p => p.childId === c.id);
+
+  return state.projects.filter(
+    project =>
+      project.childId === c.id
+  );
 }
 
-function fmtDate(s) {
-  if (!s) return "";
-  const [y,m,d] = s.split("-");
-  return `${d}/${m}/${y}`;
-}
+/* =============================================
+   OFFLINE
+============================================= */
 
-function daysUntil(s) {
-  const a = new Date();
-  a.setHours(0,0,0,0);
-
-  const b = new Date(s + "T00:00:00");
-
-  return Math.ceil((b-a)/86400000);
-}
-
-function speak(text) {
-  if (!("speechSynthesis" in window)) {
-    return alert("A voz não está disponível neste navegador.");
+function getOfflineQueue() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(
+        offlineQueueKey
+      ) || "[]"
+    );
+  } catch {
+    return [];
   }
-
-  speechSynthesis.cancel();
-
-  const u = new SpeechSynthesisUtterance(text);
-
-  u.lang = "pt-BR";
-  u.rate = 0.95;
-  u.pitch = 1.05;
-
-  speechSynthesis.speak(u);
 }
 
-// =============================================
-// SUPABASE - TAREFAS
-// =============================================
+function saveOfflineQueue(
+  queue
+) {
+  localStorage.setItem(
+    offlineQueueKey,
+    JSON.stringify(queue)
+  );
+}
+
+function queueOfflineAction(
+  action
+) {
+  const queue =
+    getOfflineQueue();
+
+  queue.push({
+    ...action,
+    queuedAt:
+      new Date().toISOString()
+  });
+
+  saveOfflineQueue(queue);
+}
+
+function showConnectionStatus() {
+  let banner =
+    $("#offlineBanner");
+
+  if (!navigator.onLine) {
+    if (!banner) {
+      banner =
+        document.createElement(
+          "div"
+        );
+
+      banner.id =
+        "offlineBanner";
+
+      banner.className =
+        "offline-banner";
+
+      banner.textContent =
+        "Sem internet • suas alterações serão sincronizadas quando a conexão voltar.";
+
+      document.body.appendChild(
+        banner
+      );
+    }
+  } else {
+    banner?.remove();
+  }
+}
+
+window.addEventListener(
+  "offline",
+  showConnectionStatus
+);
+
+window.addEventListener(
+  "online",
+  async () => {
+    showConnectionStatus();
+
+    await syncOfflineQueue();
+  }
+);
+
+/* =============================================
+   TAREFAS DO SUPABASE
+============================================= */
 
 function mapTaskFromDb(t) {
+  const localExtra =
+    state.tasks.find(
+      x => x.id === t.id
+    ) || {};
+
   return {
     id: t.id,
-    childId: t.member_id,
-    title: t.title,
-    cat: t.category || "Casa",
-    time: t.scheduled_time
-      ? String(t.scheduled_time).slice(0,5)
-      : "",
-    duration: t.duration_minutes || 10,
-    type: t.task_type || "fixed",
-    voice: !!t.voice_enabled,
-    shared: !!t.shared,
-    needsHelp: !!t.help_enabled,
-    done: t.status === "done",
-    status: t.status || "pending"
+
+    childId:
+      t.member_id,
+
+    title:
+      t.title,
+
+    cat:
+      t.category ||
+      "Casa",
+
+    time:
+      t.scheduled_time
+        ? String(
+            t.scheduled_time
+          ).slice(0, 5)
+        : "",
+
+    duration:
+      t.duration_minutes ||
+      10,
+
+    type:
+      t.task_type ||
+      "fixed",
+
+    voice:
+      !!t.voice_enabled,
+
+    shared:
+      !!t.shared,
+
+    needsHelp:
+      !!t.help_enabled,
+
+    done:
+      t.status === "done",
+
+    status:
+      t.status ||
+      "pending",
+
+    icon:
+      localExtra.icon ||
+      suggestEmoji(
+        t.title,
+        t.category
+      ),
+
+    requirePhoto:
+      !!localExtra.requirePhoto,
+
+    photo:
+      localExtra.photo ||
+      null
   };
 }
 
 async function loadTasksFromSupabase() {
-  if (!familiaAtual || !state.children?.length) {
-    state.tasks = [];
+  if (
+    !familiaAtual ||
+    !state.children?.length
+  ) {
     return;
   }
 
   const memberIds =
-    state.children.map(c => c.id);
-
-  const { data, error } = await leleDb
-    .from("tasks")
-    .select("*")
-    .eq("family_id", familiaAtual)
-    .in("member_id", memberIds)
-    .order(
-      "scheduled_time",
-      {
-        ascending:true,
-        nullsFirst:false
-      }
+    state.children.map(
+      c => c.id
     );
 
- if (error) {
-  console.error("Erro ao carregar tarefas:", error);
-
-  state.tasks = [];
-
-  return;
-}
-
-  state.tasks =
-    (data || []).map(mapTaskFromDb);
-}
-
-async function saveTaskToSupabase(taskId, data) {
-
-  const payload = {
-    family_id: familiaAtual,
-    member_id: data.childId,
-    title: data.title,
-    category: data.cat,
-    task_type: data.type || "fixed",
-    scheduled_date:
-      new Date().toISOString().slice(0,10),
-    scheduled_time: data.time || null,
-    duration_minutes: data.duration || 10,
-    voice_enabled: !!data.voice,
-    help_enabled: !!data.needsHelp,
-    shared: !!data.shared,
-    status: data.done ? "done" : "pending",
-    created_by: usuarioAtual?.id || null,
-    updated_at: new Date().toISOString()
-  };
-
-  if (taskId) {
-
-    const { error } = await leleDb
+  const {
+    data,
+    error
+  } =
+    await leleDb
       .from("tasks")
-      .update(payload)
-      .eq("id", taskId);
+      .select("*")
+      .eq(
+        "family_id",
+        familiaAtual
+      )
+      .in(
+        "member_id",
+        memberIds
+      )
+      .order(
+        "scheduled_time",
+        {
+          ascending: true,
+          nullsFirst: false
+        }
+      );
 
-    if (error) throw error;
+  if (error) {
+    console.error(
+      "Erro ao carregar tarefas:",
+      error
+    );
 
-  } else {
+    /*
+      IMPORTANTE:
+      não apagamos as tarefas locais
+      quando a internet cai.
+    */
 
-    const { error } = await leleDb
-      .from("tasks")
-      .insert(payload);
-
-    if (error) throw error;
+    return;
   }
 
-  await loadTasksFromSupabase();
+  const tarefasBanco =
+    (data || [])
+      .map(
+        mapTaskFromDb
+      );
+
+  state.tasks =
+    tarefasBanco;
+
+  save();
+}
+
+async function saveTaskToSupabase(
+  taskId,
+  data
+) {
+  const localTask = {
+    id:
+      taskId ||
+      `offline-${Date.now()}`,
+
+    childId:
+      data.childId,
+
+    title:
+      data.title,
+
+    cat:
+      data.cat,
+
+    time:
+      data.time || "",
+
+    duration:
+      data.duration || 10,
+
+    type:
+      data.type ||
+      "fixed",
+
+    voice:
+      !!data.voice,
+
+    shared:
+      !!data.shared,
+
+    needsHelp:
+      !!data.needsHelp,
+
+    icon:
+      data.icon ||
+      suggestEmoji(
+        data.title,
+        data.cat
+      ),
+
+    requirePhoto:
+      !!data.requirePhoto,
+
+    photo:
+      data.photo || null,
+
+    done:
+      !!data.done,
+
+    status:
+      data.done
+        ? "done"
+        : "pending"
+  };
+
+  /*
+    Guarda primeiro localmente.
+    Assim a tarefa não some.
+  */
+
+  const index =
+    state.tasks.findIndex(
+      t =>
+        t.id === taskId
+    );
+
+  if (index >= 0) {
+    state.tasks[index] = {
+      ...state.tasks[index],
+      ...localTask
+    };
+  } else {
+    state.tasks.push(
+      localTask
+    );
+  }
 
   save();
   render();
-}
 
-async function setTaskStatusReal(task, newStatus) {
+  const payload = {
+    family_id:
+      familiaAtual,
 
-  const { error } = await leleDb.rpc(
-    "set_task_status",
-    {
-      p_task_id: task.id,
-      p_status: newStatus
+    member_id:
+      data.childId,
+
+    title:
+      data.title,
+
+    category:
+      data.cat,
+
+    task_type:
+      data.type ||
+      "fixed",
+
+    scheduled_date:
+      new Date()
+        .toISOString()
+        .slice(0, 10),
+
+    scheduled_time:
+      data.time ||
+      null,
+
+    duration_minutes:
+      data.duration ||
+      10,
+
+    voice_enabled:
+      !!data.voice,
+
+    help_enabled:
+      !!data.needsHelp,
+
+    shared:
+      !!data.shared,
+
+    status:
+      data.done
+        ? "done"
+        : "pending",
+
+    created_by:
+      usuarioAtual?.id ||
+      null,
+
+    updated_at:
+      new Date()
+        .toISOString()
+  };
+
+  if (!navigator.onLine) {
+    queueOfflineAction({
+      type:
+        taskId
+          ? "updateTask"
+          : "createTask",
+
+      taskId,
+
+      payload,
+
+      localId:
+        localTask.id
+    });
+
+    return;
+  }
+
+  try {
+    if (taskId) {
+      const { error } =
+        await leleDb
+          .from("tasks")
+          .update(payload)
+          .eq(
+            "id",
+            taskId
+          );
+
+      if (error) {
+        throw error;
+      }
+    } else {
+      const {
+        data: inserted,
+        error
+      } =
+        await leleDb
+          .from("tasks")
+          .insert(payload)
+          .select()
+          .single();
+
+      if (error) {
+        throw error;
+      }
+
+      /*
+        Troca o ID temporário
+        pelo ID real do banco.
+      */
+
+      const localIndex =
+        state.tasks.findIndex(
+          t =>
+            t.id ===
+            localTask.id
+        );
+
+      if (
+        localIndex >= 0 &&
+        inserted?.id
+      ) {
+        state.tasks[
+          localIndex
+        ].id =
+          inserted.id;
+      }
+
+      save();
     }
-  );
+
+    await loadTasksFromSupabase();
+
+    render();
+
+  } catch (error) {
+    console.error(
+      "Erro ao salvar tarefa:",
+      error
+    );
+
+    queueOfflineAction({
+      type:
+        taskId
+          ? "updateTask"
+          : "createTask",
+
+      taskId,
+
+      payload,
+
+      localId:
+        localTask.id
+    });
+  }
+}
+/* =============================================
+   STATUS DA TAREFA
+============================================= */
+
+async function setTaskStatusReal(
+  task,
+  newStatus
+) {
+  const oldStatus =
+    task.status;
+
+  task.status =
+    newStatus;
+
+  task.done =
+    newStatus === "done";
+
+  save();
+  render();
+
+  if (!navigator.onLine) {
+    queueOfflineAction({
+      type: "taskStatus",
+      taskId: task.id,
+      status: newStatus
+    });
+
+    return;
+  }
+
+  const { error } =
+    await leleDb.rpc(
+      "set_task_status",
+      {
+        p_task_id:
+          task.id,
+
+        p_status:
+          newStatus
+      }
+    );
 
   if (error) {
-    console.error("Erro ao atualizar tarefa:", error);
-    alert("Não foi possível atualizar a tarefa.");
+    console.error(
+      "Erro ao atualizar tarefa:",
+      error
+    );
+
+    task.status =
+      oldStatus;
+
+    task.done =
+      oldStatus === "done";
+
+    save();
+    render();
+
+    alert(
+      "Não foi possível atualizar a tarefa."
+    );
+
     return;
   }
 
@@ -261,31 +1116,225 @@ async function setTaskStatusReal(task, newStatus) {
   render();
 }
 
-// =============================================
-// HIDRATAÇÃO REAL
-// =============================================
+
+/* =============================================
+   SINCRONIZAÇÃO OFFLINE
+============================================= */
+
+async function syncOfflineQueue() {
+  if (!navigator.onLine) {
+    return;
+  }
+
+  const queue =
+    getOfflineQueue();
+
+  if (!queue.length) {
+    return;
+  }
+
+  const remaining = [];
+
+  for (
+    const action of queue
+  ) {
+    try {
+
+      if (
+        action.type ===
+        "taskStatus"
+      ) {
+        if (
+          String(
+            action.taskId
+          ).startsWith(
+            "offline-"
+          )
+        ) {
+          remaining.push(
+            action
+          );
+
+          continue;
+        }
+
+        const { error } =
+          await leleDb.rpc(
+            "set_task_status",
+            {
+              p_task_id:
+                action.taskId,
+
+              p_status:
+                action.status
+            }
+          );
+
+        if (error) {
+          throw error;
+        }
+      }
+
+
+      if (
+        action.type ===
+        "createTask"
+      ) {
+        const {
+          data,
+          error
+        } =
+          await leleDb
+            .from("tasks")
+            .insert(
+              action.payload
+            )
+            .select()
+            .single();
+
+        if (error) {
+          throw error;
+        }
+
+        const task =
+          state.tasks.find(
+            t =>
+              t.id ===
+              action.localId
+          );
+
+        if (
+          task &&
+          data?.id
+        ) {
+          task.id =
+            data.id;
+        }
+      }
+
+
+      if (
+        action.type ===
+        "updateTask"
+      ) {
+        if (
+          String(
+            action.taskId
+          ).startsWith(
+            "offline-"
+          )
+        ) {
+          remaining.push(
+            action
+          );
+
+          continue;
+        }
+
+        const { error } =
+          await leleDb
+            .from("tasks")
+            .update(
+              action.payload
+            )
+            .eq(
+              "id",
+              action.taskId
+            );
+
+        if (error) {
+          throw error;
+        }
+      }
+
+
+      if (
+        action.type ===
+        "hydration"
+      ) {
+        const { error } =
+          await leleDb
+            .from(
+              "hydration_logs"
+            )
+            .insert(
+              action.payload
+            );
+
+        if (error) {
+          throw error;
+        }
+      }
+
+    } catch (error) {
+      console.error(
+        "Erro ao sincronizar ação:",
+        error
+      );
+
+      remaining.push(
+        action
+      );
+    }
+  }
+
+  saveOfflineQueue(
+    remaining
+  );
+
+  save();
+
+  try {
+    await loadTasksFromSupabase();
+    await loadHydrationFromSupabase();
+  } catch (error) {
+    console.error(
+      "Erro ao atualizar após sincronização:",
+      error
+    );
+  }
+
+  render();
+}
+
+
+/* =============================================
+   HIDRATAÇÃO
+============================================= */
 
 async function loadHydrationFromSupabase() {
+  if (
+    !state.children?.length
+  ) {
+    return;
+  }
 
-  if (!state.children?.length) return;
+  const inicio =
+    new Date();
 
-  const inicio = new Date();
+  inicio.setHours(
+    0, 0, 0, 0
+  );
 
-  inicio.setHours(0,0,0,0);
-
-  const { data, error } = await leleDb
-    .from("hydration_logs")
-    .select(
-      "member_id,amount_ml,logged_at"
-    )
-    .eq(
-      "family_id",
-      familiaAtual
-    )
-    .gte(
-      "logged_at",
-      inicio.toISOString()
-    );
+  const {
+    data,
+    error
+  } =
+    await leleDb
+      .from(
+        "hydration_logs"
+      )
+      .select(
+        "member_id,amount_ml,logged_at"
+      )
+      .eq(
+        "family_id",
+        familiaAtual
+      )
+      .gte(
+        "logged_at",
+        inicio.toISOString()
+      );
 
   if (error) {
     console.error(
@@ -293,53 +1342,112 @@ async function loadHydrationFromSupabase() {
       error
     );
 
+    /*
+      Mantém o valor local
+      caso esteja offline.
+    */
+
     return;
   }
 
   const totalPorMembro = {};
 
-  for (const item of (data || [])) {
-
-    totalPorMembro[item.member_id] =
-      (totalPorMembro[item.member_id] || 0) +
-      Number(item.amount_ml || 0);
-
+  for (
+    const item of
+    (data || [])
+  ) {
+    totalPorMembro[
+      item.member_id
+    ] =
+      (
+        totalPorMembro[
+          item.member_id
+        ] || 0
+      ) +
+      Number(
+        item.amount_ml || 0
+      );
   }
 
-  state.children.forEach(c => {
+  state.children.forEach(
+    c => {
+      c.water =
+        totalPorMembro[
+          c.id
+        ] || 0;
+    }
+  );
 
-    c.water =
-      totalPorMembro[c.id] || 0;
-
-  });
+  save();
 }
 
-async function addHydrationReal(amount) {
 
+async function addHydrationReal(
+  amount
+) {
   const c = child();
 
-  if (!c) return;
+  if (!c) {
+    return;
+  }
 
-  const { error } = await leleDb
-    .from("hydration_logs")
-    .insert({
-      family_id: familiaAtual,
-      member_id: c.id,
-      amount_ml: amount,
-      created_by:
-        usuarioAtual?.id || null
+  /*
+    Atualiza imediatamente
+    na tela.
+  */
+
+  c.water =
+    Number(
+      c.water || 0
+    ) +
+    Number(amount);
+
+  save();
+  render();
+
+  const payload = {
+    family_id:
+      familiaAtual,
+
+    member_id:
+      c.id,
+
+    amount_ml:
+      amount,
+
+    created_by:
+      usuarioAtual?.id ||
+      null
+  };
+
+  if (!navigator.onLine) {
+    queueOfflineAction({
+      type: "hydration",
+      payload
     });
 
-  if (error) {
+    return;
+  }
 
+  const { error } =
+    await leleDb
+      .from(
+        "hydration_logs"
+      )
+      .insert(
+        payload
+      );
+
+  if (error) {
     console.error(
       "Erro ao registrar hidratação:",
       error
     );
 
-    alert(
-      "Não foi possível registrar a água."
-    );
+    queueOfflineAction({
+      type: "hydration",
+      payload
+    });
 
     return;
   }
@@ -350,162 +1458,329 @@ async function addHydrationReal(amount) {
   render();
 }
 
-// =============================================
-// CARREGAR FAMÍLIA
-// =============================================
+
+/* =============================================
+   CARREGAR FAMÍLIA REAL
+============================================= */
 
 async function carregarFamiliaReal() {
 
   const {
-    data: { user },
-    error: erroUsuario
-  } = await leleDb.auth.getUser();
+    data: {
+      user
+    },
+    error:
+      erroUsuario
+  } =
+    await leleDb.auth
+      .getUser();
 
-  if (erroUsuario || !user) {
+  if (
+    erroUsuario ||
+    !user
+  ) {
     throw new Error(
       "Usuário não autenticado."
     );
   }
 
-  usuarioAtual = user;
+  usuarioAtual =
+    user;
+
+
+  /*
+    Descobre quem entrou.
+  */
 
   const {
     data: membro,
-    error: erroMembro
-  } = await leleDb
-    .from("family_members")
-    .select("*")
-    .eq("user_id", user.id)
-    .eq("active", true)
-    .limit(1)
-    .single();
+    error:
+      erroMembro
+  } =
+    await leleDb
+      .from(
+        "family_members"
+      )
+      .select("*")
+      .eq(
+        "user_id",
+        user.id
+      )
+      .eq(
+        "active",
+        true
+      )
+      .limit(1)
+      .single();
 
-  if (erroMembro || !membro) {
 
+  if (
+    erroMembro ||
+    !membro
+  ) {
     throw new Error(
       "Seu login existe, mas ainda não está vinculado a uma família."
     );
-
   }
 
-  membroAtual = membro;
-  familiaAtual = membro.family_id;
 
-  const { data: familia } =
+  membroAtual =
+    membro;
+
+  familiaAtual =
+    membro.family_id;
+
+
+  /*
+    Nome da família.
+  */
+
+  const {
+    data: familia
+  } =
     await leleDb
-      .from("families")
+      .from(
+        "families"
+      )
       .select("name")
-      .eq("id", familiaAtual)
+      .eq(
+        "id",
+        familiaAtual
+      )
       .single();
 
+
   state.familyName =
-    familia?.name || "Família Lelê";
+    familia?.name ||
+    "Família Lelê";
+
+
+  /*
+    Membros da família.
+  */
 
   const {
     data: membros,
-    error: erroMembros
-  } = await leleDb
-    .from("family_members")
-    .select("*")
-    .eq(
-      "family_id",
-      familiaAtual
-    )
-    .eq("active", true)
-    .order("created_at");
+    error:
+      erroMembros
+  } =
+    await leleDb
+      .from(
+        "family_members"
+      )
+      .select("*")
+      .eq(
+        "family_id",
+        familiaAtual
+      )
+      .eq(
+        "active",
+        true
+      )
+      .order(
+        "created_at"
+      );
+
 
   if (erroMembros) {
     throw erroMembros;
   }
 
+
   let filhos;
 
-  if (membro.role === "child") {
 
+  /*
+    Filho vê somente
+    o próprio perfil.
+  */
+
+  if (
+    membro.role ===
+    "child"
+  ) {
     filhos =
       membros.filter(
-        x => x.id === membro.id
+        x =>
+          x.id ===
+          membro.id
       );
-
   } else {
-
     filhos =
       membros.filter(
-        x => x.role === "child"
+        x =>
+          x.role ===
+          "child"
       );
-
   }
+
+
+  const filhosAnteriores =
+    state.children || [];
+
 
   state.children =
-    filhos.map(x => {
+    filhos.map(
+      x => {
 
-      const idade =
-        calcularIdade(x.birth_date);
+        const idade =
+          calcularIdade(
+            x.birth_date
+          );
 
-      return {
-        id:x.id,
-        userId:x.user_id,
-        name:x.display_name,
-        age:idade,
-        birthDate:x.birth_date,
+        const anterior =
+          filhosAnteriores.find(
+            antigo =>
+              antigo.id ===
+              x.id
+          ) || {};
 
-        school:{
-          start:"07:00",
-          end:"12:30",
-          days:[1,2,3,4,5]
-        },
+        return {
+          id:
+            x.id,
 
-        waterGoal:
-          x.water_goal_ml || 1500,
+          userId:
+            x.user_id,
 
-        water:0,
+          name:
+            x.display_name,
 
-        endDay:
-          x.day_end_time ||
-          (idade >= 13
-            ? "22:00"
-            : "20:30")
-      };
+          age:
+            idade,
 
-    });
+          birthDate:
+            x.birth_date,
 
-  state.activeChild = 0;
+          school:
+            anterior.school || {
+              start:
+                "07:00",
 
-  if (membro.role === "child") {
+              end:
+                "12:30",
 
-    state.mode = "child";
+              days:
+                [1,2,3,4,5]
+            },
+
+          waterGoal:
+            x.water_goal_ml ||
+            anterior.waterGoal ||
+            1500,
+
+          water:
+            anterior.water ||
+            0,
+
+          endDay:
+            x.day_end_time ||
+            anterior.endDay ||
+            (
+              idade >= 13
+                ? "22:00"
+                : "20:30"
+            )
+        };
+      }
+    );
+
+
+  /*
+    Mantém o filho selecionado
+    se ele ainda existir.
+  */
+
+  if (
+    state.activeChild >=
+    state.children.length
+  ) {
+    state.activeChild = 0;
+  }
+
+
+  /*
+    Define o modo conforme
+    quem entrou.
+  */
+
+  if (
+    membro.role ===
+    "child"
+  ) {
+    state.mode =
+      "child";
 
     $("#modeBtn")
-      ?.classList.add("hidden");
+      ?.classList
+      .add(
+        "hidden"
+      );
 
   } else {
 
-    state.mode = "parent";
+    if (
+      state.mode !==
+      "child"
+    ) {
+      state.mode =
+        "parent";
+    }
 
     $("#modeBtn")
-      ?.classList.remove("hidden");
-
+      ?.classList
+      .remove(
+        "hidden"
+      );
   }
 
-  await loadTasksFromSupabase();
-  await loadHydrationFromSupabase();
+
+  /*
+    Busca dados online.
+
+    Se falhar por falta
+    de internet, o estado
+    local permanece.
+  */
+
+  try {
+    await loadTasksFromSupabase();
+  } catch (error) {
+    console.error(
+      "Usando tarefas locais:",
+      error
+    );
+  }
+
+  try {
+    await loadHydrationFromSupabase();
+  } catch (error) {
+    console.error(
+      "Usando hidratação local:",
+      error
+    );
+  }
 
   save();
 }
 
-// =============================================
-// LOGIN / LOGOUT
-// =============================================
 
-async function fazerLogin(event) {
+/* =============================================
+   LOGIN
+============================================= */
 
+async function fazerLogin(
+  event
+) {
   event.preventDefault();
 
   const email =
-    $("#loginEmail").value.trim();
+    $("#loginEmail")
+      .value
+      .trim();
 
   const senha =
-    $("#loginPassword").value;
+    $("#loginPassword")
+      .value;
 
   const mensagem =
     $("#loginMessage");
@@ -513,20 +1788,25 @@ async function fazerLogin(event) {
   mensagem.textContent =
     "Entrando no Lelê...";
 
-  const { error } =
+
+  const {
+    error
+  } =
     await leleDb.auth
       .signInWithPassword({
         email,
-        password:senha
+        password:
+          senha
       });
 
-  if (error) {
 
+  if (error) {
     mensagem.textContent =
       "E-mail ou senha incorretos.";
 
     return;
   }
+
 
   try {
 
@@ -535,525 +1815,1195 @@ async function fazerLogin(event) {
     startTasksRealtime();
 
     $("#authScreen")
-      .classList.add("hidden");
+      .classList
+      .add(
+        "hidden"
+      );
 
     $("#app")
-      .classList.remove("hidden");
+      .classList
+      .remove(
+        "hidden"
+      );
+
+    mensagem.textContent =
+      "";
 
     render();
 
+    if (
+      navigator.onLine
+    ) {
+      syncOfflineQueue();
+    }
+
   } catch (erro) {
 
-    console.error(erro);
+    console.error(
+      erro
+    );
 
     mensagem.textContent =
       erro.message ||
       "Não foi possível carregar sua família.";
 
-    await leleDb.auth.signOut();
-
+    await leleDb.auth
+      .signOut();
   }
 }
 
+
+/* =============================================
+   LOGOUT
+============================================= */
+
 async function sairLele() {
 
-  if (tasksRealtimeChannel) {
-
+  if (
+    tasksRealtimeChannel
+  ) {
     leleDb.removeChannel(
       tasksRealtimeChannel
     );
 
-    tasksRealtimeChannel = null;
+    tasksRealtimeChannel =
+      null;
   }
 
-  await leleDb.auth.signOut();
 
-  usuarioAtual = null;
-  membroAtual = null;
-  familiaAtual = null;
+  await leleDb.auth
+    .signOut();
+
+
+  usuarioAtual =
+    null;
+
+  membroAtual =
+    null;
+
+  familiaAtual =
+    null;
+
+
+  /*
+    Não apagamos as tarefas
+    locais nem preferências.
+
+    Apenas encerramos a sessão.
+  */
 
   $("#app")
-    .classList.add("hidden");
+    ?.classList
+    .add(
+      "hidden"
+    );
 
   $("#authScreen")
-    .classList.remove("hidden");
-
-  $("#loginPassword").value = "";
-  $("#loginMessage").textContent = "";
-}
-
-async function iniciarLoginLele() {
-
-  $("#loginForm")
-    ?.addEventListener(
-      "submit",
-      fazerLogin
+    ?.classList
+    .remove(
+      "hidden"
     );
 
-  $("#logoutBtn")
-    ?.addEventListener(
-      "click",
-      sairLele
-    );
 
-  const { data } =
-    await leleDb.auth.getSession();
-
-  if (data?.session) {
-
-    try {
-
-      await carregarFamiliaReal();
-
-      startTasksRealtime();
-
-      $("#authScreen")
-        .classList.add("hidden");
-
-      $("#app")
-        .classList.remove("hidden");
-
-      render();
-
-      return;
-
-    } catch (erro) {
-
-      console.error(erro);
-
-      await leleDb.auth.signOut();
-    }
+  if (
+    $("#loginPassword")
+  ) {
+    $("#loginPassword")
+      .value = "";
   }
 
-  $("#app")
-    .classList.add("hidden");
 
-  $("#authScreen")
-    .classList.remove("hidden");
+  if (
+    $("#loginMessage")
+  ) {
+    $("#loginMessage")
+      .textContent = "";
+  }
+
+
+  document.body
+    .classList
+    .remove(
+      "mode-parent",
+      "mode-child"
+    );
 }
-// =============================================
-// SINCRONIZAÇÃO EM TEMPO REAL
-// =============================================
+
+
+/* =============================================
+   TROCAR MODO PAIS / FILHO
+============================================= */
+
+function toggleMode() {
+
+  /*
+    Login de filho não pode
+    entrar no modo dos pais.
+  */
+
+  if (
+    membroAtual?.role ===
+    "child"
+  ) {
+    state.mode =
+      "child";
+
+    save();
+    render();
+
+    return;
+  }
+
+
+  state.mode =
+    state.mode ===
+    "parent"
+      ? "child"
+      : "parent";
+
+
+  save();
+  render();
+}
+
+
+/* =============================================
+   REALTIME DAS TAREFAS
+============================================= */
 
 function startTasksRealtime() {
 
-  if (!familiaAtual) return;
-
-  if (tasksRealtimeChannel) {
-    leleDb.removeChannel(tasksRealtimeChannel);
+  if (
+    !familiaAtual
+  ) {
+    return;
   }
+
+
+  if (
+    tasksRealtimeChannel
+  ) {
+    leleDb.removeChannel(
+      tasksRealtimeChannel
+    );
+  }
+
 
   tasksRealtimeChannel =
     leleDb
       .channel(
-        "lele-tasks-" + familiaAtual
+        `lele-tasks-${familiaAtual}`
       )
       .on(
         "postgres_changes",
         {
-          event:"*",
-          schema:"public",
-          table:"tasks",
-          filter:`family_id=eq.${familiaAtual}`
+          event: "*",
+          schema: "public",
+          table: "tasks",
+          filter:
+            `family_id=eq.${familiaAtual}`
         },
         async () => {
 
-          try {
-
-            await loadTasksFromSupabase();
-
-            save();
-            render();
-
-          } catch (error) {
-
-            console.error(
-              "Erro ao sincronizar tarefas:",
-              error
-            );
-
+          if (
+            !navigator.onLine
+          ) {
+            return;
           }
+
+          await loadTasksFromSupabase();
+
+          save();
+          render();
         }
       )
       .subscribe();
 }
 
 
-// =============================================
-// RENDER PRINCIPAL
-// =============================================
+/* =============================================
+   RELÓGIO ANALÓGICO
+============================================= */
 
-function render() {
-
-  if (!child()) return;
-
-  document.body.className =
-    `mode-${state.mode}`;
-
-  if (membroAtual?.role === "child") {
-
-    $("#modeBtn")
-      ?.classList.add("hidden");
-
-  } else {
-
-    $("#modeBtn")
-      ?.classList.remove("hidden");
-
-    $("#modeBtn").textContent =
-      state.mode === "parent"
-        ? "Ver como filho"
-        : "Voltar ao painel";
-
+function analogClockHtml(
+  time
+) {
+  if (!time) {
+    return "";
   }
 
-  $("#subtitle").textContent =
-    state.mode === "parent"
-      ? `Painel da ${state.familyName}`
-      : `Perfil de ${child().name} • ${child().age} anos`;
+  const parts =
+    String(time)
+      .split(":");
 
-  renderHome();
-  renderRoutine();
-  renderSchool();
-  renderFamily();
-  renderMessages();
-  renderSettings();
+  const hour =
+    Number(
+      parts[0] || 0
+    );
+
+  const minute =
+    Number(
+      parts[1] || 0
+    );
+
+  const minuteAngle =
+    minute * 6;
+
+  const hourAngle =
+    (
+      hour % 12
+    ) * 30 +
+    minute * 0.5;
+
+
+  return `
+    <span
+      class="analog-clock"
+      style="
+        --hour-angle:${hourAngle}deg;
+        --minute-angle:${minuteAngle}deg;
+      "
+      aria-label="Relógio marcando ${time}"
+      title="${time}"
+    >
+      <span class="clock-center"></span>
+    </span>
+  `;
 }
 
 
-// =============================================
-// HOME
-// =============================================
+/* =============================================
+   CATEGORIA COM EMOJI
+============================================= */
 
-function renderHome() {
+function categoryLabel(
+  category
+) {
+  return `
+    ${categoryIcons[
+      category
+    ] || "⭐"}
+    ${category || "Tarefa"}
+  `;
+}
+
+
+/* =============================================
+   EMOJI DA TAREFA
+============================================= */
+
+function getTaskEmoji(
+  task
+) {
+  return (
+    task.icon ||
+    suggestEmoji(
+      task.title,
+      task.cat
+    )
+  );
+}
+
+
+/* =============================================
+   FOTO DA TAREFA
+============================================= */
+
+function openPhotoForTask(
+  task
+) {
+  pendingPhotoTask =
+    task;
+
+  pendingPhotoData =
+    null;
+
+  const input =
+    $("#taskPhotoInput");
+
+  if (input) {
+    input.value =
+      "";
+  }
+
+  const preview =
+    $("#photoPreview");
+
+  if (preview) {
+    preview.innerHTML =
+      "";
+
+    preview.classList
+      .add(
+        "hidden"
+      );
+  }
+
+
+  $("#photoDialog")
+    ?.showModal();
+}
+
+
+function handleTaskPhoto(
+  event
+) {
+  const file =
+    event.target
+      .files?.[0];
+
+  if (!file) {
+    return;
+  }
+
+
+  /*
+    Limite simples para
+    evitar fotos enormes
+    no armazenamento local.
+  */
+
+  if (
+    file.size >
+    8 * 1024 * 1024
+  ) {
+    alert(
+      "Escolha uma foto com até 8 MB."
+    );
+
+    event.target.value =
+      "";
+
+    return;
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    () => {
+
+      pendingPhotoData =
+        reader.result;
+
+      const preview =
+        $("#photoPreview");
+
+      if (!preview) {
+        return;
+      }
+
+      preview.innerHTML =
+        `
+          <img
+            src="${pendingPhotoData}"
+            alt="Foto da tarefa"
+          />
+        `;
+
+      preview.classList
+        .remove(
+          "hidden"
+        );
+    };
+
+
+  reader.readAsDataURL(
+    file
+  );
+}
+
+
+async function confirmTaskPhoto() {
+
+  if (
+    !pendingPhotoTask
+  ) {
+    return;
+  }
+
+
+  if (
+    !pendingPhotoData
+  ) {
+    alert(
+      "Tire ou escolha uma foto primeiro."
+    );
+
+    return;
+  }
+
+
+  pendingPhotoTask.photo =
+    pendingPhotoData;
+
+
+  /*
+    A foto fica salva
+    localmente para o teste.
+
+    Depois podemos criar
+    o bucket do Supabase
+    para evidências.
+  */
+
+  save();
+
+
+  $("#photoDialog")
+    ?.close();
+
+
+  await setTaskStatusReal(
+    pendingPhotoTask,
+    "done"
+  );
+
+
+  pendingPhotoTask =
+    null;
+
+  pendingPhotoData =
+    null;
+}
+
+
+/* =============================================
+   CONCLUIR TAREFA
+============================================= */
+
+async function completeTask(
+  task
+) {
+
+  if (
+    task.done
+  ) {
+    await setTaskStatusReal(
+      task,
+      "pending"
+    );
+
+    return;
+  }
+
+
+  if (
+    task.requirePhoto
+  ) {
+    openPhotoForTask(
+      task
+    );
+
+    return;
+  }
+
+
+  await setTaskStatusReal(
+    task,
+    "done"
+  );
+}
+
+
+/* =============================================
+   NOTIFICAÇÕES LOCAIS
+============================================= */
+
+async function requestNotificationPermission() {
+
+  if (
+    !(
+      "Notification"
+      in window
+    )
+  ) {
+    return false;
+  }
+
+
+  if (
+    Notification.permission ===
+    "granted"
+  ) {
+    return true;
+  }
+
+
+  if (
+    Notification.permission ===
+    "denied"
+  ) {
+    return false;
+  }
+
+
+  const permission =
+    await Notification
+      .requestPermission();
+
+
+  return (
+    permission ===
+    "granted"
+  );
+}
+
+
+async function showLocalNotification(
+  title,
+  body
+) {
+
+  const allowed =
+    await requestNotificationPermission();
+
+
+  if (!allowed) {
+    return;
+  }
+
+
+  if (
+    "serviceWorker"
+    in navigator
+  ) {
+    const registration =
+      await navigator
+        .serviceWorker
+        .ready;
+
+    registration
+      .showNotification(
+        title,
+        {
+          body,
+          icon:
+            "./icons/icon-192.svg",
+
+          badge:
+            "./icons/icon-192.svg",
+
+          tag:
+            "lele-task"
+        }
+      );
+
+    return;
+  }
+
+
+  new Notification(
+    title,
+    {
+      body
+    }
+  );
+}
+
+
+/* =============================================
+   LEMBRETES ENQUANTO APP ESTIVER ABERTO
+============================================= */
+
+const notificationHistory =
+  new Set();
+
+
+function checkTaskNotifications() {
+
+  if (
+    document.hidden
+  ) {
+    return;
+  }
+
+
+  const now =
+    new Date();
+
+  const currentTime =
+    `${String(
+      now.getHours()
+    ).padStart(2,"0")}:${String(
+      now.getMinutes()
+    ).padStart(2,"0")}`;
+
+
+  for (
+    const task of
+    childTasks()
+  ) {
+
+    if (
+      task.done ||
+      !task.time
+    ) {
+      continue;
+    }
+
+
+    const key =
+      `${task.id}-${now.toISOString().slice(0,10)}-${currentTime}`;
+
+
+    if (
+      notificationHistory
+        .has(key)
+    ) {
+      continue;
+    }
+
+
+    if (
+      task.time ===
+      currentTime
+    ) {
+
+      notificationHistory
+        .add(key);
+
+
+      showLocalNotification(
+        `Lelê • ${child()?.name || ""}`,
+        `${getTaskEmoji(task)} ${task.title}`
+      );
+
+
+      if (
+        task.voice &&
+        state.mode ===
+        "child"
+      ) {
+        speak(
+          `Hora de ${task.title}`
+        );
+      }
+    }
+  }
+}
+
+
+setInterval(
+  checkTaskNotifications,
+  30000
+);
+
+
+/* =============================================
+   NAVEGAÇÃO
+============================================= */
+
+function showView(
+  viewId
+) {
+
+  $$(".view")
+    .forEach(
+      view =>
+        view.classList
+          .toggle(
+            "active",
+            view.id ===
+            viewId
+          )
+    );
+
+
+  $$(".nav-btn")
+    .forEach(
+      button =>
+        button.classList
+          .toggle(
+            "active",
+            button.dataset
+              .view ===
+              viewId
+          )
+    );
+
+
+  localStorage.setItem(
+    "lele-last-view",
+    viewId
+  );
+}
+/* =============================================
+   SUGESTÕES DE TAREFAS
+============================================= */
+
+function getSuggestionsForChild() {
+  const c = child();
+
+  if (!c) return [];
+
+  return taskLibrary.filter(item => {
+    const min = item.ages?.[0] ?? 0;
+    const max = item.ages?.[1] ?? 99;
+
+    return c.age >= min && c.age <= max;
+  });
+}
+
+function renderTaskSuggestions() {
+  const suggestions = getSuggestionsForChild();
+
+  return `
+    <div class="library">
+      ${suggestions.map((item, index) => `
+        <label class="task-suggestion-option">
+          <input
+            type="checkbox"
+            class="suggested-task-checkbox"
+            data-suggestion-index="${index}"
+          />
+
+          <span class="suggestion-emoji">
+            ${item.icon}
+          </span>
+
+          <span>
+            <b>${item.title}</b>
+
+            <small class="muted">
+              ${categoryLabel(item.cat)}
+            </small>
+          </span>
+        </label>
+      `).join("")}
+    </div>
+  `;
+}
+
+
+/* =============================================
+   ABRIR NOVA TAREFA
+============================================= */
+
+function openTaskDialog(task = null) {
+  const dialog = $("#taskDialog");
+
+  if (!dialog) return;
+
+  $("#taskId").value =
+    task?.id || "";
+
+  $("#taskTitle").value =
+    task?.title || "";
+
+  $("#taskCategory").value =
+    task?.cat || "Casa";
+
+  $("#taskTime").value =
+    task?.time || "";
+
+  $("#taskDuration").value =
+    task?.duration || 10;
+
+  $("#taskType").value =
+    task?.type || "fixed";
+
+  $("#taskVoice").checked =
+    task?.voice ?? true;
+
+  $("#taskShared").checked =
+    task?.shared ?? false;
+
+  $("#taskNeedsHelp").checked =
+    task?.needsHelp ?? true;
+
+  if ($("#taskPhoto")) {
+    $("#taskPhoto").checked =
+      task?.requirePhoto ?? false;
+  }
+
+  const emoji =
+    task?.icon ||
+    suggestEmoji(
+      task?.title || "",
+      task?.cat || "Casa"
+    );
+
+  if ($("#taskEmoji")) {
+    $("#taskEmoji").value = emoji;
+  }
+
+  if ($("#taskEmojiPreview")) {
+    $("#taskEmojiPreview").textContent = emoji;
+  }
+
+  $("#taskDialogTitle").textContent =
+    task
+      ? "Editar tarefa"
+      : "Nova tarefa";
+
+  dialog.showModal();
+}
+
+
+/* =============================================
+   SALVAR TAREFA DO FORMULÁRIO
+============================================= */
+
+async function saveTaskFromForm(event) {
+  event.preventDefault();
 
   const c = child();
+
+  if (!c) {
+    alert("Selecione uma criança.");
+    return;
+  }
+
+  const taskId =
+    $("#taskId").value || null;
+
+  const title =
+    $("#taskTitle").value.trim();
+
+  const cat =
+    $("#taskCategory").value;
+
+  if (!title) {
+    alert("Digite o nome da tarefa.");
+    return;
+  }
+
+  const typedEmoji =
+    $("#taskEmoji")?.value.trim();
+
+  const icon =
+    typedEmoji ||
+    suggestEmoji(title, cat);
+
+  const data = {
+    childId: c.id,
+    title,
+    cat,
+    time:
+      $("#taskTime").value,
+    duration:
+      Number(
+        $("#taskDuration").value || 10
+      ),
+    type:
+      $("#taskType").value,
+    voice:
+      $("#taskVoice").checked,
+    shared:
+      $("#taskShared").checked,
+    needsHelp:
+      $("#taskNeedsHelp").checked,
+    requirePhoto:
+      $("#taskPhoto")?.checked || false,
+    icon
+  };
+
+  $("#taskDialog").close();
+
+  await saveTaskToSupabase(
+    taskId,
+    data
+  );
+}
+
+
+/* =============================================
+   ADICIONAR TAREFA SUGERIDA
+============================================= */
+
+async function addSuggestedTask(item) {
+  const c = child();
+
+  if (!c) return;
+
+  await saveTaskToSupabase(
+    null,
+    {
+      childId: c.id,
+      title: item.title,
+      cat: item.cat,
+      time: "",
+      duration: 10,
+      type: "fixed",
+      voice: true,
+      shared: false,
+      needsHelp: true,
+      requirePhoto: false,
+      icon: item.icon
+    }
+  );
+}
+
+
+/* =============================================
+   RENDER HOME
+============================================= */
+
+function renderHome() {
+  const c = child();
+
+  if (!c) {
+    $("#homeView").innerHTML = `
+      <div class="hero">
+        <h1>Lelê</h1>
+        <p>Nenhum perfil infantil foi encontrado.</p>
+      </div>
+    `;
+
+    return;
+  }
 
   const tasks = childTasks();
 
   const done =
-    tasks.filter(t => t.done).length;
+    tasks.filter(
+      task => task.done
+    ).length;
 
-  const pct =
+  const pending =
+    tasks.length - done;
+
+  const progress =
     tasks.length
       ? Math.round(
           done / tasks.length * 100
         )
       : 0;
 
-  const next =
-    tasks.find(t => !t.done);
+  const water =
+    Number(c.water || 0);
+
+  const goal =
+    Number(c.waterGoal || 1500);
+
+  const waterProgress =
+    Math.min(
+      100,
+      Math.round(
+        water / goal * 100
+      )
+    );
 
   $("#homeView").innerHTML = `
-
     <div class="hero">
 
       <span class="age-pill">
-        ${
-          c.age <= 8
-            ? "Criança"
-            : c.age <= 12
-            ? "Pré-adolescente"
-            : "Adolescente"
-        }
+        ${c.age} anos
       </span>
 
       <h1>
-        ${
-          state.mode === "parent"
-            ? "Olá!"
-            : "Oi, " + c.name + "! ☀️"
-        }
+        Olá, ${c.name} 👋
       </h1>
 
-      <div class="muted">
-        ${
-          state.mode === "parent"
-            ? "Acompanhe o dia sem transformar rotina em vigilância."
-            : "Vamos cuidar do seu dia juntos."
-        }
-      </div>
+      <p class="muted">
+        Sua rotina de hoje está aqui.
+      </p>
 
       <div class="cards">
 
         <div class="stat">
-          <b>${pct}%</b>
-          <span class="muted">
-            tarefas
-          </span>
+          <b>${tasks.length}</b>
+          tarefas
         </div>
 
         <div class="stat">
-          <b>${done}/${tasks.length}</b>
-          <span class="muted">
-            feitas
-          </span>
+          <b>${done}</b>
+          concluídas
         </div>
 
         <div class="stat">
-          <b>${c.water}ml</b>
-          <span class="muted">
-            água
-          </span>
+          <b>${pending}</b>
+          faltando
         </div>
 
       </div>
 
       <div class="progress">
-        <div style="width:${pct}%"></div>
+        <div style="width:${progress}%"></div>
       </div>
 
     </div>
 
 
-    <div class="section water">
+    <section class="section">
 
       <div class="section-head">
-
-        <h2>💧 Hidratação</h2>
-
-        <span>
-          ${c.water}/${c.waterGoal} ml
-        </span>
-
-      </div>
-
-      <div class="progress">
-
-        <div
-          style="width:${
-            Math.min(
-              100,
-              Math.round(
-                c.water /
-                c.waterGoal *
-                100
-              )
-            )
-          }%"
-        ></div>
-
-      </div>
-
-      <div
-        style="
-          margin-top:10px;
-          display:flex;
-          gap:8px
-        "
-      >
-
-        <button
-          class="primary"
-          id="waterBtn"
-        >
-          + 200 ml
-        </button>
-
-        <button
-          class="ghost child-only"
-          id="waterVoiceBtn"
-        >
-          Ouvir lembrete
-        </button>
-
-      </div>
-
-    </div>
-
-
-    <div class="section">
-
-      <div class="section-head">
-
-        <h2>
-          Rotina de hoje
-        </h2>
-
-        <button
-          class="primary parent-only"
-          id="newTaskBtn"
-        >
-          + Tarefa
-        </button>
-
-      </div>
-
-      ${
-        next
-          ? `
-            <div class="callout">
-              <b>Agora / próxima:</b>
-              ${next.title}
-              ${
-                next.time
-                  ? `• ${next.time}`
-                  : ""
-              }
-            </div>
-          `
-          : `
-            <div class="callout">
-              Tudo concluído por hoje 🎉
-            </div>
-          `
-      }
-
-      <div style="margin-top:10px">
+        <h2>Hoje</h2>
 
         ${
+          membroAtual?.role !== "child"
+            ? `
+              <button
+                id="newTaskBtn"
+                class="primary"
+                type="button"
+              >
+                + Tarefa
+              </button>
+            `
+            : ""
+        }
+      </div>
+
+      <div id="todayTasks">
+        ${
           tasks.length
-            ? tasks.map(taskCard).join("")
+            ? tasks.map(renderTaskCard).join("")
             : `
-              <div class="muted">
-                Nenhuma tarefa cadastrada.
+              <div class="callout">
+                Nenhuma tarefa para hoje.
               </div>
             `
         }
-
       </div>
 
-    </div>
+    </section>
 
 
-    <div class="section">
+    <section class="section water">
 
       <div class="section-head">
-        <h2>✨ Sugestões para hoje</h2>
-      </div>
 
-      <div class="suggestion-grid">
+        <div>
+          <h2>💧 Água</h2>
 
-        <div class="suggestion">
-          <b>📖 Ler um livro</b>
           <div class="muted">
-            15 a 30 min
+            ${water} ml de ${goal} ml
           </div>
         </div>
 
-        <div class="suggestion">
-          <b>🎨 Atividade criativa</b>
-          <div class="muted">
-            Desenhar, pintar ou montar algo
-          </div>
-        </div>
-
-        <div class="suggestion">
-          <b>📺 Programa favorito</b>
-          <div class="muted">
-            Tempo livre definido pela família
-          </div>
-        </div>
-
-        <div class="suggestion">
-          <b>❤️ Momento em família</b>
-          <div class="muted">
-            Jogo, conversa, passeio ou receita
-          </div>
-        </div>
+        <button
+          id="addWaterBtn"
+          class="primary"
+          type="button"
+        >
+          + 250 ml
+        </button>
 
       </div>
 
-    </div>
+      <div class="progress">
+        <div style="width:${waterProgress}%"></div>
+      </div>
+
+    </section>
 
 
-    <div class="section endday">
+    ${
+      membroAtual?.role !== "child"
+        ? `
+          <section class="section">
+
+            <div class="section-head">
+              <div>
+                <h2>
+                  ✨ Sugestões para ${c.name}
+                </h2>
+
+                <div class="muted">
+                  Tarefas adequadas para ${c.age} anos.
+                </div>
+              </div>
+            </div>
+
+            ${renderTaskSuggestions()}
+
+          </section>
+        `
+        : ""
+    }
+
+
+    <section class="section endday">
 
       <h2>
-        🌙 Fechamento do dia
+        🌙 Fim do dia
       </h2>
 
       <p class="muted">
-        Horário configurado:
-        ${c.endDay}
+        Horário de referência:
+        ${c.endDay || "20:30"}
       </p>
 
-      <p>
-        Hoje ${c.name} concluiu
-        <b>
-          ${done} de ${tasks.length}
-        </b>
-        atividades.
-      </p>
+      ${
+        done === tasks.length &&
+        tasks.length
+          ? `
+            <b>
+              Tudo concluído. Muito bem! ⭐
+            </b>
+          `
+          : `
+            <b>
+              ${pending} tarefa${pending === 1 ? "" : "s"} para concluir.
+            </b>
+          `
+      }
 
-      <button
-        class="primary"
-        id="tomorrowBtn"
-      >
-        Preparar amanhã
-      </button>
-
-    </div>
+    </section>
   `;
-
-
-  $("#waterBtn").onclick =
-    () => addHydrationReal(200);
-
-
-  $("#waterVoiceBtn")
-    ?.addEventListener(
-      "click",
-      () =>
-        speak(
-          `${c.name}, pausa para água. Que tal beber alguns goles agora?`
-        )
-    );
-
-
-  $("#newTaskBtn")
-    ?.addEventListener(
-      "click",
-      () => openTask()
-    );
-
-
-  $("#tomorrowBtn").onclick =
-    () =>
-      speak(
-        c.age < 10
-          ? `Antes de terminar o dia, ${c.name}, tem alguma coisa que você precisa levar ou fazer amanhã e não pode esquecer?`
-          : "Antes de encerrar: tem algo importante para amanhã que você não pode esquecer?"
-      );
-
-
-  attachTaskButtons();
 }
 
 
-// =============================================
-// CARD DA TAREFA
-// =============================================
+/* =============================================
+   CARD DA TAREFA
+============================================= */
 
-function taskCard(t) {
+function renderTaskCard(task) {
+  const icon =
+    getTaskEmoji(task);
+
+  const evidence =
+    task.photo
+      ? `<span title="Foto enviada">📷</span>`
+      : "";
 
   return `
-
-    <div
-      class="task ${t.done ? "done" : ""}"
+    <article
+      class="task ${task.done ? "done" : ""}"
+      data-task-id="${task.id}"
     >
 
-      <div class="task-dot"></div>
+      <button
+        class="task-emoji speak-task-btn"
+        data-task-id="${task.id}"
+        type="button"
+        title="Ouvir tarefa"
+        aria-label="Ouvir ${task.title}"
+      >
+        ${icon}
+      </button>
 
       <div>
 
         <div class="task-title">
-          <b>${t.title}</b>
+          ${task.title}
+          ${evidence}
         </div>
 
         <div class="task-meta">
 
-          ${t.time || "Sem horário"}
-          •
-          ${t.cat}
-          •
-          ${t.duration || 10} min
-
-          ${t.voice ? "• 🔊" : ""}
+          <span class="task-category">
+            ${categoryLabel(task.cat)}
+          </span>
 
           ${
-            t.status === "needs_help"
-              ? " • 🆘 Ajuda solicitada"
+            task.time
+              ? `
+                <span class="task-clock-wrap">
+                  ${analogClockHtml(task.time)}
+                  <b>${task.time}</b>
+                </span>
+              `
+              : ""
+          }
+
+          ${
+            task.duration
+              ? ` • ${task.duration} min`
               : ""
           }
 
@@ -1064,1330 +3014,1069 @@ function taskCard(t) {
 
       <div class="task-actions">
 
+        ${
+          task.needsHelp &&
+          !task.done
+            ? `
+              <button
+                class="small help task-help-btn"
+                data-task-id="${task.id}"
+                type="button"
+              >
+                🙋 Ajuda
+              </button>
+            `
+            : ""
+        }
+
         <button
-          class="small ok"
-          data-done="${t.id}"
+          class="small ok task-done-btn"
+          data-task-id="${task.id}"
+          type="button"
         >
           ${
-            t.done
-              ? "Desfazer"
-              : "Concluir"
+            task.done
+              ? "↩ Desfazer"
+              : task.requirePhoto
+                ? "📷 Concluir"
+                : "✓ Concluir"
           }
         </button>
 
-
         ${
-          t.needsHelp && !t.done
+          membroAtual?.role !== "child"
             ? `
               <button
-                class="small help"
-                data-help="${t.id}"
+                class="small edit task-edit-btn"
+                data-task-id="${task.id}"
+                type="button"
               >
-                Preciso de ajuda
+                Editar
               </button>
             `
             : ""
         }
-
-
-        ${
-          t.voice
-            ? `
-              <button
-                class="small edit"
-                data-speak="${t.id}"
-              >
-                Falar
-              </button>
-            `
-            : ""
-        }
-
-
-        <button
-          class="small edit parent-only"
-          data-edit="${t.id}"
-        >
-          Editar
-        </button>
 
       </div>
 
+    </article>
+  `;
+}
+
+
+/* =============================================
+   ROTINA
+============================================= */
+
+function renderRoutine() {
+  const c = child();
+
+  if (!c) return;
+
+  const tasks =
+    childTasks();
+
+  $("#routineView").innerHTML = `
+    <div class="section-head">
+
+      <div>
+        <h2>
+          🗓️ Rotina de ${c.name}
+        </h2>
+
+        <div class="muted">
+          Veja os horários no formato digital e analógico.
+        </div>
+      </div>
+
+      ${
+        membroAtual?.role !== "child"
+          ? `
+            <button
+              id="newRoutineTaskBtn"
+              class="primary"
+              type="button"
+            >
+              + Tarefa
+            </button>
+          `
+          : ""
+      }
+
+    </div>
+
+    <div>
+      ${
+        tasks.length
+          ? tasks.map(renderTaskCard).join("")
+          : `
+            <div class="callout">
+              Nenhuma tarefa cadastrada.
+            </div>
+          `
+      }
     </div>
   `;
 }
 
 
-// =============================================
-// AÇÕES DAS TAREFAS
-// =============================================
+/* =============================================
+   ESCOLA
+============================================= */
 
-function attachTaskButtons() {
-
-  $$("[data-done]")
-    .forEach(b => {
-
-      b.onclick =
-        async () => {
-
-          const t =
-            state.tasks.find(
-              x =>
-                x.id ===
-                b.dataset.done
-            );
-
-          if (!t) return;
-
-          await setTaskStatusReal(
-            t,
-            t.done
-              ? "pending"
-              : "done"
-          );
-
-        };
-
-    });
-
-
-  $$("[data-help]")
-    .forEach(b => {
-
-      b.onclick =
-        async () => {
-
-          const t =
-            state.tasks.find(
-              x =>
-                x.id ===
-                b.dataset.help
-            );
-
-          if (!t) return;
-
-          await setTaskStatusReal(
-            t,
-            "needs_help"
-          );
-
-          alert(
-            "Pedido de ajuda enviado aos responsáveis."
-          );
-
-        };
-
-    });
-
-
-  $$("[data-speak]")
-    .forEach(b => {
-
-      b.onclick =
-        () => {
-
-          const t =
-            state.tasks.find(
-              x =>
-                x.id ===
-                b.dataset.speak
-            );
-
-          if (!t) return;
-
-          speak(
-            `${child().name}, lembrete: ${t.title}. Quando terminar, me avise!`
-          );
-
-        };
-
-    });
-
-
-  $$("[data-edit]")
-    .forEach(b => {
-
-      b.onclick =
-        () => {
-
-          const t =
-            state.tasks.find(
-              x =>
-                x.id ===
-                b.dataset.edit
-            );
-
-          if (t) openTask(t);
-
-        };
-
-    });
-}
-
-
-// =============================================
-// ROTINA
-// =============================================
-
-function renderRoutine() {
-
+function renderSchool() {
   const c = child();
 
-  const blocks =
-    state.protectedBlocks.filter(
-      b => b.childId === c.id
-    );
+  if (!c) return;
 
-  const lib =
-    taskLibrary.filter(
-      x =>
-        c.age >= x.ages[0] &&
-        c.age <= x.ages[1]
-    );
+  $("#schoolView").innerHTML = `
+    <div class="hero">
 
+      <h1>
+        🎒 Escola
+      </h1>
 
-  $("#routineView").innerHTML = `
+      <p>
+        Área escolar de ${c.name}.
+      </p>
 
-    <div class="section-head">
+      <div class="cards">
 
-      <div>
+        <div class="stat">
+          <b>${c.school?.start || "--:--"}</b>
+          Entrada
+        </div>
 
-        <h2>
-          Rotina de ${c.name}
-        </h2>
+        <div class="stat">
+          <b>${c.school?.end || "--:--"}</b>
+          Saída
+        </div>
 
-        <div class="muted">
-          A rotina respeita escola e horários protegidos.
+        <div class="stat">
+          <b>${childProjects().length}</b>
+          Trabalhos
         </div>
 
       </div>
 
-      <button
-        class="primary parent-only"
-        id="routineAdd"
-      >
-        + Tarefa
-      </button>
-
     </div>
 
-
-    <div class="timeline">
-
-      ${
-        childTasks()
-          .map(taskCard)
-          .join("")
-      }
-
-      ${
-        blocks
-          .map(
-            b => `
-              <div class="block">
-                🔕
-                <b>${b.label}</b>
-
-                <div class="muted">
-                  ${b.start}–${b.end}
-                  • o Lelê não chama durante este período
-                </div>
-
-              </div>
-            `
-          )
-          .join("")
-      }
-
-    </div>
-
-
-    <div class="section parent-only block-display">
+    <section class="section">
 
       <div class="section-head">
 
         <h2>
-          Biblioteca por idade
+          Trabalhos escolares
         </h2>
 
-        <span class="age-pill">
-          ${c.age} anos
-        </span>
-
-      </div>
-
-
-      <div class="library">
-
         ${
-          lib.map(
-            (x,i) => `
-
-              <div class="lib-item">
-
-                <b>
-                  ${x.icon}
-                  ${x.title}
-                </b>
-
-                <span class="muted">
-                  ${x.cat}
-                </span>
-
-                <div style="margin-top:8px">
-
-                  <button
-                    class="small edit"
-                    data-addlib="${i}"
-                  >
-                    Adicionar
-                  </button>
-
-                </div>
-
-              </div>
+          membroAtual?.role !== "child"
+            ? `
+              <button
+                id="newProjectBtn"
+                class="primary"
+                type="button"
+              >
+                + Trabalho
+              </button>
             `
-          ).join("")
+            : ""
         }
 
       </div>
-
-    </div>
-  `;
-
-
-  $("#routineAdd")
-    ?.addEventListener(
-      "click",
-      () => openTask()
-    );
-
-
-  attachTaskButtons();
-
-
-  $$("[data-addlib]")
-    .forEach(b => {
-
-      b.onclick =
-        async () => {
-
-          const x =
-            lib[
-              Number(
-                b.dataset.addlib
-              )
-            ];
-
-          try {
-
-            await saveTaskToSupabase(
-              null,
-              {
-                childId:c.id,
-                title:x.title,
-                cat:x.cat,
-                time:"18:00",
-                duration:10,
-                type:"fixed",
-                voice:c.age < 13,
-                shared:false,
-                needsHelp:
-                  x.cat === "Escola",
-                done:false
-              }
-            );
-
-          } catch (error) {
-
-            console.error(error);
-
-            alert(
-              "Não foi possível adicionar a tarefa."
-            );
-
-          }
-
-        };
-
-    });
-}
-
-
-// =============================================
-// ESCOLA
-// =============================================
-
-function renderSchool() {
-
-  const c = child();
-
-  $("#schoolView").innerHTML = `
-
-    <div class="section-head">
-
-      <div>
-
-        <h2>
-          Escola e projetos
-        </h2>
-
-        <div class="muted">
-          Planeje antes da véspera.
-        </div>
-
-      </div>
-
-      <button
-        class="primary parent-only"
-        id="newProject"
-      >
-        + Trabalho
-      </button>
-
-    </div>
-
-
-    <div class="block">
-
-      🎓
-      <b>Horário escolar</b>
-
-      <div class="muted">
-        ${c.school.start}–${c.school.end}
-        • segunda a sexta
-      </div>
-
-    </div>
-
-
-    ${
-      childProjects()
-        .map(
-          p => `
-
-            <div class="project">
-
-              <div class="section-head">
-
-                <div>
-
-                  <h3>
-                    ${p.title}
-                  </h3>
-
-                  <div class="muted">
-                    ${p.subject || "Escola"}
-                    • entrega ${fmtDate(p.due)}
-                  </div>
-
-                </div>
-
-                <span class="age-pill">
-                  ${daysUntil(p.due)} dias
-                </span>
-
-              </div>
-
-              <div>
-                ${p.notes || ""}
-              </div>
-
-              <div class="materials">
-
-                ${
-                  p.materials
-                    .map(
-                      m =>
-                        `<span class="material">🛒 ${m}</span>`
-                    )
-                    .join("")
-                }
-
-              </div>
-
-              <div style="margin-top:12px">
-
-                <b>
-                  Etapas sugeridas
-                </b>
-
-                <div class="muted">
-                  ${p.steps.join(" → ")}
-                </div>
-
-              </div>
-
-            </div>
-          `
-        )
-        .join("")
-      ||
-      `
-        <div class="callout">
-          Nenhum trabalho cadastrado.
-        </div>
-      `
-    }
-  `;
-
-
-  $("#newProject")
-    ?.addEventListener(
-      "click",
-      () =>
-        $("#projectDialog")
-          .showModal()
-    );
-}
-
-
-// =============================================
-// FAMÍLIA
-// =============================================
-
-function renderFamily() {
-
-  $("#familyView").innerHTML = `
-
-    <div class="section-head">
-
-      <div>
-
-        <h2>
-          Família
-        </h2>
-
-        <div class="muted">
-          Perfis vinculados à sua família.
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="hero">
-
-      <h2>
-        Perfis
-      </h2>
-
-      <div
-        style="
-          display:flex;
-          gap:8px;
-          flex-wrap:wrap;
-          margin-top:10px
-        "
-      >
-
-        ${
-          state.children
-            .map(
-              (x,i) => `
-
-                <button
-                  class="${
-                    i === state.activeChild
-                      ? "primary"
-                      : "ghost"
-                  }"
-                  data-child="${i}"
-                >
-                  ${x.name}
-                  •
-                  ${x.age}
-                </button>
-
-              `
-            )
-            .join("")
-        }
-
-      </div>
-
-    </div>
-  `;
-
-
-  $$("[data-child]")
-    .forEach(b => {
-
-      b.onclick =
-        () => {
-
-          state.activeChild =
-            Number(
-              b.dataset.child
-            );
-
-          save();
-          render();
-
-        };
-
-    });
-}
-
-
-// =============================================
-// RECADOS
-// =============================================
-
-function renderMessages() {
-
-  const msgs =
-    state.messages.filter(
-      m =>
-        m.childId === child().id
-    );
-
-
-  $("#messagesView").innerHTML = `
-
-    <div class="section-head">
-
-      <div>
-
-        <h2>
-          Recados da família
-        </h2>
-
-        <div class="muted">
-          Privado entre responsáveis e filhos vinculados.
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div id="messageList">
 
       ${
-        msgs.map(
-          m => `
+        childProjects().length
+          ? childProjects().map(project => `
+              <article class="project">
 
-            <div
-              class="message ${
-                (
-                  state.mode === "parent" &&
-                  m.from === "parent"
-                ) ||
-                (
-                  state.mode === "child" &&
-                  m.from === "child"
-                )
-                  ? "me"
-                  : ""
-              }"
-            >
+                <h3>
+                  ${project.title}
+                </h3>
 
-              <b>
+                <div class="muted">
+                  ${project.subject || ""}
+                </div>
+
+                <p>
+                  Entrega:
+                  <b>
+                    ${fmtDate(project.due)}
+                  </b>
+                </p>
+
                 ${
-                  m.from === "parent"
-                    ? "Responsável"
-                    : child().name
+                  project.notes
+                    ? `<p>${project.notes}</p>`
+                    : ""
                 }
-              </b>
+
+              </article>
+            `).join("")
+          : `
+            <div class="callout">
+              Nenhum trabalho escolar cadastrado.
+            </div>
+          `
+      }
+
+    </section>
+  `;
+}
+
+
+/* =============================================
+   FAMÍLIA
+============================================= */
+
+function renderFamily() {
+  $("#familyView").innerHTML = `
+    <div class="hero">
+
+      <h1>
+        👨‍👩‍👧 ${state.familyName}
+      </h1>
+
+      <p class="muted">
+        Perfis conectados à rotina.
+      </p>
+
+    </div>
+
+    <section class="section">
+
+      ${
+        state.children.map(
+          (c, index) => `
+            <article class="task">
+
+              <div class="task-emoji">
+                ${
+                  c.age >= 13
+                    ? "😎"
+                    : "🙂"
+                }
+              </div>
 
               <div>
-                ${m.text}
+                <div class="task-title">
+                  ${c.name}
+                </div>
+
+                <div class="task-meta">
+                  ${c.age} anos
+                </div>
               </div>
 
-              <div class="task-meta">
-                ${m.at}
-              </div>
+              ${
+                membroAtual?.role !== "child"
+                  ? `
+                    <button
+                      class="ghost child-select-btn"
+                      data-child-index="${index}"
+                      type="button"
+                    >
+                      Ver perfil
+                    </button>
+                  `
+                  : ""
+              }
 
-            </div>
+            </article>
           `
         ).join("")
       }
 
-    </div>
-
-
-    <div class="chatbar">
-
-      <input
-        id="msgInput"
-        placeholder="Escreva um recado..."
-        maxlength="240"
-      >
-
-      <button
-        id="sendMsg"
-        class="primary"
-      >
-        Enviar
-      </button>
-
-      <button
-        id="recordAudio"
-        class="ghost"
-      >
-        🎙️
-      </button>
-
-    </div>
+    </section>
   `;
-
-
-  $("#sendMsg").onclick =
-    () => {
-
-      const i = $("#msgInput");
-
-      if (!i.value.trim()) return;
-
-      state.messages.push({
-        id:crypto.randomUUID(),
-        childId:child().id,
-        from:state.mode,
-        text:i.value.trim(),
-        at:
-          new Date()
-            .toLocaleTimeString(
-              "pt-BR",
-              {
-                hour:"2-digit",
-                minute:"2-digit"
-              }
-            )
-      });
-
-      save();
-
-      i.value = "";
-
-      renderMessages();
-    };
-
-
-  $("#recordAudio").onclick =
-    recordAudio;
 }
 
 
-async function recordAudio() {
+/* =============================================
+   RECADOS
+============================================= */
 
-  if (
-    !navigator.mediaDevices
-      ?.getUserMedia
-  ) {
+function renderMessages() {
+  $("#messagesView").innerHTML = `
+    <div class="hero">
 
-    return alert(
-      "Gravação de áudio não suportada neste navegador."
-    );
+      <h1>
+        💬 Recados
+      </h1>
 
-  }
+      <p class="muted">
+        Espaço da família para lembretes e mensagens.
+      </p>
 
-  try {
+    </div>
 
-    const stream =
-      await navigator.mediaDevices
-        .getUserMedia({
-          audio:true
-        });
+    <section class="section">
 
-    const rec =
-      new MediaRecorder(stream);
+      ${
+        state.messages.length
+          ? state.messages.map(
+              message => `
+                <div class="message">
+                  ${message.text || message}
+                </div>
+              `
+            ).join("")
+          : `
+            <div class="callout">
+              Nenhum recado por enquanto.
+            </div>
+          `
+      }
 
-    const chunks = [];
-
-    rec.ondataavailable =
-      e => chunks.push(e.data);
-
-
-    rec.onstop = () => {
-
-      stream
-        .getTracks()
-        .forEach(
-          t => t.stop()
-        );
-
-      const url =
-        URL.createObjectURL(
-          new Blob(
-            chunks,
-            {
-              type:rec.mimeType
-            }
-          )
-        );
-
-
-      const a =
-        document.createElement(
-          "audio"
-        );
-
-      a.controls = true;
-      a.src = url;
-
-      $("#messageList")
-        .appendChild(a);
-    };
-
-
-    rec.start();
-
-    alert(
-      "Gravando por 10 segundos. Fale agora."
-    );
-
-    setTimeout(
-      () =>
-        rec.state === "recording" &&
-        rec.stop(),
-      10000
-    );
-
-  } catch (e) {
-
-    alert(
-      "Não foi possível acessar o microfone."
-    );
-
-  }
+    </section>
+  `;
 }
 
 
-// =============================================
-// AJUSTES
-// =============================================
+/* =============================================
+   AJUSTES
+============================================= */
 
 function renderSettings() {
-
   const c = child();
 
   $("#settingsView").innerHTML = `
-
-    <div class="section-head">
-
-      <div>
-
-        <h2>
-          Ajustes
-        </h2>
-
-        <div class="muted">
-          Personalização pelos responsáveis.
-        </div>
-
-      </div>
-
-    </div>
-
-
     <div class="hero">
 
-      <label>
+      <h1>
+        ⚙️ Ajustes
+      </h1>
 
-        Perfil ativo
-
-        <select id="childSelect">
-
-          ${
-            state.children
-              .map(
-                (x,i) => `
-
-                  <option
-                    value="${i}"
-                    ${
-                      i ===
-                      state.activeChild
-                        ? "selected"
-                        : ""
-                    }
-                  >
-                    ${x.name}
-                    •
-                    ${x.age} anos
-                  </option>
-
-                `
-              )
-              .join("")
-          }
-
-        </select>
-
-      </label>
-
-
-      <div class="grid2">
-
-        <label>
-          Início da escola
-
-          <input
-            id="schoolStart"
-            type="time"
-            value="${c.school.start}"
-          >
-
-        </label>
-
-
-        <label>
-          Fim da escola
-
-          <input
-            id="schoolEnd"
-            type="time"
-            value="${c.school.end}"
-          >
-
-        </label>
-
-      </div>
-
-
-      <div class="grid2">
-
-        <label>
-          Meta de água (ml)
-
-          <input
-            id="waterGoal"
-            type="number"
-            value="${c.waterGoal}"
-            min="500"
-            max="5000"
-          >
-
-        </label>
-
-
-        <label>
-          Fechamento do dia
-
-          <input
-            id="endDay"
-            type="time"
-            value="${c.endDay}"
-          >
-
-        </label>
-
-      </div>
-
-
-      <button
-        id="saveSettings"
-        class="primary"
-      >
-        Salvar ajustes
-      </button>
+      <p class="muted">
+        Configurações do Lelê.
+      </p>
 
     </div>
+
+    <section class="section">
+
+      <div class="callout">
+
+        <b>Sessão persistente</b>
+
+        <p>
+          O Lelê mantém o login salvo neste dispositivo.
+        </p>
+
+      </div>
+
+      <div
+        class="callout"
+        style="margin-top:10px;"
+      >
+
+        <b>Funcionamento sem internet</b>
+
+        <p>
+          As informações já carregadas continuam disponíveis e as alterações pendentes são sincronizadas quando a internet voltar.
+        </p>
+
+      </div>
+
+      <div
+        class="callout"
+        style="margin-top:10px;"
+      >
+
+        <b>🔔 Notificações</b>
+
+        <p>
+          Permita notificações para receber lembretes das tarefas.
+        </p>
+
+        <button
+          id="enableNotificationsBtn"
+          class="primary"
+          type="button"
+        >
+          Ativar notificações
+        </button>
+
+      </div>
+
+      ${
+        c
+          ? `
+            <div
+              class="callout"
+              style="margin-top:10px;"
+            >
+
+              <b>
+                Perfil atual
+              </b>
+
+              <p>
+                ${c.name}, ${c.age} anos.
+              </p>
+
+            </div>
+          `
+          : ""
+      }
+
+    </section>
   `;
+}
 
 
-  $("#childSelect").onchange =
-    e => {
+/* =============================================
+   RENDER PRINCIPAL
+============================================= */
 
-      state.activeChild =
-        Number(
-          e.target.value
-        );
+function render() {
+  if (
+    !$("#app") ||
+    $("#app").classList.contains("hidden")
+  ) {
+    return;
+  }
 
-      save();
-      render();
-    };
+  document.body.classList.toggle(
+    "mode-parent",
+    state.mode === "parent"
+  );
+
+  document.body.classList.toggle(
+    "mode-child",
+    state.mode === "child"
+  );
+
+  const c = child();
+
+  if ($("#subtitle")) {
+    $("#subtitle").textContent =
+      c
+        ? `${state.familyName} • ${c.name}`
+        : state.familyName;
+  }
+
+  if ($("#modeBtn")) {
+    $("#modeBtn").textContent =
+      state.mode === "parent"
+        ? "Ver como filho"
+        : "Voltar aos pais";
+  }
+
+  renderHome();
+  renderRoutine();
+  renderSchool();
+  renderFamily();
+  renderMessages();
+  renderSettings();
+
+  const lastView =
+    localStorage.getItem(
+      "lele-last-view"
+    ) || "homeView";
+
+  showView(lastView);
+
+  bindDynamicEvents();
+}
 
 
-  $("#saveSettings").onclick =
-    () => {
+/* =============================================
+   EVENTOS DINÂMICOS
+============================================= */
 
-      c.school.start =
-        $("#schoolStart").value;
+function bindDynamicEvents() {
+  $("#newTaskBtn")?.addEventListener(
+    "click",
+    () => openTaskDialog()
+  );
 
-      c.school.end =
-        $("#schoolEnd").value;
+  $("#newRoutineTaskBtn")?.addEventListener(
+    "click",
+    () => openTaskDialog()
+  );
 
-      c.waterGoal =
-        Number(
-          $("#waterGoal").value
-        );
+  $("#addWaterBtn")?.addEventListener(
+    "click",
+    () => addHydrationReal(250)
+  );
 
-      c.endDay =
-        $("#endDay").value;
-
-      save();
-      render();
+  $("#enableNotificationsBtn")?.addEventListener(
+    "click",
+    async () => {
+      const allowed =
+        await requestNotificationPermission();
 
       alert(
-        "Ajustes salvos."
+        allowed
+          ? "Notificações ativadas 🔔"
+          : "As notificações não foram autorizadas."
       );
-    };
-}
-
-
-// =============================================
-// CRIAR / EDITAR TAREFA
-// =============================================
-
-function openTask(t = null) {
-
-  $("#taskId").value =
-    t?.id || "";
-
-  $("#taskTitle").value =
-    t?.title || "";
-
-  $("#taskCategory").value =
-    t?.cat || "Casa";
-
-  $("#taskTime").value =
-    t?.time || "18:00";
-
-  $("#taskDuration").value =
-    t?.duration || 10;
-
-  $("#taskType").value =
-    t?.type || "fixed";
-
-  $("#taskVoice").checked =
-    t?.voice ??
-    (child().age < 13);
-
-  $("#taskShared").checked =
-    !!t?.shared;
-
-  $("#taskNeedsHelp").checked =
-    !!t?.needsHelp;
-
-  $("#taskDialogTitle")
-    .textContent =
-      t
-        ? "Editar tarefa"
-        : "Nova tarefa";
-
-  $("#taskDialog")
-    .showModal();
-}
-
-
-$("#taskForm")
-  .addEventListener(
-    "submit",
-    async e => {
-
-      if (
-        e.submitter?.value ===
-        "cancel"
-      ) {
-        return;
-      }
-
-      e.preventDefault();
-
-
-      if (
-        !membroAtual ||
-        !["owner","parent"]
-          .includes(
-            membroAtual.role
-          )
-      ) {
-
-        alert(
-          "Somente responsáveis podem criar ou editar tarefas."
-        );
-
-        return;
-      }
-
-
-      const id =
-        $("#taskId").value ||
-        null;
-
-
-      const data = {
-
-        childId:
-          child().id,
-
-        title:
-          $("#taskTitle")
-            .value
-            .trim(),
-
-        cat:
-          $("#taskCategory")
-            .value,
-
-        time:
-          $("#taskTime")
-            .value,
-
-        duration:
-          Number(
-            $("#taskDuration")
-              .value || 10
-          ),
-
-        type:
-          $("#taskType")
-            .value,
-
-        voice:
-          $("#taskVoice")
-            .checked,
-
-        shared:
-          $("#taskShared")
-            .checked,
-
-        needsHelp:
-          $("#taskNeedsHelp")
-            .checked,
-
-        done:false
-      };
-
-
-      try {
-
-        await saveTaskToSupabase(
-          id,
-          data
-        );
-
-        $("#taskDialog")
-          .close();
-
-      } catch (error) {
-
-        console.error(
-          "Erro ao salvar tarefa:",
-          error
-        );
-
-        alert(
-          "Não foi possível salvar a tarefa."
-        );
-
-      }
-
     }
   );
 
+  $$(".speak-task-btn").forEach(
+    button => {
+      button.addEventListener(
+        "click",
+        () => {
+          const task =
+            state.tasks.find(
+              t =>
+                String(t.id) ===
+                String(
+                  button.dataset.taskId
+                )
+            );
 
-// =============================================
-// PROJETOS ESCOLARES
-// =============================================
-
-$("#projectForm")
-  .addEventListener(
-    "submit",
-    e => {
-
-      if (
-        e.submitter?.value ===
-        "cancel"
-      ) {
-        return;
-      }
-
-      e.preventDefault();
-
-      state.projects.push({
-
-        id:
-          crypto.randomUUID(),
-
-        childId:
-          child().id,
-
-        title:
-          $("#projectTitle")
-            .value
-            .trim(),
-
-        subject:
-          $("#projectSubject")
-            .value
-            .trim(),
-
-        due:
-          $("#projectDue")
-            .value,
-
-        materials:
-          $("#projectMaterials")
-            .value
-            .split(",")
-            .map(
-              x => x.trim()
-            )
-            .filter(Boolean),
-
-        notes:
-          $("#projectNotes")
-            .value
-            .trim(),
-
-        steps:[
-          "Entender o pedido",
-          "Pesquisar",
-          "Separar/comprar materiais",
-          "Produzir",
-          "Revisar",
-          "Colocar na mochila"
-        ]
-
-      });
-
-      save();
-
-      $("#projectDialog")
-        .close();
-
-      e.target.reset();
-
-      render();
-
+          if (task) {
+            speak(task.title);
+          }
+        }
+      );
     }
   );
 
+  $$(".task-done-btn").forEach(
+    button => {
+      button.addEventListener(
+        "click",
+        async () => {
+          const task =
+            state.tasks.find(
+              t =>
+                String(t.id) ===
+                String(
+                  button.dataset.taskId
+                )
+            );
 
-// =============================================
-// MODO RESPONSÁVEL / VISUALIZAÇÃO DO FILHO
-// =============================================
-
-$("#modeBtn").onclick =
-  () => {
-
-    if (
-      !membroAtual ||
-      !["owner","parent"]
-        .includes(
-          membroAtual.role
-        )
-    ) {
-      return;
+          if (task) {
+            await completeTask(task);
+          }
+        }
+      );
     }
+  );
 
-    state.mode =
-      state.mode === "parent"
-        ? "child"
-        : "parent";
+  $$(".task-edit-btn").forEach(
+    button => {
+      button.addEventListener(
+        "click",
+        () => {
+          const task =
+            state.tasks.find(
+              t =>
+                String(t.id) ===
+                String(
+                  button.dataset.taskId
+                )
+            );
 
-    save();
-    render();
+          if (task) {
+            openTaskDialog(task);
+          }
+        }
+      );
+    }
+  );
+
+  $$(".task-help-btn").forEach(
+    button => {
+      button.addEventListener(
+        "click",
+        () => {
+          const task =
+            state.tasks.find(
+              t =>
+                String(t.id) ===
+                String(
+                  button.dataset.taskId
+                )
+            );
+
+          if (!task) return;
+
+          speak(
+            `Preciso de ajuda com a tarefa ${task.title}`
+          );
+
+          alert(
+            `Pedido de ajuda enviado para: ${task.title}`
+          );
+        }
+      );
+    }
+  );
+
+  $$(".child-select-btn").forEach(
+    button => {
+      button.addEventListener(
+        "click",
+        () => {
+          state.activeChild =
+            Number(
+              button.dataset.childIndex
+            );
+
+          save();
+          render();
+          showView("homeView");
+        }
+      );
+    }
+  );
+
+  $$(".suggested-task-checkbox").forEach(
+    checkbox => {
+      checkbox.addEventListener(
+        "change",
+        async () => {
+          if (!checkbox.checked) {
+            return;
+          }
+
+          const suggestions =
+            getSuggestionsForChild();
+
+          const item =
+            suggestions[
+              Number(
+                checkbox.dataset.suggestionIndex
+              )
+            ];
+
+          if (!item) return;
+
+          checkbox.disabled = true;
+
+          await addSuggestedTask(item);
+        }
+      );
+    }
+  );
+}
+
+
+/* =============================================
+   EMOJI AUTOMÁTICO NO FORMULÁRIO
+============================================= */
+
+function updateTaskEmojiSuggestion() {
+  const title =
+    $("#taskTitle")?.value || "";
+
+  const cat =
+    $("#taskCategory")?.value || "Casa";
+
+  const emoji =
+    suggestEmoji(
+      title,
+      cat
+    );
+
+  const input =
+    $("#taskEmoji");
+
+  const preview =
+    $("#taskEmojiPreview");
+
+  if (
+    input &&
+    (
+      !input.value ||
+      input.dataset.auto === "true"
+    )
+  ) {
+    input.value = emoji;
+    input.dataset.auto = "true";
+  }
+
+  if (preview) {
+    preview.textContent =
+      input?.value || emoji;
+  }
+}
+
+
+/* =============================================
+   PROJETO ESCOLAR
+============================================= */
+
+function saveProjectFromForm(event) {
+  event.preventDefault();
+
+  const c = child();
+
+  if (!c) return;
+
+  const project = {
+    id:
+      `project-${Date.now()}`,
+
+    childId:
+      c.id,
+
+    title:
+      $("#projectTitle").value.trim(),
+
+    subject:
+      $("#projectSubject").value.trim(),
+
+    due:
+      $("#projectDue").value,
+
+    materials:
+      $("#projectMaterials").value.trim(),
+
+    notes:
+      $("#projectNotes").value.trim()
   };
 
+  state.projects.push(project);
 
-// =============================================
-// NAVEGAÇÃO
-// =============================================
+  save();
 
-$$(".nav-btn")
-  .forEach(
-    b => {
+  $("#projectDialog").close();
 
-      b.onclick =
-        () => {
+  $("#projectForm").reset();
 
-          $$(".nav-btn")
-            .forEach(
-              x =>
-                x.classList
-                  .remove("active")
-            );
-
-          b.classList
-            .add("active");
+  render();
+}
 
 
-          $$(".view")
-            .forEach(
-              v =>
-                v.classList
-                  .remove("active")
-            );
+/* =============================================
+   EVENTOS FIXOS
+============================================= */
 
+$("#loginForm")?.addEventListener(
+  "submit",
+  fazerLogin
+);
 
-          $(
-            "#" +
-            b.dataset.view
-          )
-            .classList
-            .add("active");
+$("#logoutBtn")?.addEventListener(
+  "click",
+  sairLele
+);
 
-        };
+$("#modeBtn")?.addEventListener(
+  "click",
+  toggleMode
+);
 
+$("#taskForm")?.addEventListener(
+  "submit",
+  saveTaskFromForm
+);
+
+$("#projectForm")?.addEventListener(
+  "submit",
+  saveProjectFromForm
+);
+
+$("#taskTitle")?.addEventListener(
+  "input",
+  () => {
+    const input =
+      $("#taskEmoji");
+
+    if (input) {
+      input.dataset.auto = "true";
     }
-  );
 
+    updateTaskEmojiSuggestion();
+  }
+);
 
-// =============================================
-// INSTALAÇÃO DO APP
-// =============================================
+$("#taskCategory")?.addEventListener(
+  "change",
+  () => {
+    const input =
+      $("#taskEmoji");
 
-let deferredPrompt;
+    if (input) {
+      input.dataset.auto = "true";
+    }
 
+    updateTaskEmojiSuggestion();
+  }
+);
 
-window.addEventListener(
-  "beforeinstallprompt",
-  e => {
+$("#taskEmoji")?.addEventListener(
+  "input",
+  event => {
+    event.target.dataset.auto =
+      "false";
 
-    e.preventDefault();
+    if ($("#taskEmojiPreview")) {
+      $("#taskEmojiPreview").textContent =
+        event.target.value || "⭐";
+    }
+  }
+);
 
-    deferredPrompt = e;
+$("#taskEmojiPreview")?.addEventListener(
+  "click",
+  () => {
+    const title =
+      $("#taskTitle")?.value.trim();
 
-    $("#installBtn")
-      .classList
-      .remove("hidden");
+    if (title) {
+      speak(title);
+    }
+  }
+);
 
+$("#taskPhotoInput")?.addEventListener(
+  "change",
+  handleTaskPhoto
+);
+
+$("#confirmPhotoBtn")?.addEventListener(
+  "click",
+  confirmTaskPhoto
+);
+
+$("#cancelPhotoBtn")?.addEventListener(
+  "click",
+  () => {
+    $("#photoDialog")?.close();
+  }
+);
+
+$("#closePhotoDialog")?.addEventListener(
+  "click",
+  () => {
+    $("#photoDialog")?.close();
+  }
+);
+
+$("#newProjectBtn")?.addEventListener(
+  "click",
+  () => {
+    $("#projectDialog")?.showModal();
+  }
+);
+
+$$(".nav-btn").forEach(
+  button => {
+    button.addEventListener(
+      "click",
+      () => {
+        showView(
+          button.dataset.view
+        );
+      }
+    );
   }
 );
 
 
-$("#installBtn").onclick =
-  async () => {
+/* =============================================
+   PWA / INSTALAÇÃO
+============================================= */
 
-    if (!deferredPrompt) {
+let deferredInstallPrompt = null;
+
+window.addEventListener(
+  "beforeinstallprompt",
+  event => {
+    event.preventDefault();
+
+    deferredInstallPrompt =
+      event;
+
+    $("#installBtn")
+      ?.classList
+      .remove(
+        "hidden"
+      );
+  }
+);
+
+$("#installBtn")?.addEventListener(
+  "click",
+  async () => {
+    if (
+      !deferredInstallPrompt
+    ) {
       return;
     }
 
-    deferredPrompt.prompt();
+    deferredInstallPrompt.prompt();
 
-    await deferredPrompt
+    await deferredInstallPrompt
       .userChoice;
 
-    deferredPrompt = null;
+    deferredInstallPrompt =
+      null;
 
     $("#installBtn")
-      .classList
-      .add("hidden");
+      ?.classList
+      .add(
+        "hidden"
+      );
+  }
+);
 
-  };
 
-
-// =============================================
-// SERVICE WORKER
-// =============================================
+/* =============================================
+   SERVICE WORKER
+============================================= */
 
 if (
-  "serviceWorker" in navigator
+  "serviceWorker"
+  in navigator
 ) {
-
-  navigator.serviceWorker
-    .register("./sw.js");
-
+  window.addEventListener(
+    "load",
+    () => {
+      navigator
+        .serviceWorker
+        .register(
+          "./sw.js?v=10"
+        )
+        .catch(
+          error =>
+            console.error(
+              "Erro no Service Worker:",
+              error
+            )
+        );
+    }
+  );
 }
 
 
-// =============================================
-// INICIAR LELÊ
-// =============================================
+/* =============================================
+   RECUPERAR SESSÃO
+============================================= */
 
-iniciarLoginLele();
+async function iniciarLele() {
+  showConnectionStatus();
+
+  const {
+    data: {
+      session
+    }
+  } =
+    await leleDb.auth
+      .getSession();
+
+  if (!session) {
+    $("#authScreen")
+      ?.classList
+      .remove(
+        "hidden"
+      );
+
+    $("#app")
+      ?.classList
+      .add(
+        "hidden"
+      );
+
+    return;
+  }
+
+  try {
+    await carregarFamiliaReal();
+
+    startTasksRealtime();
+
+    $("#authScreen")
+      ?.classList
+      .add(
+        "hidden"
+      );
+
+    $("#app")
+      ?.classList
+      .remove(
+        "hidden"
+      );
+
+    render();
+
+    if (navigator.onLine) {
+      syncOfflineQueue();
+    }
+
+  } catch (error) {
+    console.error(
+      "Erro ao recuperar sessão:",
+      error
+    );
+
+    /*
+      Se existe sessão mas a internet
+      caiu, não fazemos logout automático.
+    */
+
+    if (!navigator.onLine) {
+      $("#authScreen")
+        ?.classList
+        .add(
+          "hidden"
+        );
+
+      $("#app")
+        ?.classList
+        .remove(
+          "hidden"
+        );
+
+      render();
+
+      return;
+    }
+
+    $("#authScreen")
+      ?.classList
+      .remove(
+        "hidden"
+      );
+
+    $("#app")
+      ?.classList
+      .add(
+        "hidden"
+      );
+  }
+}
+
+
+/* =============================================
+   EVENTOS DE AUTENTICAÇÃO
+============================================= */
+
+leleDb.auth.onAuthStateChange(
+  async (
+    event,
+    session
+  ) => {
+
+    if (
+      event ===
+      "SIGNED_OUT"
+    ) {
+      return;
+    }
+
+    if (
+      event ===
+      "TOKEN_REFRESHED"
+    ) {
+      usuarioAtual =
+        session?.user ||
+        usuarioAtual;
+    }
+  }
+);
+
+
+/* =============================================
+   INICIAR
+============================================= */
+
+iniciarLele();
