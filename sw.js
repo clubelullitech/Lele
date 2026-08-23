@@ -3,8 +3,8 @@ const CACHE_NAME = "lele-v13";
 const APP_FILES = [
   "./",
   "./index.html",
-  "./styles.css?v=12",
-  "./app.js?v=12",
+  "./styles.css?v=13",
+  "./app.js?v=13",
   "./manifest.webmanifest"
 ];
 
