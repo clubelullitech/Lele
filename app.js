@@ -183,16 +183,13 @@ async function loadTasksFromSupabase() {
       }
     );
 
-  if (error) {
-    console.error(
-      "Erro ao carregar tarefas:",
-      error
-    );
+ if (error) {
+  console.error("Erro ao carregar tarefas:", error);
 
-    throw new Error(
-      "Não foi possível carregar as tarefas da família."
-    );
-  }
+  state.tasks = [];
+
+  return;
+}
 
   state.tasks =
     (data || []).map(mapTaskFromDb);
