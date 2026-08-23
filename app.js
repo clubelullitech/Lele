@@ -3888,6 +3888,25 @@ function bindDynamicEvents() {
           ? "Notificações ativadas 🔔"
           : "As notificações não foram autorizadas."
       );
+      $$(".evidence-view-btn").forEach(
+  button => {
+    button.addEventListener(
+      "click",
+      async () => {
+        const task =
+          state.tasks.find(
+            t =>
+              String(t.id) ===
+              String(button.dataset.taskId)
+          );
+
+        if (task) {
+          await viewTaskEvidence(task);
+        }
+      }
+    );
+  }
+);
     }
   );
 
