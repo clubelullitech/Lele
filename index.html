@@ -3,320 +3,647 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#7c5cff" />
+  <meta name="theme-color" content="#7567e8" />
+
   <title>Lelê — Rotina em família</title>
 
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 
 <body>
 
-  <section id="authScreen" style="max-width:420px;margin:60px auto;padding:20px;">
-    <div class="hero">
-      <div class="brand" style="margin-bottom:8px;">Lelê</div>
+<section id="authScreen" class="auth-screen">
+  <div class="hero auth-card">
 
-      <h1 style="margin-bottom:6px;">Bem-vindo 💜</h1>
+    <div class="brand">Lelê</div>
+
+    <h1>Bem-vindo 💜</h1>
+
+    <p class="muted">
+      Entre para acessar sua família e sua rotina.
+    </p>
+
+    <form id="loginForm">
+
+      <label>
+        E-mail
+        <input
+          id="loginEmail"
+          type="email"
+          placeholder="seuemail@gmail.com"
+          autocomplete="email"
+          required
+        />
+      </label>
+
+      <label>
+        Senha
+        <input
+          id="loginPassword"
+          type="password"
+          placeholder="Sua senha"
+          autocomplete="current-password"
+          required
+        />
+      </label>
+
+      <button
+        type="submit"
+        class="primary login-button"
+      >
+        Entrar no Lelê
+      </button>
+
+      <p
+        id="loginMessage"
+        class="muted login-message"
+      ></p>
+
+    </form>
+
+  </div>
+</section>
+
+
+<div id="app" class="hidden">
+
+  <header class="topbar">
+
+    <div class="topbar-brand">
+      <div class="brand">Lelê</div>
+
+      <div
+        id="subtitle"
+        class="muted"
+      >
+        Sua família no Lelê
+      </div>
+    </div>
+
+    <div class="top-actions">
+
+      <button
+        id="installBtn"
+        class="ghost hidden"
+        type="button"
+      >
+        Instalar app
+      </button>
+
+      <button
+        id="modeBtn"
+        class="primary"
+        type="button"
+      >
+        Ver como filho
+      </button>
+
+      <button
+        id="logoutBtn"
+        class="ghost"
+        type="button"
+      >
+        Sair
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <main>
+
+    <section
+      id="homeView"
+      class="view active"
+    ></section>
+
+    <section
+      id="routineView"
+      class="view"
+    ></section>
+
+    <section
+      id="schoolView"
+      class="view"
+    ></section>
+
+    <section
+      id="familyView"
+      class="view"
+    ></section>
+
+    <section
+      id="messagesView"
+      class="view"
+    ></section>
+
+    <section
+      id="settingsView"
+      class="view"
+    ></section>
+
+  </main>
+
+
+  <nav
+    class="bottomnav"
+    aria-label="Navegação principal"
+  >
+
+    <button
+      data-view="homeView"
+      class="nav-btn active"
+      type="button"
+    >
+      Hoje
+    </button>
+
+    <button
+      data-view="routineView"
+      class="nav-btn"
+      type="button"
+    >
+      Rotina
+    </button>
+
+    <button
+      data-view="schoolView"
+      class="nav-btn"
+      type="button"
+    >
+      Escola
+    </button>
+
+    <button
+      data-view="familyView"
+      class="nav-btn"
+      type="button"
+    >
+      Família
+    </button>
+
+    <button
+      data-view="messagesView"
+      class="nav-btn"
+      type="button"
+    >
+      Recados
+    </button>
+
+    <button
+      data-view="settingsView"
+      class="nav-btn"
+      type="button"
+    >
+      Ajustes
+    </button>
+
+  </nav>
+
+</div>
+
+
+<!-- NOVA TAREFA -->
+
+<dialog id="taskDialog">
+
+  <form
+    method="dialog"
+    id="taskForm"
+    class="modal-card"
+  >
+
+    <div class="modal-head">
+
+      <h2 id="taskDialogTitle">
+        Nova tarefa
+      </h2>
+
+      <button
+        value="cancel"
+        class="icon-btn"
+        aria-label="Fechar"
+      >
+        ✕
+      </button>
+
+    </div>
+
+
+    <input
+      type="hidden"
+      id="taskId"
+    />
+
+
+    <div class="task-visual-editor">
+
+      <label>
+        Ícone da tarefa
+
+        <div class="emoji-editor">
+
+          <button
+            id="taskEmojiPreview"
+            class="emoji-preview"
+            type="button"
+            title="Ouvir tarefa"
+          >
+            ⭐
+          </button>
+
+          <input
+            id="taskEmoji"
+            type="text"
+            maxlength="8"
+            value="⭐"
+            placeholder="⭐"
+          />
+
+        </div>
+
+      </label>
 
       <p class="muted">
-        Entre para acessar sua família e sua rotina.
+        O Lelê escolherá um ícone automaticamente.
+        Você pode trocar quando quiser.
       </p>
 
-      <form id="loginForm">
-
-        <label>
-          E-mail
-          <input
-            id="loginEmail"
-            type="email"
-            placeholder="seuemail@gmail.com"
-            autocomplete="email"
-            required
-          />
-        </label>
-
-        <label>
-          Senha
-          <input
-            id="loginPassword"
-            type="password"
-            placeholder="Sua senha"
-            autocomplete="current-password"
-            required
-          />
-        </label>
-
-        <button
-          type="submit"
-          class="primary"
-          style="width:100%;margin-top:12px;"
-        >
-          Entrar no Lelê
-        </button>
-
-        <p
-          id="loginMessage"
-          class="muted"
-          style="margin-top:12px;text-align:center;"
-        ></p>
-
-      </form>
     </div>
-  </section>
 
 
-  <div id="app" class="hidden">
+    <label>
+      Título
 
-    <header class="topbar">
+      <input
+        id="taskTitle"
+        required
+        maxlength="80"
+        placeholder="Ex.: Escovar os dentes"
+      />
 
-      <div>
-        <div class="brand">Lelê</div>
-
-        <div id="subtitle" class="muted">
-          Sua família no Lelê
-        </div>
-      </div>
-
-      <div class="top-actions">
-
-        <button
-          id="installBtn"
-          class="ghost hidden"
-        >
-          Instalar app
-        </button>
-
-        <button
-          id="modeBtn"
-          class="primary"
-        >
-          Ver como filho
-        </button>
-
-        <button
-          id="logoutBtn"
-          class="ghost"
-        >
-          Sair
-        </button>
-
-      </div>
-
-    </header>
+    </label>
 
 
-    <main>
-      <section id="homeView" class="view active"></section>
-      <section id="routineView" class="view"></section>
-      <section id="schoolView" class="view"></section>
-      <section id="familyView" class="view"></section>
-      <section id="messagesView" class="view"></section>
-      <section id="settingsView" class="view"></section>
-    </main>
+    <label>
+      Categoria
+
+      <select id="taskCategory">
+
+        <option value="Higiene">
+          🧼 Higiene
+        </option>
+
+        <option value="Casa">
+          🏠 Casa
+        </option>
+
+        <option value="Escola">
+          🎓 Escola
+        </option>
+
+        <option value="Água">
+          💧 Água
+        </option>
+
+        <option value="Saúde">
+          ❤️ Saúde
+        </option>
+
+        <option value="Lazer">
+          🎮 Lazer
+        </option>
+
+        <option value="Família">
+          👨‍👩‍👧 Família
+        </option>
+
+        <option value="Autonomia">
+          🌱 Autonomia
+        </option>
+
+        <option value="Organização">
+          📦 Organização
+        </option>
+
+        <option value="Pet">
+          🐾 Pet
+        </option>
+
+      </select>
+
+    </label>
 
 
-    <nav class="bottomnav" aria-label="Navegação principal">
+    <div class="grid2">
 
-      <button data-view="homeView" class="nav-btn active">
-        Hoje
+      <label>
+        Horário
+
+        <input
+          id="taskTime"
+          type="time"
+        />
+
+      </label>
+
+
+      <label>
+        Duração (min)
+
+        <input
+          id="taskDuration"
+          type="number"
+          min="1"
+          max="240"
+          value="10"
+        />
+
+      </label>
+
+    </div>
+
+
+    <label>
+      Tipo
+
+      <select id="taskType">
+
+        <option value="fixed">
+          Horário fixo
+        </option>
+
+        <option value="window">
+          Janela de horário
+        </option>
+
+        <option value="daypart">
+          Momento do dia
+        </option>
+
+        <option value="reminder">
+          Só lembrete
+        </option>
+
+      </select>
+
+    </label>
+
+
+    <label class="switch-row">
+
+      <input
+        id="taskVoice"
+        type="checkbox"
+        checked
+      />
+
+      🔊 Falar a tarefa em voz alta
+
+    </label>
+
+
+    <label class="switch-row">
+
+      <input
+        id="taskPhoto"
+        type="checkbox"
+      />
+
+      📷 Pedir foto ao concluir
+
+    </label>
+
+
+    <label class="switch-row">
+
+      <input
+        id="taskShared"
+        type="checkbox"
+      />
+
+      👨‍👩‍👧 Tarefa compartilhada entre irmãos
+
+    </label>
+
+
+    <label class="switch-row">
+
+      <input
+        id="taskNeedsHelp"
+        type="checkbox"
+      />
+
+      🙋 Permitir “Preciso de ajuda”
+
+    </label>
+
+
+    <div class="modal-actions">
+
+      <button
+        value="cancel"
+        class="ghost"
+      >
+        Cancelar
       </button>
 
-      <button data-view="routineView" class="nav-btn">
-        Rotina
+      <button
+        id="saveTaskBtn"
+        value="default"
+        class="primary"
+      >
+        Salvar
       </button>
 
-      <button data-view="schoolView" class="nav-btn">
-        Escola
+    </div>
+
+  </form>
+
+</dialog>
+
+
+<!-- FOTO DA TAREFA -->
+
+<dialog id="photoDialog">
+
+  <div class="modal-card">
+
+    <div class="modal-head">
+
+      <h2>
+        📷 Mostrar que concluí
+      </h2>
+
+      <button
+        id="closePhotoDialog"
+        class="icon-btn"
+        type="button"
+        aria-label="Fechar"
+      >
+        ✕
       </button>
 
-      <button data-view="familyView" class="nav-btn">
-        Família
+    </div>
+
+    <p>
+      Tire ou escolha uma foto para mostrar que a tarefa foi realizada.
+    </p>
+
+    <input
+      id="taskPhotoInput"
+      type="file"
+      accept="image/*"
+      capture="environment"
+    />
+
+    <div
+      id="photoPreview"
+      class="photo-preview hidden"
+    ></div>
+
+    <div class="modal-actions">
+
+      <button
+        id="cancelPhotoBtn"
+        class="ghost"
+        type="button"
+      >
+        Cancelar
       </button>
 
-      <button data-view="messagesView" class="nav-btn">
-        Recados
+      <button
+        id="confirmPhotoBtn"
+        class="primary"
+        type="button"
+      >
+        Concluir tarefa
       </button>
 
-      <button data-view="settingsView" class="nav-btn">
-        Ajustes
-      </button>
-
-    </nav>
+    </div>
 
   </div>
 
-
-  <dialog id="taskDialog">
-
-    <form method="dialog" id="taskForm" class="modal-card">
-
-      <div class="modal-head">
-        <h2 id="taskDialogTitle">Nova tarefa</h2>
-
-        <button value="cancel" class="icon-btn" aria-label="Fechar">
-          ✕
-        </button>
-      </div>
-
-      <input type="hidden" id="taskId" />
-
-      <label>
-        Título
-        <input id="taskTitle" required maxlength="80" />
-      </label>
-
-      <label>
-        Categoria
-
-        <select id="taskCategory">
-          <option>Higiene</option>
-          <option>Casa</option>
-          <option>Escola</option>
-          <option>Água</option>
-          <option>Saúde</option>
-          <option>Lazer</option>
-          <option>Família</option>
-          <option>Autonomia</option>
-          <option>Organização</option>
-          <option>Pet</option>
-        </select>
-
-      </label>
-
-      <div class="grid2">
-
-        <label>
-          Horário
-          <input id="taskTime" type="time" />
-        </label>
-
-        <label>
-          Duração (min)
-          <input
-            id="taskDuration"
-            type="number"
-            min="1"
-            max="240"
-            value="10"
-          />
-        </label>
-
-      </div>
-
-      <label>
-        Tipo
-
-        <select id="taskType">
-          <option value="fixed">Horário fixo</option>
-          <option value="window">Janela de horário</option>
-          <option value="daypart">Momento do dia</option>
-          <option value="reminder">Só lembrete</option>
-        </select>
-
-      </label>
-
-      <label class="switch-row">
-        <input id="taskVoice" type="checkbox" checked />
-        Falar em voz alta
-      </label>
-
-      <label class="switch-row">
-        <input id="taskShared" type="checkbox" />
-        Tarefa compartilhada entre irmãos
-      </label>
-
-      <label class="switch-row">
-        <input id="taskNeedsHelp" type="checkbox" />
-        Permitir “Preciso de ajuda”
-      </label>
-
-      <div class="modal-actions">
-
-        <button value="cancel" class="ghost">
-          Cancelar
-        </button>
-
-        <button
-          id="saveTaskBtn"
-          value="default"
-          class="primary"
-        >
-          Salvar
-        </button>
-
-      </div>
-
-    </form>
-
-  </dialog>
+</dialog>
 
 
-  <dialog id="projectDialog">
+<!-- PROJETO ESCOLAR -->
 
-    <form method="dialog" id="projectForm" class="modal-card">
+<dialog id="projectDialog">
 
-      <div class="modal-head">
+  <form
+    method="dialog"
+    id="projectForm"
+    class="modal-card"
+  >
 
-        <h2>Novo trabalho escolar</h2>
+    <div class="modal-head">
 
-        <button value="cancel" class="icon-btn">
-          ✕
-        </button>
+      <h2>
+        Novo trabalho escolar
+      </h2>
 
-      </div>
+      <button
+        value="cancel"
+        class="icon-btn"
+      >
+        ✕
+      </button>
 
-      <label>
-        Trabalho / atividade
-        <input id="projectTitle" required maxlength="100" />
-      </label>
-
-      <label>
-        Matéria
-        <input id="projectSubject" maxlength="60" />
-      </label>
-
-      <label>
-        Data de entrega
-        <input id="projectDue" type="date" required />
-      </label>
-
-      <label>
-        Materiais necessários
-        <textarea
-          id="projectMaterials"
-          rows="3"
-          placeholder="Ex.: cartolina, cola, tinta"
-        ></textarea>
-      </label>
-
-      <label>
-        Descrição
-        <textarea id="projectNotes" rows="3"></textarea>
-      </label>
-
-      <div class="modal-actions">
-
-        <button value="cancel" class="ghost">
-          Cancelar
-        </button>
-
-        <button
-          id="saveProjectBtn"
-          value="default"
-          class="primary"
-        >
-          Salvar projeto
-        </button>
-
-      </div>
-
-    </form>
-
-  </dialog>
+    </div>
 
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=7"></script>
+    <label>
+      Trabalho / atividade
+
+      <input
+        id="projectTitle"
+        required
+        maxlength="100"
+      />
+
+    </label>
+
+
+    <label>
+      Matéria
+
+      <input
+        id="projectSubject"
+        maxlength="60"
+      />
+
+    </label>
+
+
+    <label>
+      Data de entrega
+
+      <input
+        id="projectDue"
+        type="date"
+        required
+      />
+
+    </label>
+
+
+    <label>
+      Materiais necessários
+
+      <textarea
+        id="projectMaterials"
+        rows="3"
+        placeholder="Ex.: cartolina, cola, tinta"
+      ></textarea>
+
+    </label>
+
+
+    <label>
+      Descrição
+
+      <textarea
+        id="projectNotes"
+        rows="3"
+      ></textarea>
+
+    </label>
+
+
+    <div class="modal-actions">
+
+      <button
+        value="cancel"
+        class="ghost"
+      >
+        Cancelar
+      </button>
+
+      <button
+        id="saveProjectBtn"
+        value="default"
+        class="primary"
+      >
+        Salvar projeto
+      </button>
+
+    </div>
+
+  </form>
+
+</dialog>
+
+
+<!-- SUPABASE -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- LELÊ -->
+
+<script src="app.js?v=10"></script>
 
 </body>
 </html>
