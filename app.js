@@ -2148,7 +2148,109 @@ function getTaskEmoji(
 /* =============================================
    FOTO DA TAREFA
 ============================================= */
+async function uploadTaskEvidence(task, file) {
+  if (!task || !file) {
+    throw new Error(
+      "Tarefa ou foto não encontrada."
+    );
+  }
 
+  if (!navigator.onLine) {
+    throw new Error(
+      "A foto precisa de internet para ser enviada."
+    );
+  }
+
+  const extension =
+    (
+      file.name
+        ?.split(".")
+        .pop() ||
+      "jpg"
+    )
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]/g,
+        ""
+      ) || "jpg";
+
+  const filePath =
+    `${familiaAtual}/${task.childId}/${task.id}-${Date.now()}.${extension}`;
+
+  const {
+    error: uploadError
+  } =
+    await leleDb.storage
+      .from("task-evidence")
+      .upload(
+        filePath,
+        file,
+        {
+          cacheControl: "0",
+          upsert: false,
+          contentType:
+            file.type ||
+            "image/jpeg"
+        }
+      );
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const {
+    error: updateError
+  } =
+    await leleDb
+      .from("tasks")
+      .update({
+        evidence_path:
+          filePath,
+
+        evidence_viewed:
+          false,
+
+        evidence_viewed_at:
+          null,
+
+        updated_at:
+          new Date()
+            .toISOString()
+      })
+      .eq(
+        "id",
+        task.id
+      );
+
+  if (updateError) {
+    /*
+      Se falhar ao registrar a foto
+      na tarefa, apagamos o arquivo
+      que acabou de ser enviado.
+    */
+
+    await leleDb.storage
+      .from("task-evidence")
+      .remove([
+        filePath
+      ]);
+
+    throw updateError;
+  }
+
+  task.evidencePath =
+    filePath;
+
+  task.evidenceViewed =
+    false;
+
+  task.evidenceViewedAt =
+    null;
+
+  save();
+
+  return filePath;
+}
 function openPhotoForTask(
   task
 ) {
@@ -2185,37 +2287,47 @@ function openPhotoForTask(
 }
 
 
-function handleTaskPhoto(
-  event
-) {
+function handleTaskPhoto(event) {
   const file =
-    event.target
-      .files?.[0];
+    event.target.files?.[0];
 
-  if (!file) {
-    return;
-  }
+  if (!file) return;
 
-
-  /*
-    Limite simples para
-    evitar fotos enormes
-    no armazenamento local.
-  */
-
-  if (
-    file.size >
-    8 * 1024 * 1024
-  ) {
+  if (file.size > 8 * 1024 * 1024) {
     alert(
       "Escolha uma foto com até 8 MB."
     );
 
-    event.target.value =
-      "";
-
+    event.target.value = "";
     return;
   }
+
+  /*
+    Guardamos o arquivo somente
+    enquanto a criança confirma.
+  */
+  pendingPhotoData = {
+    file,
+    previewUrl:
+      URL.createObjectURL(file)
+  };
+
+  const preview =
+    $("#photoPreview");
+
+  if (preview) {
+    preview.innerHTML = `
+      <img
+        src="${pendingPhotoData.previewUrl}"
+        alt="Evidência da tarefa"
+      />
+    `;
+
+    preview.classList.remove(
+      "hidden"
+    );
+  }
+}
 
 
   const reader =
@@ -2257,17 +2369,11 @@ function handleTaskPhoto(
 
 
 async function confirmTaskPhoto() {
-
-  if (
-    !pendingPhotoTask
-  ) {
+  if (!pendingPhotoTask) {
     return;
   }
 
-
-  if (
-    !pendingPhotoData
-  ) {
+  if (!pendingPhotoData?.file) {
     alert(
       "Tire ou escolha uma foto primeiro."
     );
@@ -2275,38 +2381,71 @@ async function confirmTaskPhoto() {
     return;
   }
 
+  const task =
+    pendingPhotoTask;
 
-  pendingPhotoTask.photo =
-    pendingPhotoData;
+  const button =
+    $("#confirmPhotoBtn");
 
+  if (button) {
+    button.disabled = true;
+    button.textContent =
+      "Enviando foto...";
+  }
 
-  /*
-    A foto fica salva
-    localmente para o teste.
+  try {
+    /*
+      1. Envia a evidência temporária.
+    */
+    await uploadTaskEvidence(
+      task,
+      pendingPhotoData.file
+    );
 
-    Depois podemos criar
-    o bucket do Supabase
-    para evidências.
-  */
+    /*
+      2. Só depois do upload
+      permitimos concluir.
+    */
+    await setTaskStatusReal(
+      task,
+      "done"
+    );
 
-  save();
+    if (
+      pendingPhotoData.previewUrl
+    ) {
+      URL.revokeObjectURL(
+        pendingPhotoData.previewUrl
+      );
+    }
 
+    $("#photoDialog")?.close();
 
-  $("#photoDialog")
-    ?.close();
+    pendingPhotoTask = null;
+    pendingPhotoData = null;
 
+    await loadTasksFromSupabase();
 
-  await setTaskStatusReal(
-    pendingPhotoTask,
-    "done"
-  );
+    save();
+    render();
 
+  } catch (error) {
+    console.error(
+      "Erro ao enviar evidência:",
+      error
+    );
 
-  pendingPhotoTask =
-    null;
+    alert(
+      "Não foi possível enviar a foto. A tarefa não será concluída. Verifique a internet e tente novamente."
+    );
 
-  pendingPhotoData =
-    null;
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent =
+        "Enviar e concluir";
+    }
+  }
 }
 
 
@@ -2314,13 +2453,12 @@ async function confirmTaskPhoto() {
    CONCLUIR TAREFA
 ============================================= */
 
-async function completeTask(
-  task
-) {
+async function completeTask(task) {
 
-  if (
-    task.done
-  ) {
+  /*
+    Desfazer conclusão.
+  */
+  if (task.done) {
     await setTaskStatusReal(
       task,
       "pending"
@@ -2329,17 +2467,15 @@ async function completeTask(
     return;
   }
 
-
-  if (
-    task.requirePhoto
-  ) {
-    openPhotoForTask(
-      task
-    );
-
+  /*
+    Foto obrigatória:
+    não existe caminho para concluir
+    antes da evidência ser enviada.
+  */
+  if (task.requirePhoto) {
+    openPhotoForTask(task);
     return;
   }
-
 
   await setTaskStatusReal(
     task,
