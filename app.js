@@ -781,10 +781,10 @@ function mapTaskFromDb(t) {
     evidenceViewed:
       !!t.evidence_viewed,
 
-    evidenceViewedAt:
-      t.evidence_viewed_at || null
-      
-    recurrenceType:
+ evidenceViewedAt:
+  t.evidence_viewed_at || null,
+
+recurrenceType:
   t.recurrence_type || "once",
 
 recurrenceDays:
