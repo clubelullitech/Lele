@@ -3796,6 +3796,7 @@ function renderTaskCard(task) {
 
       <div class="task-actions">
 
+        ${evidence}
         ${
           task.needsHelp &&
           !task.done
@@ -4042,7 +4043,7 @@ function renderFamily() {
 
               <div>
                 <div class="task-title">
-                  ${c.name}
+                   ${task.title}
                 </div>
 
                 <div class="task-meta">
