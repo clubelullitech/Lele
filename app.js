@@ -442,8 +442,8 @@ function speak(text){
   u.lang="pt-BR";u.rate=0.95;u.pitch=1.05;
   speechSynthesis.speak(u);
 }
-function render(){
-  document.body.className=`mode-${state.mode}`;
+function render() {
+  document.body.className = `mode-${state.mode}`;
 
   if (membroAtual?.role === "child") {
     $("#modeBtn").classList.add("hidden");
@@ -453,9 +453,10 @@ function render(){
       state.mode === "parent" ? "Ver como filho" : "Voltar ao painel";
   }
 
-  $("#subtitle").textContent = state.mode==="parent"
-    ? `Painel da ${state.familyName}`
-    : `Perfil de ${child().name} • ${child().age} anos`;
+  $("#subtitle").textContent =
+    state.mode === "parent"
+      ? `Painel da ${state.familyName}`
+      : `Perfil de ${child().name} • ${child().age} anos`;
 
   renderHome();
   renderRoutine();
