@@ -783,6 +783,23 @@ function mapTaskFromDb(t) {
 
     evidenceViewedAt:
       t.evidence_viewed_at || null
+      
+    recurrenceType:
+  t.recurrence_type || "once",
+
+recurrenceDays:
+  Array.isArray(t.recurrence_days)
+    ? t.recurrence_days
+    : [],
+
+recurrenceEndDate:
+  t.recurrence_end_date || null,
+
+recurrenceEnabled:
+  !!t.recurrence_enabled,
+
+lastCompletedDate:
+  t.last_completed_date || null,
   };
 }
 
@@ -896,6 +913,21 @@ async function saveTaskToSupabase(
     requirePhoto:
       !!data.requirePhoto,
 
+    recurrenceType:
+  data.recurrenceType || "once",
+
+recurrenceDays:
+  data.recurrenceDays || [],
+
+recurrenceEndDate:
+  data.recurrenceEndDate || null,
+
+recurrenceEnabled:
+  !!data.recurrenceEnabled,
+
+lastCompletedDate:
+  data.lastCompletedDate || null,
+
     photo:
       data.photo || null,
 
@@ -936,6 +968,18 @@ async function saveTaskToSupabase(
   const payload = {
     family_id:
       familiaAtual,
+
+    recurrence_type:
+  data.recurrenceType || "once",
+
+recurrence_days:
+  data.recurrenceDays || [],
+
+recurrence_end_date:
+  data.recurrenceEndDate || null,
+
+recurrence_enabled:
+  !!data.recurrenceEnabled,
 
     member_id:
       data.childId,
