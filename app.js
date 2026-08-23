@@ -8,7 +8,376 @@ const leleDb = window.supabase.createClient(
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const storeKey = "lele-demo-v2";
+// =============================================
+// LOGIN E PERFIL REAL DO LELÊ
+// =============================================
 
+let usuarioAtual = null;
+let membroAtual = null;
+let familiaAtual = null;
+
+function calcularIdade(dataNascimento) {
+  if (!dataNascimento) return 0;
+
+  const nascimento = new Date(dataNascimento + "T00:00:00");
+  const hoje = new Date();
+
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+
+  const mes = hoje.getMonth() - nascimento.getMonth();
+
+  if (
+    mes < 0 ||
+    (mes === 0 && hoje.getDate() < nascimento.getDate())
+  ) {
+    idade--;
+  }
+
+  return idade;
+}
+
+
+async function carregarFamiliaReal() {
+
+  const {
+    data: { user },
+    error: erroUsuario
+  } = await leleDb.auth.getUser();
+
+  if (erroUsuario || !user) {
+    throw new Error("Usuário não autenticado.");
+  }
+
+  usuarioAtual = user;
+
+
+  // Descobre quem entrou
+  const {
+    data: membro,
+    error: erroMembro
+  } = await leleDb
+    .from("family_members")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("active", true)
+    .limit(1)
+    .single();
+
+
+  if (erroMembro || !membro) {
+    throw new Error(
+      "Seu login existe, mas ainda não está vinculado a uma família."
+    );
+  }
+
+
+  membroAtual = membro;
+  familiaAtual = membro.family_id;
+
+
+  // Nome da família
+  const {
+    data: familia
+  } = await leleDb
+    .from("families")
+    .select("name")
+    .eq("id", familiaAtual)
+    .single();
+
+
+  state.familyName =
+    familia?.name || "Família Lelê";
+
+
+  // Busca os membros
+  const {
+    data: membros,
+    error: erroMembros
+  } = await leleDb
+    .from("family_members")
+    .select("*")
+    .eq("family_id", familiaAtual)
+    .eq("active", true)
+    .order("created_at");
+
+
+  if (erroMembros) {
+    throw erroMembros;
+  }
+
+
+  // Responsáveis podem visualizar os filhos.
+  // Filho visualiza somente o próprio perfil.
+  let filhos;
+
+  if (membro.role === "child") {
+
+    filhos = membros.filter(
+      x => x.id === membro.id
+    );
+
+  } else {
+
+    filhos = membros.filter(
+      x => x.role === "child"
+    );
+
+  }
+
+
+  state.children = filhos.map(x => {
+
+    const idade =
+      calcularIdade(x.birth_date);
+
+    return {
+
+      id: x.id,
+
+      userId: x.user_id,
+
+      name: x.display_name,
+
+      age: idade,
+
+      birthDate: x.birth_date,
+
+      school: {
+        start: "07:00",
+        end: "12:30",
+        days: [1,2,3,4,5]
+      },
+
+      waterGoal:
+        x.water_goal_ml || 1500,
+
+      water: 0,
+
+      endDay:
+        x.day_end_time ||
+        (idade >= 13 ? "22:00" : "20:30")
+
+    };
+
+  });
+
+
+  state.activeChild = 0;
+
+
+  // Define automaticamente a interface
+  if (membro.role === "child") {
+
+    state.mode = "child";
+
+    $("#modeBtn")?.classList.add("hidden");
+
+  } else {
+
+    state.mode = "parent";
+
+    $("#modeBtn")?.classList.remove("hidden");
+
+  }
+
+
+  // Remove os dados fictícios do protótipo
+  state.tasks =
+    state.tasks.filter(
+      t => state.children.some(
+        c => c.id === t.childId
+      )
+    );
+
+  state.projects =
+    state.projects.filter(
+      p => state.children.some(
+        c => c.id === p.childId
+      )
+    );
+
+  state.messages =
+    state.messages.filter(
+      m => state.children.some(
+        c => c.id === m.childId
+      )
+    );
+
+  state.protectedBlocks =
+    state.protectedBlocks.filter(
+      p => state.children.some(
+        c => c.id === p.childId
+      )
+    );
+
+
+  save();
+
+}
+
+
+async function fazerLogin(event) {
+
+  event.preventDefault();
+
+  const email =
+    $("#loginEmail").value.trim();
+
+  const senha =
+    $("#loginPassword").value;
+
+  const mensagem =
+    $("#loginMessage");
+
+
+  mensagem.textContent =
+    "Entrando no Lelê...";
+
+
+  const {
+    error
+  } = await leleDb.auth
+    .signInWithPassword({
+
+      email: email,
+
+      password: senha
+
+    });
+
+
+  if (error) {
+
+    mensagem.textContent =
+      "E-mail ou senha incorretos.";
+
+    return;
+
+  }
+
+
+  try {
+
+    await carregarFamiliaReal();
+
+
+    $("#authScreen")
+      .classList.add("hidden");
+
+    $("#app")
+      .classList.remove("hidden");
+
+
+    render();
+
+
+  } catch (erro) {
+
+    console.error(erro);
+
+
+    mensagem.textContent =
+      erro.message ||
+      "Não foi possível carregar sua família.";
+
+
+    await leleDb.auth.signOut();
+
+  }
+
+}
+
+
+async function sairLele() {
+
+  await leleDb.auth.signOut();
+
+
+  usuarioAtual = null;
+
+  membroAtual = null;
+
+  familiaAtual = null;
+
+
+  $("#app")
+    .classList.add("hidden");
+
+
+  $("#authScreen")
+    .classList.remove("hidden");
+
+
+  $("#loginPassword").value = "";
+
+  $("#loginMessage").textContent = "";
+
+}
+
+
+async function iniciarLoginLele() {
+
+  $("#loginForm")
+    ?.addEventListener(
+      "submit",
+      fazerLogin
+    );
+
+
+  $("#logoutBtn")
+    ?.addEventListener(
+      "click",
+      sairLele
+    );
+
+
+  const {
+    data
+  } = await leleDb.auth
+    .getSession();
+
+
+  // Se já estava logado,
+  // não precisa digitar senha novamente.
+  if (data?.session) {
+
+    try {
+
+      await carregarFamiliaReal();
+
+
+      $("#authScreen")
+        .classList.add("hidden");
+
+
+      $("#app")
+        .classList.remove("hidden");
+
+
+      render();
+
+
+      return;
+
+    } catch (erro) {
+
+      console.error(erro);
+
+      await leleDb.auth.signOut();
+
+    }
+
+  }
+
+
+  $("#app")
+    .classList.add("hidden");
+
+
+  $("#authScreen")
+    .classList.remove("hidden");
+
+}
 const taskLibrary = [
   {title:"Escovar os dentes",cat:"Higiene",ages:[3,17],icon:"🪥"},
   {title:"Arrumar a cama",cat:"Casa",ages:[4,17],icon:"🛏️"},
@@ -286,4 +655,4 @@ window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPro
 $("#installBtn").onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("#installBtn").classList.add("hidden")};
 
 if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
-render();
+iniciarLoginLele();
