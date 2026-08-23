@@ -242,30 +242,19 @@ async function saveTaskToSupabase(taskId, data) {
   render();
 }
 
-async function setTaskStatusReal(
-  task,
-  newStatus
-) {
+async function setTaskStatusReal(task, newStatus) {
 
   const { error } = await leleDb
-    .rpc(
-      "set_task_status",
-      {
-        p_task_id: task.id,
-        p_status: newStatus
-      }
-    );
+    .from("tasks")
+    .update({
+      status: newStatus,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", task.id);
 
   if (error) {
-    console.error(
-      "Erro ao atualizar tarefa:",
-      error
-    );
-
-    alert(
-      "Não foi possível atualizar a tarefa."
-    );
-
+    console.error("Erro ao atualizar tarefa:", error);
+    alert("Não foi possível atualizar a tarefa.");
     return;
   }
 
@@ -273,6 +262,7 @@ async function setTaskStatusReal(
 
   save();
   render();
+}
 }
 
 // =============================================
