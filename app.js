@@ -4310,24 +4310,7 @@ function bindRoutineCalendarEvents() {
       }
     );
 }
-
-    </div>
-
-    <div>
-      ${
-        tasks.length
-          ? tasks.map(renderTaskCard).join("")
-          : `
-            <div class="callout">
-              Nenhuma tarefa cadastrada.
-            </div>
-          `
-      }
-    </div>
-  `;
-}
-
-
+ 
 /* =============================================
    ESCOLA
 ============================================= */
