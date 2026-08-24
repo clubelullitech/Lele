@@ -108,11 +108,59 @@ function daysUntil(s) {
 ============================================= */
 
 let leleVoices = [];
+const leleVoicePreferenceKey = "lele-natural-voice-v1";
 
 function carregarVozesLele() {
   if (!("speechSynthesis" in window)) return;
 
   leleVoices = speechSynthesis.getVoices();
+
+  if ($("#leleVoiceSelect")) {
+    renderSettings();
+    bindDynamicEvents();
+  }
+}
+
+function vozesPortuguesLele() {
+  return leleVoices.filter(voice =>
+    String(voice.lang || "").toLowerCase().startsWith("pt")
+  );
+}
+
+function pontuarVozNatural(voice) {
+  const name = String(voice.name || "").toLowerCase();
+  const lang = String(voice.lang || "").toLowerCase();
+  let score = lang.startsWith("pt-br") ? 100 : 40;
+
+  if (/natural|neural|online|premium/.test(name)) score += 70;
+  if (/google|microsoft|apple/.test(name)) score += 25;
+  if (/francisca|thalita|luciana|maria/.test(name)) score += 20;
+  if (/espeak|compact|desktop|robot/.test(name)) score -= 60;
+  if (voice.localService) score += 5;
+
+  return score;
+}
+
+function vozPreferidaLele() {
+  const preference = localStorage.getItem(leleVoicePreferenceKey);
+  const voices = vozesPortuguesLele();
+
+  if (preference) {
+    const selected = voices.find(voice => voice.name === preference);
+    if (selected) return selected;
+  }
+
+  return [...voices].sort((a, b) =>
+    pontuarVozNatural(b) - pontuarVozNatural(a)
+  )[0] || null;
+}
+
+function limparTextoParaVoz(text) {
+  return String(text || "")
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, " ")
+    .replace(/\s*[-–—]\s*/g, ", ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 carregarVozesLele();
@@ -129,60 +177,19 @@ function speak(text) {
 
   speechSynthesis.cancel();
 
-  const fala = new SpeechSynthesisUtterance(text);
+  const fala = new SpeechSynthesisUtterance(limparTextoParaVoz(text));
 
   fala.lang = "pt-BR";
 
-  const vozesBR = leleVoices.filter(voz =>
-    String(voz.lang || "")
-      .toLowerCase()
-      .startsWith("pt-br")
-  );
-
-  /*
-    Prioridade para vozes que normalmente
-    soam mais naturais no Windows/Chrome.
-  */
-  const nomesPreferidos = [
-    "Francisca",
-    "Thalita",
-    "Maria",
-    "Luciana",
-    "Female",
-    "Google português do Brasil",
-    "Microsoft Francisca"
-  ];
-
-  let vozEscolhida = null;
-
-  for (const nome of nomesPreferidos) {
-    vozEscolhida = vozesBR.find(voz =>
-      voz.name
-        .toLowerCase()
-        .includes(nome.toLowerCase())
-    );
-
-    if (vozEscolhida) break;
-  }
-
-  /*
-    Se não encontrou uma das preferidas,
-    usa outra voz brasileira disponível.
-  */
-  if (!vozEscolhida && vozesBR.length) {
-    vozEscolhida = vozesBR[0];
-  }
+  const vozEscolhida = vozPreferidaLele();
 
   if (vozEscolhida) {
     fala.voice = vozEscolhida;
   }
 
-  /*
-    Um pouco mais leve e jovem,
-    sem acelerar demais.
-  */
-  fala.rate = 0.96;
-  fala.pitch = 1.18;
+  const idade = child()?.age || 10;
+  fala.rate = idade >= 13 ? 0.98 : 0.94;
+  fala.pitch = idade >= 13 ? 1 : 1.04;
   fala.volume = 1;
 
   speechSynthesis.speak(fala);
@@ -5588,6 +5595,36 @@ function renderSettings() {
         style="margin-top:10px;"
       >
 
+        <b>🔊 Voz natural</b>
+
+        <p>
+          O Lelê prioriza a voz mais natural disponível neste aparelho. Você também pode escolher e ouvir um teste.
+        </p>
+
+        <div class="voice-settings-row">
+          <select id="leleVoiceSelect" aria-label="Escolher voz do Lelê">
+            <option value="">Automática — recomendada</option>
+            ${vozesPortuguesLele().map(voice => `
+              <option value="${escapeHtml(voice.name)}" ${localStorage.getItem(leleVoicePreferenceKey) === voice.name ? "selected" : ""}>
+                ${escapeHtml(voice.name)} (${escapeHtml(voice.lang)})
+              </option>
+            `).join("")}
+          </select>
+
+          <button id="testLeleVoiceBtn" class="secondary" type="button">
+            Ouvir teste
+          </button>
+        </div>
+
+        <small class="muted">As opções mudam conforme o celular ou computador.</small>
+
+      </div>
+
+      <div
+        class="callout"
+        style="margin-top:10px;"
+      >
+
         <b>🔔 Notificações</b>
 
         <p>
@@ -5942,6 +5979,17 @@ function bindDynamicEvents() {
   });
 
   bindChatEvents();
+
+  $("#leleVoiceSelect")?.addEventListener("change", event => {
+    const value = event.currentTarget.value;
+    if (value) localStorage.setItem(leleVoicePreferenceKey, value);
+    else localStorage.removeItem(leleVoicePreferenceKey);
+    speak("Oi! Eu sou o Lelê. Vamos fazer uma coisa de cada vez, no seu ritmo.");
+  });
+
+  $("#testLeleVoiceBtn")?.addEventListener("click", () =>
+    speak("Oi! Eu sou o Lelê. Estou aqui para ajudar, sem pressa e sem complicação.")
+  );
 
   $("#clearTestDataBtn")?.addEventListener("click", clearTestData);
 
