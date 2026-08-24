@@ -1,11 +1,11 @@
-const CACHE_NAME = "lele-v20";
+const CACHE_NAME = "lele-v21";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./styles.css?v=20",
-  "./app.js?v=20",
-  "./notifications.js?v=20",
+  "./styles.css?v=21",
+  "./app.js?v=21",
+  "./notifications.js?v=21",
   "./assets/guides/escovar-dentes-1.webp",
   "./assets/guides/escovar-dentes-2.webp",
   "./assets/guides/escovar-dentes-3.webp",
@@ -38,6 +38,22 @@ const APP_FILES = [
   "./assets/guides/garrafa-2.webp",
   "./assets/guides/garrafa-3.webp",
   "./assets/guides/garrafa-4.webp",
+  "./assets/guides/leitura-1.webp",
+  "./assets/guides/leitura-2.webp",
+  "./assets/guides/leitura-3.webp",
+  "./assets/guides/leitura-4.webp",
+  "./assets/guides/brincar-1.webp",
+  "./assets/guides/brincar-2.webp",
+  "./assets/guides/brincar-3.webp",
+  "./assets/guides/brincar-4.webp",
+  "./assets/guides/tv-1.webp",
+  "./assets/guides/tv-2.webp",
+  "./assets/guides/tv-3.webp",
+  "./assets/guides/tv-4.webp",
+  "./assets/guides/familia-1.webp",
+  "./assets/guides/familia-2.webp",
+  "./assets/guides/familia-3.webp",
+  "./assets/guides/familia-4.webp",
   "./manifest.webmanifest"
 ];
 

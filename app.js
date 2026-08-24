@@ -4436,6 +4436,46 @@ const taskGuides = [
     ]
   },
   {
+    words: ["ler um livro", "leitura"],
+    images: ["assets/guides/leitura-1.webp", "assets/guides/leitura-2.webp", "assets/guides/leitura-3.webp", "assets/guides/leitura-4.webp"],
+    steps: [
+      "Escolha um livro que combine com sua idade e curiosidade.",
+      "Sente-se em um lugar confortável e bem iluminado.",
+      "Leia no seu ritmo e observe as imagens e ideias da história.",
+      "Quando terminar, guarde o livro com cuidado."
+    ]
+  },
+  {
+    words: ["brincar livremente", "brincar"],
+    images: ["assets/guides/brincar-1.webp", "assets/guides/brincar-2.webp", "assets/guides/brincar-3.webp", "assets/guides/brincar-4.webp"],
+    steps: [
+      "Escolha uma brincadeira segura e prepare o espaço.",
+      "Use a imaginação e brinque do seu jeito.",
+      "Se outra criança participar, compartilhe e espere sua vez.",
+      "No final, guarde os brinquedos usados."
+    ]
+  },
+  {
+    words: ["assistir tv", "televisão"],
+    images: ["assets/guides/tv-1.webp", "assets/guides/tv-2.webp", "assets/guides/tv-3.webp", "assets/guides/tv-4.webp"],
+    steps: [
+      "Combine com um responsável o programa e o tempo para assistir.",
+      "Sente-se a uma distância confortável e mantenha o volume moderado.",
+      "Quando o tempo estiver acabando, prepare-se para encerrar.",
+      "Desligue a TV e escolha a próxima atividade."
+    ]
+  },
+  {
+    words: ["atividade em família", "ficar com a família", "tempo em família"],
+    images: ["assets/guides/familia-1.webp", "assets/guides/familia-2.webp", "assets/guides/familia-3.webp", "assets/guides/familia-4.webp"],
+    steps: [
+      "Escolham juntos uma atividade que todos possam aproveitar.",
+      "Participem da brincadeira ou atividade respeitando a vez de cada um.",
+      "Conversem e escutem com atenção o que cada pessoa quer contar.",
+      "Guardem o que usaram e encerrem esse momento com carinho."
+    ]
+  },
+  {
     words: ["lição", "estudar", "prova", "matéria"],
     steps: [
       "Separe apenas o material que você vai usar.",
