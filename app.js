@@ -3910,6 +3910,18 @@ function taskIsForDate(task, date) {
       date.getDate()
     );
 
+const taskStartDate =
+  task.createdAt
+    ? task.createdAt.slice(0, 10)
+    : null;
+
+if (
+  taskStartDate &&
+  dateKey < taskStartDate
+) {
+  return false;
+}
+  
   if (
     task.recurrenceEndDate &&
     dateKey > task.recurrenceEndDate
