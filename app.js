@@ -4504,9 +4504,7 @@ function renderFamily() {
         ).join("")
       }
 
-    </section>
-  `;
-    </section>
+       </section>
   `;
 
   $("#editFamilyNameBtn")
