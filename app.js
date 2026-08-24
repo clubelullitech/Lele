@@ -1078,6 +1078,9 @@ recurrenceEndDate:
 recurrenceEnabled:
   !!data.recurrenceEnabled,
 
+scheduledDate:
+  data.scheduledDate || null,
+
 lastCompletedDate:
   data.lastCompletedDate || null,
 
