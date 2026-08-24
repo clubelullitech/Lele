@@ -5590,35 +5590,37 @@ function renderSettings() {
 
       </div>
 
-      <div
-        class="callout"
-        style="margin-top:10px;"
-      >
+      ${membroAtual?.role !== "child" ? `
+        <div
+          class="callout"
+          style="margin-top:10px;"
+        >
 
-        <b>🔊 Voz natural</b>
+          <b>🔊 Voz natural</b>
 
-        <p>
-          O Lelê prioriza a voz mais natural disponível neste aparelho. Você também pode escolher e ouvir um teste.
-        </p>
+          <p>
+            Somente os responsáveis podem escolher a voz usada pelo Lelê neste aparelho.
+          </p>
 
-        <div class="voice-settings-row">
-          <select id="leleVoiceSelect" aria-label="Escolher voz do Lelê">
-            <option value="">Automática — recomendada</option>
-            ${vozesPortuguesLele().map(voice => `
-              <option value="${escapeHtml(voice.name)}" ${localStorage.getItem(leleVoicePreferenceKey) === voice.name ? "selected" : ""}>
-                ${escapeHtml(voice.name)} (${escapeHtml(voice.lang)})
-              </option>
-            `).join("")}
-          </select>
+          <div class="voice-settings-row">
+            <select id="leleVoiceSelect" aria-label="Escolher voz do Lelê">
+              <option value="">Automática — recomendada</option>
+              ${vozesPortuguesLele().map(voice => `
+                <option value="${escapeHtml(voice.name)}" ${localStorage.getItem(leleVoicePreferenceKey) === voice.name ? "selected" : ""}>
+                  ${escapeHtml(voice.name)} (${escapeHtml(voice.lang)})
+                </option>
+              `).join("")}
+            </select>
 
-          <button id="testLeleVoiceBtn" class="secondary" type="button">
-            Ouvir teste
-          </button>
+            <button id="testLeleVoiceBtn" class="secondary" type="button">
+              Ouvir teste
+            </button>
+          </div>
+
+          <small class="muted">As opções mudam conforme o celular ou computador.</small>
+
         </div>
-
-        <small class="muted">As opções mudam conforme o celular ou computador.</small>
-
-      </div>
+      ` : ""}
 
       <div
         class="callout"
