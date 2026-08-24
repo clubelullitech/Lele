@@ -2691,7 +2691,7 @@ async function uploadChatAudio(blob) {
   return path;
 }
 
-async function sendChatMessage({ text = "", recipientId = "all", audioBlob = null, kind = "text" }) {
+async function sendChatMessage({ text = "", recipientId = "all", audioBlob = null, kind = "text", navigate = true }) {
   if (!familiaAtual || !membroAtual) return;
   if (!text.trim() && !audioBlob) throw new Error("Escreva ou grave uma mensagem.");
 
@@ -2704,7 +2704,7 @@ async function sendChatMessage({ text = "", recipientId = "all", audioBlob = nul
     family_id: familiaAtual,
     child_id: childId,
     sender_id: membroAtual.id,
-    message_type: audioBlob ? "audio" : kind,
+    message_type: audioBlob ? "audio" : (kind === "system" ? "system" : "text"),
     body: encodeChatBody({ text: text.trim(), recipientId, kind: audioBlob ? "audio" : kind }),
     audio_path: audioPath
   });
@@ -2716,7 +2716,7 @@ async function sendChatMessage({ text = "", recipientId = "all", audioBlob = nul
 
   await loadMessagesFromSupabase();
   render();
-  showView("messagesView");
+  if (navigate) showView("messagesView");
 }
 
 async function sendHelpRequest(task) {
@@ -5900,6 +5900,7 @@ function renderMessages() {
                     </audio>
                   ` : ""}
                   ${message.kind === "system" ? `<span class="system-chip">🙋 Pedido de ajuda</span>` : ""}
+                  ${message.kind === "reflection" ? `<span class="system-chip reflection-chip">🌤️ Resumo do dia</span>` : ""}
                 </article>
               `;
             }).join("")
@@ -6274,6 +6275,7 @@ function renderDevelopment() {
   const reflection = localStorage.getItem(reflectionKey(c)) || "";
   const ageIsSupported = c.age >= 5 && c.age <= 16;
   const isTeen = c.age >= 13;
+  const canSendReflection = state.mode === "child";
 
   $("#developmentView").innerHTML = `
     <div class="hero development-hero">
@@ -6374,9 +6376,135 @@ function renderDevelopment() {
         `).join("")}
       </div>
       <p id="reflectionMessage" class="reflection-message">
-        ${reflection ? "Obrigado por contar. Amanhã tentamos de novo, do seu jeito. 💛" : ""}
+        ${reflection ? "Sua escolha está pronta. Você pode escrever algo ou enviar assim mesmo." : ""}
       </p>
+
+      ${canSendReflection ? `
+        <label class="daily-note-label" for="dailyReflectionNote">
+          Quer contar mais alguma coisa? <small>(opcional)</small>
+        </label>
+        <textarea
+          id="dailyReflectionNote"
+          class="daily-reflection-note"
+          maxlength="500"
+          rows="4"
+          placeholder="Ex.: hoje consegui me organizar melhor, mas fiquei preocupado com…"
+        ></textarea>
+        <button id="sendDailyReflectionBtn" class="primary" type="button">
+          Enviar meu resumo do dia
+        </button>
+      ` : `
+        <div class="callout">As respostas de ${escapeHtml(c.name)} aparecerão na guia Indicadores.</div>
+      `}
     </section>
+  `;
+}
+
+function indicatorSummaryForChild(targetChild) {
+  const tasks = state.tasks.filter(task =>
+    task.childId === targetChild.id && task.title !== "Horário de aula"
+  );
+  const todayTasks = tasks.filter(taskIsForToday);
+  const doneToday = todayTasks.filter(task =>
+    task.done || task.lastCompletedDate === todayKey()
+  );
+  const pendingToday = Math.max(0, todayTasks.length - doneToday.length);
+  const rate = todayTasks.length
+    ? Math.round(doneToday.length / todayTasks.length * 100)
+    : 0;
+  const projects = state.projects.filter(project => project.childId === targetChild.id);
+  const openProjects = projects.filter(project => !project.done).length;
+  const skillCounts = new Map();
+  tasks.filter(task => task.done || task.lastCompletedDate).forEach(task => {
+    const skill = skillForCategory(task.cat);
+    skillCounts.set(skill, (skillCounts.get(skill) || 0) + 1);
+  });
+  const strongestSkills = [...skillCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([skill]) => skill);
+  const latestReflection = [...(state.messages || [])]
+    .filter(message => message.senderId === targetChild.id && message.kind === "reflection")
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0] || null;
+
+  let status = "Ainda não há tarefas para resumir hoje.";
+  if (todayTasks.length && rate === 100) status = "O combinado de hoje foi concluído. Ótimo momento para reconhecer o esforço.";
+  else if (rate >= 60) status = "O dia está avançando bem. Vale escolher uma pendência por vez.";
+  else if (doneToday.length) status = "Já houve avanço hoje, mas ainda existem etapas pendentes.";
+  else if (todayTasks.length) status = "As tarefas ainda não foram iniciadas. Um primeiro passo pequeno pode ajudar.";
+
+  return {
+    totalToday: todayTasks.length,
+    doneToday: doneToday.length,
+    pendingToday,
+    rate,
+    openProjects,
+    strongestSkills,
+    latestReflection,
+    status
+  };
+}
+
+function renderIndicators() {
+  const view = $("#indicatorsView");
+  if (!view) return;
+
+  const children = membroAtual?.role === "child"
+    ? [child()].filter(Boolean)
+    : state.children;
+
+  view.innerHTML = `
+    <div class="hero indicators-hero">
+      <span class="age-pill">📊 Acompanhamento</span>
+      <h1>${membroAtual?.role === "child" ? "Minha evolução" : "Indicadores da família"}</h1>
+      <p class="muted">
+        ${membroAtual?.role === "child"
+          ? "Veja seus avanços sem comparação com outras pessoas."
+          : "Um resumo separado por filho, baseado nas atividades registradas no Lelê."}
+      </p>
+    </div>
+
+    <div class="indicator-children-grid">
+      ${children.map(targetChild => {
+        const info = indicatorSummaryForChild(targetChild);
+        return `
+          <section class="section child-indicator-card">
+            <div class="indicator-child-head">
+              <div>
+                <span class="indicator-avatar">${targetChild.age >= 13 ? "🧑" : "🧒"}</span>
+                <div><h2>${escapeHtml(targetChild.name)}</h2><small>${targetChild.age} anos</small></div>
+              </div>
+              <strong>${info.rate}% hoje</strong>
+            </div>
+
+            <div class="progress indicator-progress"><div style="width:${info.rate}%"></div></div>
+
+            <div class="indicator-stats">
+              <div><b>${info.doneToday}</b><span>concluídas</span></div>
+              <div><b>${info.pendingToday}</b><span>pendentes</span></div>
+              <div><b>${info.openProjects}</b><span>trabalhos</span></div>
+            </div>
+
+            <div class="indicator-summary"><b>Resumo</b><p>${info.status}</p></div>
+
+            <div class="indicator-skills">
+              <b>Habilidades em prática</b>
+              <div>${info.strongestSkills.length
+                ? info.strongestSkills.map(skill => `<span>🌿 ${escapeHtml(skill)}</span>`).join("")
+                : "<small>As habilidades aparecerão conforme as atividades forem concluídas.</small>"}
+              </div>
+            </div>
+
+            <div class="latest-reflection">
+              <b>Como foi o dia</b>
+              ${info.latestReflection
+                ? `<p>${escapeHtml(info.latestReflection.text)}</p><small>${new Date(info.latestReflection.createdAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</small>`
+                : `<p class="muted">Ainda não foi enviado um resumo hoje.</p>`}
+            </div>
+          </section>
+        `;
+      }).join("") || `<div class="callout">Nenhum perfil infantil foi encontrado.</div>`}
+    </div>
   `;
 }
 
@@ -6425,6 +6553,7 @@ function render() {
   renderRoutine();
   renderSchool();
   renderDevelopment();
+  renderIndicators();
   renderFamily();
   renderMessages();
   renderSettings();
@@ -6573,8 +6702,44 @@ function bindDynamicEvents() {
       $$(".reflection-btn").forEach(item => item.classList.remove("selected"));
       button.classList.add("selected");
       $("#reflectionMessage").textContent =
-        "Obrigado por contar. Amanhã tentamos de novo, do seu jeito. 💛";
+        "Sua escolha está pronta. Você pode escrever algo ou enviar assim mesmo.";
     });
+  });
+
+  $("#sendDailyReflectionBtn")?.addEventListener("click", async () => {
+    const c = child();
+    const mood = c ? localStorage.getItem(reflectionKey(c)) : "";
+    if (!c || !mood) {
+      alert("Escolha primeiro como foi o seu dia.");
+      return;
+    }
+
+    const note = $("#dailyReflectionNote")?.value.trim() || "";
+    const text = `Como foi meu dia: ${mood}.${note ? ` ${note}` : ""}`;
+    const parents = state.familyMembers.filter(member => member.role !== "child");
+    const recipientId = parents.length === 1 ? parents[0].id : "all";
+    const button = $("#sendDailyReflectionBtn");
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Enviando…";
+    }
+
+    try {
+      await sendChatMessage({ text, recipientId, kind: "reflection", navigate: false });
+      localStorage.setItem(`lele-reflection-sent-${c.id}`, todayKey());
+      render();
+      showView("developmentView");
+      const message = $("#reflectionMessage");
+      if (message) message.textContent = "Resumo enviado aos responsáveis 💛";
+    } catch (error) {
+      console.error("Erro ao enviar resumo do dia:", error);
+      alert("Não foi possível enviar o resumo. Confira a internet e tente novamente.");
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Enviar meu resumo do dia";
+      }
+    }
   });
 
   $("#enableNotificationsBtn")
