@@ -1844,6 +1844,7 @@ async function loadHydrationFromSupabase() {
   }
 
   const totalPorMembro = {};
+  const ultimoRegistroPorMembro = {};
 
   for (
     const item of
@@ -1860,6 +1861,13 @@ async function loadHydrationFromSupabase() {
       Number(
         item.amount_ml || 0
       );
+
+    if (
+      !ultimoRegistroPorMembro[item.member_id] ||
+      new Date(item.logged_at) > new Date(ultimoRegistroPorMembro[item.member_id])
+    ) {
+      ultimoRegistroPorMembro[item.member_id] = item.logged_at;
+    }
   }
 
   state.children.forEach(
@@ -1868,6 +1876,11 @@ async function loadHydrationFromSupabase() {
         totalPorMembro[
           c.id
         ] || 0;
+
+      c.lastWaterAt =
+        ultimoRegistroPorMembro[c.id] ||
+        c.lastWaterAt ||
+        null;
     }
   );
 
@@ -1876,7 +1889,7 @@ async function loadHydrationFromSupabase() {
 
 
 async function addHydrationReal(
-  amount
+  amount = 1
 ) {
   const c = child();
 
@@ -1894,6 +1907,9 @@ async function addHydrationReal(
       c.water || 0
     ) +
     Number(amount);
+
+  c.lastWaterAt =
+    new Date().toISOString();
 
   save();
   render();
@@ -2217,13 +2233,9 @@ async function carregarFamiliaReal() {
 
   } else {
 
-    if (
-      state.mode !==
-      "child"
-    ) {
-      state.mode =
-        "parent";
-    }
+    /* Responsáveis sempre entram na visão de responsável. */
+    state.mode =
+      "parent";
 
     $("#modeBtn")
       ?.classList
@@ -3842,6 +3854,10 @@ function renderHome() {
       : `${c.name}, você concluiu o que estava planejado. Muito bem!`;
 
   const inSchool = childIsInSchoolNow(c);
+  const isParentDashboard = membroAtual?.role !== "child" && state.mode === "parent";
+  const profileName = isParentDashboard
+    ? (membroAtual?.display_name || "Responsável")
+    : c.name;
 
   $("#homeView").innerHTML = `
     <div class="hero">
@@ -3851,11 +3867,13 @@ function renderHome() {
       </span>
 
       <h1>
-        Olá, ${c.name} 👋
+        Olá, ${escapeHtml(profileName)} 👋
       </h1>
 
       <p class="muted">
-        Vamos fazer juntos, um passo de cada vez.
+        ${isParentDashboard
+          ? `Você está acompanhando a rotina de ${escapeHtml(c.name)}.`
+          : "Vamos fazer juntos, um passo de cada vez."}
       </p>
 
 
@@ -3910,7 +3928,7 @@ function renderHome() {
     <section class="section">
 
       <div class="section-head">
-        <h2>Hoje</h2>
+        <h2>${isParentDashboard ? `Hoje de ${escapeHtml(c.name)}` : "Hoje"}</h2>
 
         ${
           membroAtual?.role !== "child"
@@ -3954,17 +3972,23 @@ function renderHome() {
           </div>
         </div>
 
-        <button
-          id="addWaterBtn"
-          class="primary"
-          type="button"
-        >
-          Tomei água 💧
-        </button>
+        ${isParentDashboard ? "" : `
+          <button
+            id="addWaterBtn"
+            class="primary"
+            type="button"
+          >
+            Tomei água 💧
+          </button>
+        `}
 
       </div>
 
-      <div class="water-reminder-status">🔔 Lembrete horário ativo</div>
+      <div class="water-reminder-status">
+        ${c.lastWaterAt
+          ? `✅ Água registrada às ${new Date(c.lastWaterAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
+          : "🔔 Lembrete horário ativo"}
+      </div>
 
     </section>
 
@@ -6067,7 +6091,9 @@ function renderSettings() {
               </b>
 
               <p>
-                ${c.name}, ${c.age} anos.
+                ${membroAtual?.role === "child"
+                  ? `${escapeHtml(c.name)}, ${c.age} anos • perfil do filho.`
+                  : `${escapeHtml(membroAtual?.display_name || "Responsável")} • perfil de responsável.<br><small>Acompanhando ${escapeHtml(c.name)}, ${c.age} anos.</small>`}
               </p>
 
             </div>
@@ -6187,6 +6213,57 @@ function reflectionKey(c) {
   return `lele-reflection-${c?.id || "child"}`;
 }
 
+const teenGrowthTracks = [
+  {
+    icon: "🧭",
+    title: "Decisões e prioridades",
+    text: "Separar o que é urgente, importante e pode esperar — sem tentar resolver tudo de uma vez.",
+    action: "Planejar as prioridades da semana"
+  },
+  {
+    icon: "💬",
+    title: "Emoções e comunicação",
+    text: "Perceber o que sente, colocar limites com respeito e procurar ajuda quando algo pesa demais.",
+    action: "Conversar sobre algo que preciso"
+  },
+  {
+    icon: "🤝",
+    title: "Relações saudáveis",
+    text: "Reconhecer respeito, consentimento, pressão dos amigos e atitudes que não devem ser normalizadas.",
+    action: "Contar como estou me sentindo"
+  },
+  {
+    icon: "💰",
+    title: "Dinheiro na vida real",
+    text: "Planejar gastos, comparar escolhas, guardar uma parte e desconfiar de ofertas ou golpes.",
+    action: "Planejar um pequeno orçamento"
+  },
+  {
+    icon: "🍳",
+    title: "Vida prática",
+    text: "Cuidar de roupas, preparar algo simples, organizar compromissos e assumir responsabilidades em casa.",
+    action: "Preparar uma refeição simples com segurança"
+  },
+  {
+    icon: "📱",
+    title: "Vida digital",
+    text: "Proteger senhas e privacidade, checar informações e perceber quando a tela está roubando sono ou foco.",
+    action: "Fazer uma pausa consciente das telas"
+  },
+  {
+    icon: "🌿",
+    title: "Corpo e bem-estar",
+    text: "Construir uma rotina possível de sono, movimento, alimentação, pausas e cuidado com a saúde.",
+    action: "Movimentar o corpo por 15 minutos"
+  },
+  {
+    icon: "🚀",
+    title: "Futuro sem pressão",
+    text: "Explorar interesses, habilidades, estudos e profissões como experiências — não como uma decisão definitiva.",
+    action: "Criar algo sem copiar"
+  }
+];
+
 function renderDevelopment() {
   const c = child();
   if (!c || !$("#developmentView")) return;
@@ -6219,6 +6296,29 @@ function renderDevelopment() {
           : `<div class="callout age-warning">O perfil está com ${c.age} anos. Esta experiência foi planejada dos 5 aos 16 anos.</div>`
       }
     </div>
+
+    ${isTeen ? `
+      <section class="section teen-growth-section">
+        <div class="section-head">
+          <div>
+            <h2>O que vale aprender aos ${c.age}</h2>
+            <div class="muted">Trilhas práticas para ganhar autonomia sem precisar saber tudo agora.</div>
+          </div>
+        </div>
+        <div class="teen-growth-grid">
+          ${teenGrowthTracks.map(track => `
+            <article class="teen-growth-card">
+              <span class="teen-growth-icon">${track.icon}</span>
+              <h3>${track.title}</h3>
+              <p>${track.text}</p>
+              <button class="ghost teen-growth-action" data-task-title="${escapeHtml(track.action)}" type="button">
+                + Praticar no meu ritmo
+              </button>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
 
     <section class="section">
       <div class="section-head">
@@ -6308,7 +6408,9 @@ function render() {
   if ($("#subtitle")) {
     $("#subtitle").textContent =
       c
-        ? `${state.familyName} • ${c.name}`
+        ? membroAtual?.role === "child"
+          ? `${state.familyName} • ${c.name}`
+          : `${state.familyName} • Responsável • acompanhando ${c.name}`
         : state.familyName;
   }
 
@@ -6434,6 +6536,34 @@ function bindDynamicEvents() {
   $("#goToTasksBtn")?.addEventListener("click", () =>
     showView("homeView")
   );
+
+  $$(".teen-growth-action").forEach(button => {
+    button.addEventListener("click", async () => {
+      const title = button.dataset.taskTitle;
+      const item = taskLibrary.find(task => task.title === title);
+      if (!item) return;
+
+      const alreadyExists = state.tasks.some(task =>
+        task.childId === child()?.id && task.title === title && !task.done
+      );
+      if (alreadyExists) {
+        button.textContent = "✓ Já está na rotina";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Adicionando…";
+      try {
+        await addSuggestedTask(item);
+        button.textContent = "✓ Adicionado à rotina";
+      } catch (error) {
+        console.error("Erro ao adicionar prática:", error);
+        button.disabled = false;
+        button.textContent = "+ Praticar no meu ritmo";
+        alert("Não foi possível adicionar agora. Confira a internet e tente novamente.");
+      }
+    });
+  });
 
   $$(".reflection-btn").forEach(button => {
     button.addEventListener("click", () => {
@@ -6609,7 +6739,7 @@ function bindDynamicEvents() {
       "click",
       async () => {
         await addHydrationReal(
-          250
+          1
         );
       }
     );

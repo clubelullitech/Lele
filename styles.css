@@ -296,6 +296,55 @@ button{
   background:linear-gradient(135deg,#fff,#edf6f0);
 }
 
+.teen-growth-section{
+  background:linear-gradient(145deg,#fff,#f4f1ff);
+}
+
+.teen-growth-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.teen-growth-card{
+  position:relative;
+  padding:16px;
+  overflow:hidden;
+  border:1px solid rgba(117,103,232,.16);
+  border-radius:19px;
+  background:rgba(255,255,255,.86);
+  box-shadow:0 8px 22px rgba(55,44,95,.06);
+}
+
+.teen-growth-card h3{
+  margin:8px 0 6px;
+  font-size:16px;
+}
+
+.teen-growth-card p{
+  min-height:58px;
+  margin:0 0 13px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.45;
+}
+
+.teen-growth-icon{
+  display:grid;
+  width:43px;
+  height:43px;
+  place-items:center;
+  border-radius:14px;
+  background:var(--accent-soft);
+  font-size:23px;
+}
+
+.teen-growth-action{
+  width:100%;
+  color:var(--accent);
+  font-weight:800;
+}
+
 .stage-card{
   display:flex;
   flex-direction:column;
@@ -1562,8 +1611,13 @@ body.mode-child .child-only.block-display{
   }
 
   .suggestion-grid,
-  .library{
+  .library,
+  .teen-growth-grid{
     grid-template-columns:1fr;
+  }
+
+  .teen-growth-card p{
+    min-height:0;
   }
 
   .task{
