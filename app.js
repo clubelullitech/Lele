@@ -3785,20 +3785,6 @@ function renderHome() {
         )
       : 0;
 
-  const water =
-    Number(c.water || 0);
-
-  const goal =
-    Number(c.waterGoal || 1500);
-
-  const waterProgress =
-    Math.min(
-      100,
-      Math.round(
-        water / goal * 100
-      )
-    );
-
   const attentionPhrase = c.age >= 13
     ? pending
       ? `${c.name}, escolha uma prioridade e comece pela primeira etapa. Você não precisa resolver tudo agora.`
@@ -3906,7 +3892,7 @@ function renderHome() {
           <h2>💧 Água</h2>
 
           <div class="muted">
-            ${water} ml de ${goal} ml
+            Lembrete de tomar água a cada hora
           </div>
         </div>
 
@@ -3915,14 +3901,12 @@ function renderHome() {
           class="primary"
           type="button"
         >
-          + 250 ml
+          Tomei água 💧
         </button>
 
       </div>
 
-      <div class="progress">
-        <div style="width:${waterProgress}%"></div>
-      </div>
+      <div class="water-reminder-status">🔔 Lembrete horário ativo</div>
 
     </section>
 

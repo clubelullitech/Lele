@@ -56,13 +56,122 @@ button{
 /* LOGIN */
 
 .auth-screen{
-  max-width:440px;
-  margin:60px auto;
-  padding:20px;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:28px 20px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 15% 18%,rgba(255,205,92,.25),transparent 18%),
+    radial-gradient(circle at 86% 16%,rgba(117,103,232,.22),transparent 22%),
+    radial-gradient(circle at 82% 82%,rgba(73,184,124,.18),transparent 22%);
 }
 
 .auth-card{
-  padding:24px;
+  position:relative;
+  width:min(100%,460px);
+  padding:34px;
+  overflow:hidden;
+  border:1px solid rgba(117,103,232,.18);
+  box-shadow:0 24px 70px rgba(65,50,110,.18);
+  animation:auth-arrive .65s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.auth-card::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:8px;
+  background:linear-gradient(90deg,#7567e8,#72c9bc,#ffd06a,#ef86a5);
+}
+
+.auth-card .brand{
+  color:var(--accent);
+  font-size:34px;
+  text-align:center;
+}
+
+.auth-card h1,
+.auth-card > p{
+  text-align:center;
+}
+
+.auth-card form{
+  position:relative;
+  z-index:2;
+  display:grid;
+  gap:14px;
+  margin-top:24px;
+}
+
+.auth-card label{
+  font-weight:750;
+}
+
+.auth-card input{
+  width:100%;
+  margin-top:7px;
+  padding:14px 15px;
+  border:2px solid var(--line);
+  border-radius:15px;
+  background:#fbfaff;
+  transition:border-color .2s,box-shadow .2s,transform .2s;
+}
+
+.auth-card input:focus{
+  outline:0;
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px rgba(117,103,232,.13);
+  transform:translateY(-1px);
+}
+
+.auth-mascot{
+  position:relative;
+  width:94px;
+  height:94px;
+  display:grid;
+  place-items:center;
+  margin:2px auto 14px;
+  border-radius:34% 66% 58% 42% / 45% 42% 58% 55%;
+  color:white;
+  background:linear-gradient(145deg,#7567e8,#9b8ff5);
+  box-shadow:0 12px 28px rgba(117,103,232,.28);
+  animation:auth-float 3s ease-in-out infinite;
+}
+
+.auth-mascot-face{
+  font-size:25px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+
+.auth-mascot-wave{
+  position:absolute;
+  right:-18px;
+  top:3px;
+  font-size:32px;
+  transform-origin:bottom left;
+  animation:auth-wave 1.8s ease-in-out infinite;
+}
+
+.auth-sparkles span{
+  position:absolute;
+  z-index:1;
+  animation:auth-sparkle 3.2s ease-in-out infinite;
+}
+
+.auth-sparkles span:nth-child(1){top:28px;left:30px}
+.auth-sparkles span:nth-child(2){top:70px;right:30px;animation-delay:.5s}
+.auth-sparkles span:nth-child(3){bottom:26px;left:25px;animation-delay:1s}
+.auth-sparkles span:nth-child(4){bottom:36px;right:28px;animation-delay:1.5s}
+
+@keyframes auth-arrive{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes auth-float{50%{transform:translateY(-7px) rotate(2deg)}}
+@keyframes auth-wave{0%,45%,100%{transform:rotate(0)}15%{transform:rotate(22deg)}30%{transform:rotate(-8deg)}}
+@keyframes auth-sparkle{0%,100%{transform:scale(.8) rotate(-8deg);opacity:.45}50%{transform:scale(1.2) rotate(10deg);opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  .auth-card,.auth-mascot,.auth-mascot-wave,.auth-sparkles span{animation:none}
 }
 
 .login-button{
@@ -730,6 +839,16 @@ body.mode-child .task-emoji{
   border:1px solid #c8e5eb;
   border-radius:22px;
   padding:17px;
+}
+
+.water-reminder-status{
+  margin-top:12px;
+  padding:11px 14px;
+  border-radius:14px;
+  color:#2f7153;
+  background:#e8f7ef;
+  font-size:13px;
+  font-weight:800;
 }
 
 .progress{

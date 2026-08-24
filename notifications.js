@@ -307,6 +307,46 @@ async function checkLeleTaskAlerts() {
   }
 }
 
+async function checkHourlyHydrationReminder() {
+  const app = document.querySelector("#app");
+  const currentChild = typeof child === "function" ? child() : null;
+
+  if (!app || app.classList.contains("hidden") || !currentChild) return;
+
+  const now = new Date();
+  const hourId = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}-${now.getHours()}-${currentChild.id || currentChild.name}`;
+  const alerts = getLeleAlerts();
+
+  if (alerts[`water-${hourId}`]) return;
+
+  alerts[`water-${hourId}`] = now.toISOString();
+  saveLeleAlerts(alerts);
+
+  showLeleActionBanner({
+    icon: "💧",
+    label: "LELÊ ESTÁ TE CHAMANDO",
+    title: "Hora de tomar água",
+    detail: "Faça uma pausa e beba água.",
+    targetView: "homeView"
+  });
+
+  if (typeof speak === "function" && document.visibilityState === "visible") {
+    speak(`${currentChild.name}, hora de tomar água.`);
+  }
+
+  if ("Notification" in window && Notification.permission === "granted" && "serviceWorker" in navigator) {
+    const registration = await navigator.serviceWorker.ready;
+    await registration.showNotification("Lelê está te chamando", {
+      body: "💧 Hora de tomar água.",
+      icon: "./icons/icon-192.svg",
+      badge: "./icons/icon-192.svg",
+      tag: `lele-water-${hourId}`,
+      renotify: true,
+      data: { targetView: "homeView", action: "hydration" }
+    });
+  }
+}
+
 async function enableLeleNotifications() {
 
   if (!("Notification" in window)) {
@@ -346,6 +386,7 @@ async function enableLeleNotifications() {
     }
 
     checkLeleTaskAlerts();
+    checkHourlyHydrationReminder();
   }
 }
 
@@ -407,10 +448,14 @@ function startLeleAlerts() {
   }
 
   checkLeleTaskAlerts();
+  checkHourlyHydrationReminder();
 
   leleAlertTimer =
     setInterval(
-      checkLeleTaskAlerts,
+      () => {
+        checkLeleTaskAlerts();
+        checkHourlyHydrationReminder();
+      },
       15000
     );
 }
@@ -433,6 +478,7 @@ document.addEventListener(
       "visible"
     ) {
       checkLeleTaskAlerts();
+      checkHourlyHydrationReminder();
     }
   }
 );
