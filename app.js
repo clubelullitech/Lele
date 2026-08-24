@@ -959,14 +959,10 @@ createdAt:
 
 lastCompletedDate:
   t.last_completed_date || null,
+  };
+}
 
 async function loadTasksFromSupabase() {
-  if (
-    !familiaAtual ||
-    !state.children?.length
-  ) {
-    return;
-  }
 
   const memberIds =
     state.children.map(
