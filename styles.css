@@ -1046,7 +1046,7 @@ body.mode-child .child-only.block-display{
   z-index:25;
 
   display:grid;
-  grid-template-columns:repeat(6,1fr);
+  grid-template-columns:repeat(7,1fr);
 
   background:rgba(255,255,255,.96);
   backdrop-filter:blur(12px);
