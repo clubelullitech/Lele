@@ -1148,9 +1148,10 @@ recurrence_enabled:
       "fixed",
 
     scheduled_date:
-      new Date()
-        .toISOString()
-        .slice(0, 10),
+  data.scheduledDate ||
+  new Date()
+    .toISOString()
+    .slice(0, 10),
 
     scheduled_time:
       data.time ||
@@ -5374,7 +5375,7 @@ function updateRecurrenceForm() {
    PROJETO ESCOLAR
 ============================================= */
 
-function saveProjectFromForm(event) {
+async function saveProjectFromForm(event) {
   event.preventDefault();
 
   const c = child();
@@ -5408,6 +5409,29 @@ function saveProjectFromForm(event) {
     done: false
   };
 
+  const taskTitle =
+  `Trabalho: ${data.title}`;
+
+const taskData = {
+  childId: c.id,
+  title: taskTitle,
+  cat: "Escola",
+  time: "",
+  duration: 10,
+  type: "reminder",
+  voice: true,
+  shared: false,
+  needsHelp: false,
+  requirePhoto: false,
+  icon: "📚",
+  recurrenceType: "once",
+  recurrenceDays: [],
+  recurrenceEndDate: null,
+  recurrenceEnabled: false,
+  scheduledDate: data.due,
+  done: false
+};
+  
   if (projectId) {
 
     const project =
@@ -5421,13 +5445,20 @@ function saveProjectFromForm(event) {
       Object.assign(project, data);
     }
 
-  } else {
+ } else {
 
-    state.projects.push({
-      id: `project-${Date.now()}`,
-      ...data
-    });
-  }
+  const project = {
+    id: `project-${Date.now()}`,
+    ...data
+  };
+
+  state.projects.push(project);
+
+  await saveTaskToSupabase(
+    null,
+    taskData
+  );
+}
 
   save();
 
