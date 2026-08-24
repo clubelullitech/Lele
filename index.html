@@ -769,7 +769,12 @@
     id="projectForm"
     class="modal-card"
   >
-
+  
+    <input
+  type="hidden"
+  id="projectId"
+/>
+    
     <div class="modal-head">
 
       <h2>
@@ -810,6 +815,15 @@
 
     <label>
       Data de entrega
+
+      <label>
+  Data e horário do lembrete
+
+  <input
+    id="projectReminder"
+    type="datetime-local"
+  />
+</label>
 
       <input
         id="projectDue"
