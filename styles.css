@@ -176,6 +176,161 @@ button{
   color:#8b5b17;
 }
 
+.guide{
+  background:#e7f4ef;
+  color:#286b55;
+}
+
+/* CRESCER E AJUDA PASSO A PASSO */
+
+.development-hero{
+  background:linear-gradient(135deg,#fff,#edf6f0);
+}
+
+.stage-card{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  margin-top:16px;
+  padding:15px;
+  border:1px solid #d7e7dc;
+  border-radius:18px;
+  background:rgba(255,255,255,.82);
+}
+
+.stage-card span,
+.skill-card small{
+  color:var(--muted);
+}
+
+.age-warning{
+  margin-top:12px;
+}
+
+.skill-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.skill-card{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:15px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+}
+
+.skill-card>span{
+  font-size:28px;
+}
+
+.skill-card b,
+.skill-card small{
+  display:block;
+}
+
+.companion-card,
+.reflection-card{
+  padding:18px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:22px;
+}
+
+.companion-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+}
+
+.companion-icon{
+  font-size:34px;
+}
+
+.reflection-options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.reflection-btn{
+  padding:11px 13px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#f7f5f3;
+}
+
+.reflection-btn.selected{
+  border-color:var(--accent);
+  background:var(--accent-soft);
+  color:#5845b4;
+  font-weight:800;
+}
+
+.reflection-message{
+  min-height:22px;
+  color:#4e725f;
+  font-weight:700;
+}
+
+.guide-modal{
+  max-height:88vh;
+  overflow:auto;
+}
+
+.guide-steps{
+  display:grid;
+  gap:10px;
+  padding:0;
+  list-style:none;
+}
+
+.guide-steps li{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  background:#f7f8f5;
+  border:1px solid #e1e8df;
+  border-radius:16px;
+}
+
+.guide-steps li>span{
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  flex:0 0 auto;
+  color:#fff;
+  background:#5f8f75;
+  border-radius:50%;
+  font-weight:900;
+}
+
+.guide-steps p{
+  margin:0;
+}
+
+.guide-skill{
+  padding:12px;
+  background:#edf6f0;
+  border-radius:14px;
+  color:#315e49;
+}
+
+.test-data-card{
+  border-color:#edc8ce;
+}
+
+@media(max-width:620px){
+  .skill-grid{grid-template-columns:1fr;}
+  .companion-card{align-items:stretch;flex-direction:column;}
+}
+
 .edit{
   background:#eeebff;
   color:#5845b4;
