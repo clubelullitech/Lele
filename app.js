@@ -4473,6 +4473,21 @@ function renderFamily() {
         Perfis conectados à rotina.
       </p>
 
+${
+  membroAtual?.role !== "child"
+    ? `
+      <button
+        id="addFamilyMemberBtn"
+        class="primary"
+        type="button"
+        style="margin-top:12px"
+      >
+        ➕ Adicionar pessoa
+      </button>
+    `
+    : ""
+}
+
     </div>
 
     <section class="section">
@@ -4550,8 +4565,6 @@ function renderFamily() {
       save();
       render();
     });
-
-}
 
 $("#addFamilyMemberBtn")
   ?.addEventListener("click", async () => {
