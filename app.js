@@ -3393,21 +3393,6 @@ function renderHome() {
         Sua rotina de hoje está aqui.
       </p>
 
-${
-  membroAtual?.role !== "child"
-    ? `
-    <button
-  id="addFamilyMemberBtn"
-  class="primary"
-  type="button"
-  style="margin-top:12px"
-  onclick="adicionarPessoaFamilia()"
->
-  ➕ Adicionar pessoa
-</button>
-    `
-    : ""
-}
 
       <div class="cards">
 
