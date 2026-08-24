@@ -4197,10 +4197,46 @@ async function destroyViewedEvidence() {
     }
   }
 }
+const taskIllustrations = {
+  "tomar banho": "assets/tasks/tomar-banho.webp",
+  "organizar o quarto": "assets/tasks/organizar-quarto.webp",
+  "colocar roupa no cesto": "assets/tasks/roupa-cesto.webp",
+  "fazer a lição de casa": "assets/tasks/licao-casa.webp",
+  "separar material escolar": "assets/tasks/material-escolar.webp",
+  "revisar matéria da prova": "assets/tasks/revisar-prova.webp",
+  "alimentar o pet": "assets/tasks/alimentar-pet.webp",
+  "ajudar a pôr a mesa": "assets/tasks/por-mesa.webp",
+  "separar roupa para amanhã": "assets/tasks/roupa-amanha.webp",
+  "planejar a semana": "assets/tasks/planejar-semana.webp",
+  "preparar lanche simples": "assets/tasks/lanche.webp",
+  "lavar a louça": "assets/tasks/lavar-louca.webp",
+  "organizar o material de estudo": "assets/tasks/material-estudo.webp",
+  "organizar o próprio horário": "assets/tasks/horario.webp",
+  "contar como estou me sentindo": "assets/tasks/sentimentos.webp",
+  "fazer uma pausa e respirar": "assets/tasks/respirar.webp",
+  "movimentar o corpo por 15 minutos": "assets/tasks/movement.webp",
+  "criar algo sem copiar": "assets/tasks/creativity.webp",
+  "planejar as prioridades da semana": "assets/tasks/priorities.webp",
+  "dividir um trabalho em etapas": "assets/tasks/project-steps.webp",
+  "fazer uma sessão de estudo focado": "assets/tasks/focused-study.webp",
+  "revisar agenda, prazos e compromissos": "assets/tasks/agenda.webp",
+  "preparar uma refeição simples com segurança": "assets/tasks/meal-safety.webp",
+  "organizar arquivos e espaço digital": "assets/tasks/digital-files.webp",
+  "planejar um pequeno orçamento": "assets/tasks/budget.webp",
+  "resolver uma pendência que estou adiando": "assets/tasks/delayed-task.webp",
+  "fazer uma pausa consciente das telas": "assets/tasks/screen-pause.webp",
+  "conversar sobre algo que preciso": "assets/tasks/talk-needs.webp"
+};
+
+function illustrationForTask(task) {
+  const title = String(task?.title || "").trim().toLowerCase();
+  return taskIllustrations[title] || guideDetailsForTask(task).images?.[0] || "";
+}
+
 function renderTaskCard(task) {
   const icon =
     getTaskEmoji(task);
-  const illustration = guideDetailsForTask(task).images?.[0] || "";
+  const illustration = illustrationForTask(task);
 
   const evidence =
   task.evidencePath &&
