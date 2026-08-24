@@ -3393,6 +3393,21 @@ function renderHome() {
         Sua rotina de hoje está aqui.
       </p>
 
+${
+  membroAtual?.role !== "child"
+    ? `
+      <button
+        id="addFamilyMemberBtn"
+        class="primary"
+        type="button"
+        style="margin-top:12px"
+      >
+        ➕ Adicionar pessoa
+      </button>
+    `
+    : ""
+}
+
       <div class="cards">
 
         <div class="stat">
@@ -4535,6 +4550,116 @@ function renderFamily() {
       save();
       render();
     });
+
+}
+
+$("#addFamilyMemberBtn")
+  ?.addEventListener("click", async () => {
+
+    const nome = prompt(
+      "Nome da pessoa:"
+    );
+
+    if (!nome?.trim()) return;
+
+    const tipo = prompt(
+      "Digite:\n1 = Criança\n2 = Pai/Responsável",
+      "1"
+    );
+
+    if (
+      tipo !== "1" &&
+      tipo !== "2"
+    ) {
+      alert("Escolha 1 ou 2.");
+      return;
+    }
+
+    let nascimento = null;
+
+    if (tipo === "1") {
+      nascimento = prompt(
+        "Data de nascimento (AAAA-MM-DD):"
+      );
+
+      if (!nascimento) return;
+    }
+
+    const usuario = prompt(
+      "Nome de usuário para login:"
+    );
+
+    if (!usuario?.trim()) return;
+
+    const senha = prompt(
+      "Senha (mínimo 6 caracteres):"
+    );
+
+    if (!senha) return;
+
+    if (senha.length < 6) {
+      alert(
+        "A senha precisa ter pelo menos 6 caracteres."
+      );
+      return;
+    }
+
+    const {
+      data,
+      error
+    } =
+      await leleDb.functions.invoke(
+        "create-family-user",
+        {
+          body: {
+            displayName:
+              nome.trim(),
+
+            username:
+              usuario.trim(),
+
+            password:
+              senha,
+
+            role:
+              tipo === "1"
+                ? "child"
+                : "parent",
+
+            birthDate:
+              nascimento
+          }
+        }
+      );
+
+    if (error) {
+      console.error(error);
+
+      alert(
+        data?.error ||
+        "Não foi possível criar a pessoa."
+      );
+
+      return;
+    }
+
+    if (!data?.success) {
+      alert(
+        data?.error ||
+        "Não foi possível criar a pessoa."
+      );
+
+      return;
+    }
+
+    alert(
+      `✅ ${nome} foi adicionado!\n\nUsuário: ${usuario}`
+    );
+
+    await carregarFamiliaReal();
+
+    render();
+  });
 
 }
 
