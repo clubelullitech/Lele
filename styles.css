@@ -1469,7 +1469,24 @@ body.mode-child .child-only.block-display{
   color:var(--muted);
 }
 
+.voice-settings-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  margin:12px 0 8px;
+}
+
+.voice-settings-row select{
+  width:100%;
+  min-width:0;
+}
+
 @media(max-width:520px){
+
+  .voice-settings-row{
+    grid-template-columns:1fr;
+  }
 
   .routine-calendar{
     padding:8px;
