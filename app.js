@@ -951,10 +951,14 @@ recurrenceEndDate:
 recurrenceEnabled:
   !!t.recurrence_enabled,
 
+scheduledDate:
+  t.scheduled_date || null,
+
+createdAt:
+  t.created_at || null,
+
 lastCompletedDate:
   t.last_completed_date || null,
-  };
-}
 
 async function loadTasksFromSupabase() {
   if (
