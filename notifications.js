@@ -34,18 +34,10 @@ function taskMinutes(task) {
   return h * 60 + m;
 }
 
-function showLeleTaskBanner(
-  task,
-  childName
-) {
+function showLeleActionBanner({ icon = "🔔", label, title, detail, targetView = "homeView" }) {
   document
     .querySelector("#leleTaskAlert")
     ?.remove();
-
-  const icon =
-    typeof getTaskEmoji === "function"
-      ? getTaskEmoji(task)
-      : task.icon || "⭐";
 
   const box =
     document.createElement("div");
@@ -82,7 +74,7 @@ function showLeleTaskBanner(
           color:#7567e8;
           font-size:12px;
         ">
-          ⏰ HORA DA TAREFA
+          ${typeof escapeHtml === "function" ? escapeHtml(label) : label}
         </b>
 
         <strong style="
@@ -90,15 +82,14 @@ function showLeleTaskBanner(
           font-size:19px;
           margin-top:3px;
         ">
-          ${task.title}
+          ${typeof escapeHtml === "function" ? escapeHtml(title) : title}
         </strong>
 
         <span style="
           font-size:12px;
           opacity:.7;
         ">
-          ${childName}
-          ${task.time ? ` • ${task.time}` : ""}
+          ${typeof escapeHtml === "function" ? escapeHtml(detail) : detail}
         </span>
       </div>
 
@@ -118,6 +109,12 @@ function showLeleTaskBanner(
 
   document.body.appendChild(box);
 
+  box.addEventListener("click", event => {
+    if (event.target.closest("#closeLeleAlert")) return;
+    if (typeof showView === "function") showView(targetView);
+    box.remove();
+  });
+
   box
     .querySelector("#closeLeleAlert")
     ?.addEventListener(
@@ -129,6 +126,21 @@ function showLeleTaskBanner(
     () => box.remove(),
     30000
   );
+}
+
+function showLeleTaskBanner(task, childName) {
+  const icon = typeof getTaskEmoji === "function"
+    ? getTaskEmoji(task)
+    : task.icon || "⭐";
+  const isParent = typeof membroAtual !== "undefined" && membroAtual?.role !== "child";
+
+  showLeleActionBanner({
+    icon,
+    label: isParent ? "🔔 VOCÊ TEM UM ALERTA NO LELÊ" : "🔔 LELÊ ESTÁ TE CHAMANDO",
+    title: isParent ? `${childName}: ${task.title}` : task.title,
+    detail: `Próxima ação${task.time ? ` • ${task.time}` : ""}: realizar a tarefa`,
+    targetView: "homeView"
+  });
 }
 
 async function showLeleNotification(
@@ -151,16 +163,15 @@ async function showLeleNotification(
       ? getTaskEmoji(task)
       : task.icon || "⭐";
 
+  const isParent = typeof membroAtual !== "undefined" && membroAtual?.role !== "child";
+
   await registration.showNotification(
-    `${icon} Hora da tarefa!`,
+    isParent ? "Você tem um alerta no Lelê" : "Lelê está te chamando",
     {
-      body:
-        `${childName}, ${task.title}` +
-        (
-          task.time
-            ? ` • ${task.time}`
-            : ""
-        ),
+      body: `${icon} ${isParent ? `${childName} precisa fazer` : "Próxima ação"}: ${task.title}${task.time ? ` • ${task.time}` : ""}`,
+
+      icon: "./icons/icon-192.svg",
+      badge: "./icons/icon-192.svg",
 
       tag:
         `lele-${task.id}`,
@@ -178,7 +189,9 @@ async function showLeleNotification(
         taskId: task.id,
         taskTitle: task.title,
         childName,
-        voice: !!task.voice
+        voice: !!task.voice,
+        targetView: "homeView",
+        action: "task"
       }
     }
   );

@@ -2646,10 +2646,34 @@ function startMessagesRealtime() {
       const decoded = decodeChatBody(event.new?.body, event.new || {});
       const directedHere = decoded.recipientId === "all" || decoded.recipientId === membroAtual?.id;
       if (event.eventType === "INSERT" && event.new?.sender_id !== membroAtual?.id && directedHere) {
+        const isHelp = decoded.kind === "system";
+        const sender = memberName(event.new.sender_id);
+        const notificationTitle = isHelp
+          ? "Lelê está te chamando"
+          : "Você tem um alerta no Lelê";
+        const notificationBody = isHelp
+          ? `${decoded.text || `${sender} pediu ajuda.`} Toque para responder.`
+          : `${sender}: ${decoded.text || "enviou um novo áudio."}`;
+
         await showLocalNotification(
-          decoded.kind === "system" ? "Lelê • Pedido de ajuda" : `Lelê • ${memberName(event.new.sender_id)}`,
-          decoded.text || "Você recebeu um novo áudio."
+          notificationTitle,
+          notificationBody,
+          {
+            tag: isHelp ? `lele-help-${event.new.id}` : `lele-message-${event.new.id}`,
+            targetView: "messagesView",
+            action: isHelp ? "help" : "message"
+          }
         );
+
+        if (typeof showLeleActionBanner === "function") {
+          showLeleActionBanner({
+            icon: isHelp ? "🙋" : "💬",
+            label: isHelp ? "LELÊ ESTÁ TE CHAMANDO" : "VOCÊ TEM UM ALERTA NO LELÊ",
+            title: isHelp ? "Pedido de ajuda" : `Mensagem de ${sender}`,
+            detail: notificationBody,
+            targetView: "messagesView"
+          });
+        }
       }
     })
     .subscribe();
@@ -3115,7 +3139,8 @@ async function requestNotificationPermission() {
 
 async function showLocalNotification(
   title,
-  body
+  body,
+  options = {}
 ) {
 
   const allowed =
@@ -3147,8 +3172,13 @@ async function showLocalNotification(
           badge:
             "./icons/icon-192.svg",
 
-          tag:
-            "lele-task"
+          tag: options.tag || "lele-alert",
+          renotify: true,
+          requireInteraction: options.action === "help",
+          data: {
+            targetView: options.targetView || "homeView",
+            action: options.action || "alert"
+          }
         }
       );
 
@@ -3228,8 +3258,13 @@ function checkTaskNotifications() {
 
 
       showLocalNotification(
-        `Lelê • ${child()?.name || ""}`,
-        `${getTaskEmoji(task)} ${task.title}`
+        state.mode === "parent" ? "Você tem um alerta no Lelê" : "Lelê está te chamando",
+        `${getTaskEmoji(task)} Próxima ação: ${task.title}${task.time ? ` • ${task.time}` : ""}`,
+        {
+          tag: `lele-task-${task.id}`,
+          targetView: "homeView",
+          action: "task"
+        }
       );
 
 
@@ -4267,11 +4302,32 @@ function renderTaskCard(task) {
 const taskGuides = [
   {
     words: ["dente", "escovar"],
+    images: [
+      "assets/guides/escovar-dentes-1.webp",
+      "assets/guides/escovar-dentes-2.webp",
+      "assets/guides/escovar-dentes-3.webp",
+      "assets/guides/escovar-dentes-4.webp"
+    ],
     steps: [
       "Pegue a escova e coloque um pouco de pasta.",
       "Escove por fora, por dentro e em cima dos dentes.",
       "Escove a língua com cuidado.",
       "Enxágue a boca e guarde tudo no lugar."
+    ]
+  },
+  {
+    words: ["arrumar a cama", "cama"],
+    images: [
+      "assets/guides/arrumar-cama-1.webp",
+      "assets/guides/arrumar-cama-2.webp",
+      "assets/guides/arrumar-cama-3.webp",
+      "assets/guides/arrumar-cama-4.webp"
+    ],
+    steps: [
+      "Abra a cortina e deixe o quarto claro para começar.",
+      "Puxe e alise o lençol para tirar as partes amassadas.",
+      "Estenda a coberta por igual e acerte as laterais.",
+      "Coloque os travesseiros no lugar e confira se ficou organizado."
     ]
   },
   {
@@ -4390,17 +4446,24 @@ function skillForCategory(category) {
 }
 
 function guideForTask(task) {
+  return guideDetailsForTask(task).steps;
+}
+
+function guideDetailsForTask(task) {
   const text = `${task.title} ${task.cat}`.toLowerCase();
   const match = taskGuides.find(guide =>
     guide.words.some(word => text.includes(word))
   );
 
-  return match?.steps || [
-    "Entenda o que precisa ficar pronto.",
-    "Separe o que você vai precisar.",
-    "Comece pela menor parte da tarefa.",
-    "Confira o resultado e peça ajuda se ainda precisar."
-  ];
+  return match || {
+    images: [],
+    steps: [
+      "Entenda o que precisa ficar pronto.",
+      "Separe o que você vai precisar.",
+      "Comece pela menor parte da tarefa.",
+      "Confira o resultado e peça ajuda se ainda precisar."
+    ]
+  };
 }
 
 let currentGuideTask = null;
@@ -4410,18 +4473,55 @@ function openTaskGuide(task) {
   if (!dialog || !task) return;
 
   currentGuideTask = task;
-  const steps = guideForTask(task);
+  const guide = guideDetailsForTask(task);
+  const steps = guide.steps;
   $("#taskGuideTitle").textContent = task.title;
   $("#taskGuideIntro").textContent =
     child()?.age >= 13
       ? "Use este plano como ponto de partida e ajuste do seu jeito:"
       : "Você não precisa fazer tudo de uma vez. Siga estes passos:";
   $("#taskGuideSteps").innerHTML = steps
-    .map((step, index) => `<li><span>${index + 1}</span><p>${step}</p></li>`)
+    .map((step, index) => `
+      <li class="guide-step-card ${guide.images?.[index] ? "has-image" : ""}">
+        ${guide.images?.[index] ? `
+          <button
+            class="guide-step-audio"
+            type="button"
+            data-step-text="${escapeHtml(step)}"
+            aria-label="Ouvir passo ${index + 1}"
+          >
+            <span class="guide-step-number">${index + 1}</span>
+            <span class="guide-image-frame">
+              <img src="${guide.images[index]}" alt="Ilustração do passo ${index + 1}: ${escapeHtml(step)}" loading="eager">
+              <span class="guide-audio-hint">🔊 Toque para ouvir</span>
+            </span>
+            <p>${escapeHtml(step)}</p>
+          </button>
+        ` : `
+          <span>${index + 1}</span><p>${escapeHtml(step)}</p>
+        `}
+      </li>
+    `)
     .join("");
   $("#taskGuideSkill").innerHTML =
     `<b>🌱 Habilidade praticada:</b> ${skillForCategory(task.cat)}`;
   dialog.showModal();
+
+  $$(".guide-step-audio").forEach(button => {
+    button.addEventListener("click", () => {
+      $$(".guide-step-audio").forEach(item => item.classList.remove("speaking"));
+      button.classList.add("speaking");
+      speak(`Passo ${button.closest("li")?.querySelector(".guide-step-number")?.textContent}. ${button.dataset.stepText}`);
+    });
+  });
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", event => {
+    if (event.data?.type === "LELE_NOTIFICATION_CLICK" && typeof showView === "function") {
+      showView(event.data.targetView || "homeView");
+    }
+  });
 }
 
 

@@ -1,11 +1,19 @@
-const CACHE_NAME = "lele-v18";
+const CACHE_NAME = "lele-v19";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./styles.css?v=18",
-  "./app.js?v=18",
-  "./notifications.js?v=18",
+  "./styles.css?v=19",
+  "./app.js?v=19",
+  "./notifications.js?v=19",
+  "./assets/guides/escovar-dentes-1.webp",
+  "./assets/guides/escovar-dentes-2.webp",
+  "./assets/guides/escovar-dentes-3.webp",
+  "./assets/guides/escovar-dentes-4.webp",
+  "./assets/guides/arrumar-cama-1.webp",
+  "./assets/guides/arrumar-cama-2.webp",
+  "./assets/guides/arrumar-cama-3.webp",
+  "./assets/guides/arrumar-cama-4.webp",
   "./manifest.webmanifest"
 ];
 
@@ -284,6 +292,11 @@ self.addEventListener(
               if (
                 "focus" in client
               ) {
+                client.postMessage({
+                  type: "LELE_NOTIFICATION_CLICK",
+                  targetView: event.notification.data?.targetView || "homeView",
+                  action: event.notification.data?.action || "alert"
+                });
                 return client.focus();
               }
             }
@@ -292,7 +305,7 @@ self.addEventListener(
               clients.openWindow
             ) {
               return clients.openWindow(
-                "./"
+                `./?leleView=${encodeURIComponent(event.notification.data?.targetView || "homeView")}`
               );
             }
           }
