@@ -24,6 +24,7 @@ let usuarioAtual = null;
 let membroAtual = null;
 let familiaAtual = null;
 let tasksRealtimeChannel = null;
+let messagesRealtimeChannel = null;
 
 let pendingPhotoTask = null;
 let pendingPhotoData = null;
@@ -197,7 +198,10 @@ const categoryIcons = {
   "Família": "👨‍👩‍👧",
   "Autonomia": "🌱",
   "Organização": "📦",
-  "Pet": "🐾"
+  "Pet": "🐾",
+  "Emoções": "💛",
+  "Movimento": "🏃",
+  "Criatividade": "🎨"
 };
 
 const emojiRules = [
@@ -422,148 +426,176 @@ const taskLibrary = [
   {
     title: "Escovar os dentes",
     cat: "Higiene",
-    ages: [3, 17],
+    ages: [5, 12],
     icon: "😁🪥"
   },
 
   {
     title: "Tomar banho",
     cat: "Higiene",
-    ages: [4, 17],
+    ages: [5, 12],
     icon: "🚿"
   },
 
   {
     title: "Arrumar a cama",
     cat: "Casa",
-    ages: [4, 17],
+    ages: [5, 12],
     icon: "🛏️"
   },
 
   {
     title: "Guardar brinquedos",
     cat: "Casa",
-    ages: [3, 9],
+    ages: [5, 8],
     icon: "🧸"
   },
 
   {
     title: "Organizar o quarto",
     cat: "Casa",
-    ages: [7, 17],
+    ages: [7, 12],
     icon: "🧹"
   },
 
   {
     title: "Colocar roupa no cesto",
     cat: "Autonomia",
-    ages: [4, 17],
+    ages: [5, 12],
     icon: "👕"
   },
 
   {
     title: "Preparar a mochila",
     cat: "Escola",
-    ages: [6, 17],
+    ages: [6, 12],
     icon: "🎒"
   },
 
   {
     title: "Fazer a lição de casa",
     cat: "Escola",
-    ages: [6, 17],
+    ages: [6, 12],
     icon: "📚"
   },
 
   {
     title: "Separar material escolar",
     cat: "Escola",
-    ages: [6, 17],
+    ages: [6, 12],
     icon: "✏️"
   },
 
   {
     title: "Revisar matéria da prova",
     cat: "Escola",
-    ages: [10, 17],
+    ages: [10, 12],
     icon: "📝"
   },
 
   {
     title: "Ler um livro",
     cat: "Lazer",
-    ages: [5, 17],
+    ages: [5, 12],
     icon: "📖"
   },
 
   {
     title: "Beber água",
     cat: "Água",
-    ages: [3, 17],
+    ages: [5, 12],
     icon: "💧"
   },
 
   {
     title: "Alimentar o pet",
     cat: "Pet",
-    ages: [6, 17],
+    ages: [6, 12],
     icon: "🐶"
   },
 
   {
     title: "Ajudar a pôr a mesa",
     cat: "Família",
-    ages: [5, 17],
+    ages: [5, 12],
     icon: "🍽️"
   },
 
   {
     title: "Separar roupa para amanhã",
     cat: "Organização",
-    ages: [9, 17],
+    ages: [9, 12],
     icon: "👚"
   },
 
   {
     title: "Planejar a semana",
     cat: "Organização",
-    ages: [12, 17],
+    ages: [11, 12],
     icon: "🗓️"
   },
 
   {
     title: "Preparar lanche simples",
     cat: "Autonomia",
-    ages: [10, 17],
+    ages: [10, 12],
     icon: "🥪"
   },
 
   {
     title: "Lavar a louça",
     cat: "Casa",
-    ages: [11, 17],
+    ages: [11, 12],
     icon: "🍽️"
   },
 
   {
     title: "Organizar o material de estudo",
     cat: "Organização",
-    ages: [10, 17],
+    ages: [10, 12],
     icon: "📚"
   },
 
   {
     title: "Organizar o próprio horário",
     cat: "Autonomia",
-    ages: [12, 17],
+    ages: [11, 12],
     icon: "🗓️"
   },
 
   {
     title: "Atividade em família",
     cat: "Família",
-    ages: [3, 17],
+    ages: [5, 12],
     icon: "❤️"
+  },
+
+  {
+    title: "Contar como estou me sentindo",
+    cat: "Emoções",
+    ages: [5, 12],
+    icon: "💛"
+  },
+
+  {
+    title: "Fazer uma pausa e respirar",
+    cat: "Emoções",
+    ages: [5, 12],
+    icon: "🌬️"
+  },
+
+  {
+    title: "Movimentar o corpo por 15 minutos",
+    cat: "Movimento",
+    ages: [5, 12],
+    icon: "🏃"
+  },
+
+  {
+    title: "Criar algo sem copiar",
+    cat: "Criatividade",
+    ages: [5, 12],
+    icon: "🎨"
   }
 ];
 
@@ -2113,6 +2145,7 @@ try {
     await carregarFamiliaReal();
 
     startTasksRealtime();
+    startMessagesRealtime();
 
     $("#authScreen")
       .classList
@@ -2168,6 +2201,11 @@ async function sairLele() {
 
     tasksRealtimeChannel =
       null;
+  }
+
+  if (messagesRealtimeChannel) {
+    leleDb.removeChannel(messagesRealtimeChannel);
+    messagesRealtimeChannel = null;
   }
 
 
@@ -2318,6 +2356,71 @@ function startTasksRealtime() {
         }
       )
       .subscribe();
+}
+
+
+/* =============================================
+   PEDIDOS DE AJUDA EM TEMPO REAL
+============================================= */
+
+async function sendHelpRequest(task) {
+  const c = child();
+  if (!task || !c || !familiaAtual || !membroAtual) return;
+
+  const body = `${c.name} pediu ajuda com: ${task.title}`;
+  const { error } = await leleDb
+    .from("messages")
+    .insert({
+      family_id: familiaAtual,
+      child_id: c.id,
+      sender_id: membroAtual.id,
+      message_type: "system",
+      body
+    });
+
+  if (error) throw error;
+
+  state.messages.unshift({
+    text: `🙋 ${body}`,
+    createdAt: new Date().toISOString()
+  });
+  save();
+}
+
+function startMessagesRealtime() {
+  if (!familiaAtual) return;
+
+  if (messagesRealtimeChannel) {
+    leleDb.removeChannel(messagesRealtimeChannel);
+  }
+
+  messagesRealtimeChannel = leleDb
+    .channel(`lele-messages-${familiaAtual}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `family_id=eq.${familiaAtual}`
+      },
+      async event => {
+        const message = event.new;
+        if (!message?.body || message.sender_id === membroAtual?.id) return;
+
+        state.messages.unshift({
+          text: `🙋 ${message.body}`,
+          createdAt: message.created_at
+        });
+        save();
+        render();
+
+        if (membroAtual?.role !== "child") {
+          await showLocalNotification("Lelê • Pedido de ajuda", message.body);
+        }
+      }
+    )
+    .subscribe();
 }
 
 
@@ -3399,7 +3502,7 @@ function renderHome() {
       </h1>
 
       <p class="muted">
-        Sua rotina de hoje está aqui.
+        Vamos fazer juntos, um passo de cada vez.
       </p>
 
 
@@ -3505,7 +3608,7 @@ function renderHome() {
                 </h2>
 
                 <div class="muted">
-                  Tarefas adequadas para ${c.age} anos.
+                  Atividades que apoiam o desenvolvimento aos ${c.age} anos.
                 </div>
               </div>
             </div>
@@ -3841,6 +3944,19 @@ function renderTaskCard(task) {
 
         ${evidence}
         ${
+          !task.done
+            ? `
+              <button
+                class="small guide task-guide-btn"
+                data-task-id="${task.id}"
+                type="button"
+              >
+                🧭 Como fazer
+              </button>
+            `
+            : ""
+        }
+        ${
           task.needsHelp &&
           !task.done
             ? `
@@ -3887,6 +4003,112 @@ function renderTaskCard(task) {
 
     </article>
   `;
+}
+
+
+/* =============================================
+   COMPANHEIRO PASSO A PASSO
+============================================= */
+
+const taskGuides = [
+  {
+    words: ["dente", "escovar"],
+    steps: [
+      "Pegue a escova e coloque um pouco de pasta.",
+      "Escove por fora, por dentro e em cima dos dentes.",
+      "Escove a língua com cuidado.",
+      "Enxágue a boca e guarde tudo no lugar."
+    ]
+  },
+  {
+    words: ["lição", "estudar", "prova", "matéria"],
+    steps: [
+      "Separe apenas o material que você vai usar.",
+      "Leia a atividade inteira antes de começar.",
+      "Faça uma parte pequena de cada vez.",
+      "Revise no final e peça ajuda somente no que ficou difícil."
+    ]
+  },
+  {
+    words: ["quarto", "brinquedo", "organizar"],
+    steps: [
+      "Escolha uma parte pequena para começar.",
+      "Separe o que fica, o que vai para outro lugar e o que é lixo.",
+      "Guarde cada grupo no lugar certo.",
+      "Olhe novamente e veja se faltou alguma coisa."
+    ]
+  },
+  {
+    words: ["mochila", "material escolar"],
+    steps: [
+      "Confira quais aulas ou atividades terá amanhã.",
+      "Separe livros, cadernos e estojo.",
+      "Coloque cada item na mochila.",
+      "Faça uma última conferência antes de fechar."
+    ]
+  },
+  {
+    words: ["sentindo", "respirar", "emoç"],
+    steps: [
+      "Pare por um instante e perceba seu corpo.",
+      "Escolha uma palavra para o que está sentindo.",
+      "Respire devagar três vezes.",
+      "Conte para um adulto se precisar de companhia ou ajuda."
+    ]
+  }
+];
+
+function skillForCategory(category) {
+  const skills = {
+    Higiene: "Autocuidado",
+    Casa: "Responsabilidade",
+    Escola: "Aprendizagem",
+    Água: "Cuidado com o corpo",
+    Saúde: "Autocuidado",
+    Lazer: "Equilíbrio",
+    Família: "Colaboração",
+    Autonomia: "Autonomia",
+    Organização: "Organização",
+    Pet: "Responsabilidade",
+    Emoções: "Consciência emocional",
+    Movimento: "Desenvolvimento físico",
+    Criatividade: "Criatividade"
+  };
+
+  return skills[category] || "Autonomia";
+}
+
+function guideForTask(task) {
+  const text = `${task.title} ${task.cat}`.toLowerCase();
+  const match = taskGuides.find(guide =>
+    guide.words.some(word => text.includes(word))
+  );
+
+  return match?.steps || [
+    "Entenda o que precisa ficar pronto.",
+    "Separe o que você vai precisar.",
+    "Comece pela menor parte da tarefa.",
+    "Confira o resultado e peça ajuda se ainda precisar."
+  ];
+}
+
+let currentGuideTask = null;
+
+function openTaskGuide(task) {
+  const dialog = $("#taskGuideDialog");
+  if (!dialog || !task) return;
+
+  currentGuideTask = task;
+  const steps = guideForTask(task);
+  $("#taskGuideTitle").textContent = task.title;
+  $("#taskGuideIntro").textContent =
+    "Você não precisa fazer tudo de uma vez. Siga estes passos:";
+  $("#taskGuideSteps").innerHTML = steps
+    .map((step, index) => `<li><span>${index + 1}</span><p>${step}</p></li>`)
+    .join("");
+  $("#taskGuideSkill").innerHTML =
+    `<b>🌱 Habilidade praticada:</b> ${skillForCategory(task.cat)}`;
+  dialog.showModal();
 }
 
 
@@ -5023,6 +5245,188 @@ function renderSettings() {
           : ""
       }
 
+      ${
+        membroAtual?.role !== "child"
+          ? `
+            <div class="callout test-data-card" style="margin-top:10px;">
+              <b>Dados de teste</b>
+              <p>Apaga somente tarefas e trabalhos escolares. Perfis, logins e família serão mantidos.</p>
+              <button id="clearTestDataBtn" class="danger" type="button">Limpar tarefas e trabalhos</button>
+            </div>
+          `
+          : ""
+      }
+
+    </section>
+  `;
+}
+
+async function clearTestData() {
+  if (!familiaAtual || membroAtual?.role === "child") return;
+
+  const confirmed = confirm(
+    "Apagar todas as tarefas e trabalhos escolares desta família? Os logins e perfis serão mantidos."
+  );
+  if (!confirmed) return;
+
+  const button = $("#clearTestDataBtn");
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Limpando...";
+  }
+
+  try {
+    const { error: taskError } = await leleDb
+      .from("tasks")
+      .delete()
+      .eq("family_id", familiaAtual);
+    if (taskError) throw taskError;
+
+    const projectResult = await leleDb
+      .from("school_projects")
+      .delete()
+      .eq("family_id", familiaAtual);
+
+    if (projectResult.error && projectResult.error.code !== "42P01") {
+      console.warn("Trabalhos remotos não foram removidos:", projectResult.error);
+    }
+
+    state.tasks = [];
+    state.projects = [];
+    save();
+    render();
+    alert("Tarefas e trabalhos de teste removidos. Os perfis foram mantidos.");
+  } catch (error) {
+    console.error("Erro ao limpar dados de teste:", error);
+    alert("Não foi possível limpar os dados. Tente novamente com o perfil de responsável.");
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Limpar tarefas e trabalhos";
+    }
+  }
+}
+
+
+/* =============================================
+   CRESCER — DESENVOLVIMENTO 5 A 12 ANOS
+============================================= */
+
+function developmentStage(age) {
+  if (age <= 7) {
+    return {
+      title: "Descobrir e praticar",
+      text: "Instruções curtas, apoio visual e repetição ajudam a criar segurança."
+    };
+  }
+
+  if (age <= 9) {
+    return {
+      title: "Ganhar confiança",
+      text: "A criança já pode escolher a ordem e conferir pequenas etapas sozinha."
+    };
+  }
+
+  return {
+    title: "Construir autonomia",
+    text: "Planejar, dividir tarefas e avaliar o próprio resultado passam a ser o foco."
+  };
+}
+
+function developmentSummary(tasks) {
+  const map = new Map();
+
+  tasks.filter(task => task.done).forEach(task => {
+    const skill = skillForCategory(task.cat);
+    map.set(skill, (map.get(skill) || 0) + 1);
+  });
+
+  return [...map.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+}
+
+function reflectionKey(c) {
+  return `lele-reflection-${c?.id || "child"}`;
+}
+
+function renderDevelopment() {
+  const c = child();
+  if (!c || !$("#developmentView")) return;
+
+  const tasks = childTasks();
+  const stage = developmentStage(c.age);
+  const summary = developmentSummary(tasks);
+  const reflection = localStorage.getItem(reflectionKey(c)) || "";
+  const ageIsSupported = c.age >= 5 && c.age <= 12;
+
+  $("#developmentView").innerHTML = `
+    <div class="hero development-hero">
+      <span class="age-pill">5 a 12 anos</span>
+      <h1>🌱 Crescer fazendo</h1>
+      <p>
+        O Lelê ajuda ${c.name} a entender, tentar e aprender com as tarefas do dia.
+      </p>
+      <div class="stage-card">
+        <b>${stage.title}</b>
+        <span>${stage.text}</span>
+      </div>
+      ${
+        ageIsSupported
+          ? ""
+          : `<div class="callout age-warning">O perfil está com ${c.age} anos. Esta experiência foi planejada para crianças de 5 a 12 anos.</div>`
+      }
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>Habilidades praticadas</h2>
+          <div class="muted">Baseado no que foi concluído, sem comparar com outras crianças.</div>
+        </div>
+      </div>
+      <div class="skill-grid">
+        ${
+          summary.length
+            ? summary.map(([skill, count]) => `
+                <article class="skill-card">
+                  <span>🌿</span>
+                  <div><b>${skill}</b><small>${count} prática${count === 1 ? "" : "s"}</small></div>
+                </article>
+              `).join("")
+            : `
+                <div class="callout">
+                  As habilidades aparecerão aqui conforme ${c.name} realizar as atividades.
+                </div>
+              `
+        }
+      </div>
+    </section>
+
+    <section class="section companion-card">
+      <div>
+        <span class="companion-icon">🧭</span>
+        <h2>Quando algo parecer difícil</h2>
+        <p>Abra uma tarefa e toque em <b>Como fazer</b>. O Lelê divide a atividade em passos pequenos e pode ler tudo em voz alta.</p>
+      </div>
+      <button id="goToTasksBtn" class="primary" type="button">Ver tarefas de hoje</button>
+    </section>
+
+    <section class="section reflection-card">
+      <h2>Como foi hoje?</h2>
+      <p class="muted">Não existe resposta errada. Escolha o que mais combina.</p>
+      <div class="reflection-options" role="group" aria-label="Como foi o dia">
+        ${["😊 Consegui", "😐 Foi mais ou menos", "😟 Precisei de ajuda"].map(option => `
+          <button
+            class="reflection-btn ${reflection === option ? "selected" : ""}"
+            data-reflection="${option}"
+            type="button"
+          >${option}</button>
+        `).join("")}
+      </div>
+      <p id="reflectionMessage" class="reflection-message">
+        ${reflection ? "Obrigado por contar. Amanhã tentamos de novo, do seu jeito. 💛" : ""}
+      </p>
     </section>
   `;
 }
@@ -5069,6 +5473,7 @@ function render() {
   renderHome();
   renderRoutine();
   renderSchool();
+  renderDevelopment();
   renderFamily();
   renderMessages();
   renderSettings();
@@ -5089,6 +5494,46 @@ function render() {
 ============================================= */
 
 function bindDynamicEvents() {
+
+  $("#clearTestDataBtn")?.addEventListener("click", clearTestData);
+
+  $$(".task-guide-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const task = state.tasks.find(item =>
+        String(item.id) === String(button.dataset.taskId)
+      );
+      openTaskGuide(task);
+    });
+  });
+
+  $("#closeTaskGuide")?.addEventListener("click", () =>
+    $("#taskGuideDialog")?.close()
+  );
+
+  $("#understoodTaskGuide")?.addEventListener("click", () =>
+    $("#taskGuideDialog")?.close()
+  );
+
+  $("#speakTaskGuide")?.addEventListener("click", () => {
+    if (!currentGuideTask) return;
+    speak(`${currentGuideTask.title}. ${guideForTask(currentGuideTask).join(" ")}`);
+  });
+
+  $("#goToTasksBtn")?.addEventListener("click", () =>
+    showView("homeView")
+  );
+
+  $$(".reflection-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const c = child();
+      if (!c) return;
+      localStorage.setItem(reflectionKey(c), button.dataset.reflection);
+      $$(".reflection-btn").forEach(item => item.classList.remove("selected"));
+      button.classList.add("selected");
+      $("#reflectionMessage").textContent =
+        "Obrigado por contar. Amanhã tentamos de novo, do seu jeito. 💛";
+    });
+  });
 
   $("#enableNotificationsBtn")
     ?.addEventListener(
@@ -5191,13 +5636,15 @@ function bindDynamicEvents() {
 
           if (!task) return;
 
-          speak(
-            `Preciso de ajuda com a tarefa ${task.title}`
-          );
-
-          alert(
-            `Pedido de ajuda enviado para: ${task.title}`
-          );
+          sendHelpRequest(task)
+            .then(() => {
+              speak(`Seu pedido de ajuda foi enviado para ${task.title}`);
+              alert(`Pedido de ajuda enviado para os responsáveis: ${task.title}`);
+            })
+            .catch(error => {
+              console.error("Erro ao enviar pedido de ajuda:", error);
+              alert("Não foi possível avisar os responsáveis. Confira a internet e tente novamente.");
+            });
         }
       );
     }
@@ -5704,7 +6151,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          "./sw.js?v=13"
+          "./sw.js?v=14"
         )
         .catch(
           error =>
@@ -5753,6 +6200,7 @@ async function iniciarLele() {
     await carregarFamiliaReal();
 
     startTasksRealtime();
+    startMessagesRealtime();
 
     $("#authScreen")
       ?.classList
