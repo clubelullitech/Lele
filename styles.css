@@ -307,6 +307,7 @@ button{
 }
 
 .guide-step-audio{
+  position:relative;
   display:grid;
   width:100%;
   padding:0;
