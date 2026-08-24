@@ -202,7 +202,10 @@ const categoryIcons = {
   "Pet": "🐾",
   "Emoções": "💛",
   "Movimento": "🏃",
-  "Criatividade": "🎨"
+  "Criatividade": "🎨",
+  "Vida prática": "🧰",
+  "Finanças": "💰",
+  "Foco": "🎯"
 };
 
 const emojiRules = [
@@ -597,6 +600,73 @@ const taskLibrary = [
     cat: "Criatividade",
     ages: [5, 12],
     icon: "🎨"
+  },
+
+  {
+    title: "Planejar as prioridades da semana",
+    cat: "Organização",
+    ages: [13, 16],
+    icon: "🗓️"
+  },
+  {
+    title: "Dividir um trabalho em etapas",
+    cat: "Escola",
+    ages: [13, 16],
+    icon: "🧩"
+  },
+  {
+    title: "Fazer uma sessão de estudo focado",
+    cat: "Foco",
+    ages: [13, 16],
+    icon: "🎯"
+  },
+  {
+    title: "Revisar agenda, prazos e compromissos",
+    cat: "Organização",
+    ages: [13, 16],
+    icon: "✅"
+  },
+  {
+    title: "Preparar uma refeição simples com segurança",
+    cat: "Vida prática",
+    ages: [13, 16],
+    icon: "🍳"
+  },
+  {
+    title: "Cuidar das próprias roupas",
+    cat: "Vida prática",
+    ages: [13, 16],
+    icon: "👕"
+  },
+  {
+    title: "Organizar arquivos e espaço digital",
+    cat: "Vida prática",
+    ages: [13, 16],
+    icon: "📁"
+  },
+  {
+    title: "Planejar um pequeno orçamento",
+    cat: "Finanças",
+    ages: [13, 16],
+    icon: "💰"
+  },
+  {
+    title: "Resolver uma pendência que estou adiando",
+    cat: "Autonomia",
+    ages: [13, 16],
+    icon: "🚀"
+  },
+  {
+    title: "Fazer uma pausa consciente das telas",
+    cat: "Saúde",
+    ages: [13, 16],
+    icon: "🌿"
+  },
+  {
+    title: "Conversar sobre algo que preciso",
+    cat: "Emoções",
+    ages: [13, 16],
+    icon: "💬"
   }
 ];
 
@@ -4068,6 +4138,60 @@ const taskGuides = [
       "Respire devagar três vezes.",
       "Conte para um adulto se precisar de companhia ou ajuda."
     ]
+  },
+  {
+    words: ["prioridades", "agenda", "prazos", "compromissos", "semana"],
+    steps: [
+      "Liste tudo o que precisa de atenção, sem tentar organizar ainda.",
+      "Marque o que tem prazo e o que é mais importante.",
+      "Escolha no máximo três prioridades reais.",
+      "Reserve um horário para começar e revise o plano no fim do dia."
+    ]
+  },
+  {
+    words: ["trabalho", "projeto", "etapas"],
+    steps: [
+      "Defina claramente o que precisa ser entregue.",
+      "Separe pesquisa, produção e revisão em etapas.",
+      "Dê um prazo curto e realista para cada etapa.",
+      "Comece pela primeira ação que leva menos de quinze minutos."
+    ]
+  },
+  {
+    words: ["estudo focado", "sessão de estudo"],
+    steps: [
+      "Escolha uma meta específica para esta sessão.",
+      "Afaste notificações e deixe somente o material necessário.",
+      "Estude por um período curto com atenção total.",
+      "Ao terminar, explique com suas palavras o que aprendeu."
+    ]
+  },
+  {
+    words: ["refeição", "cozinhar"],
+    steps: [
+      "Escolha uma receita simples e confirme se um adulto precisa acompanhar.",
+      "Separe ingredientes e utensílios antes de começar.",
+      "Siga a ordem da receita e cuide do fogo e de objetos cortantes.",
+      "Desligue tudo, guarde os alimentos e organize o espaço."
+    ]
+  },
+  {
+    words: ["orçamento", "dinheiro"],
+    steps: [
+      "Anote quanto dinheiro está disponível.",
+      "Separe o que é necessário do que é apenas vontade.",
+      "Compare valores e defina um limite.",
+      "Registre o que gastou e quanto restou."
+    ]
+  },
+  {
+    words: ["arquivos", "digital"],
+    steps: [
+      "Escolha uma pasta ou área pequena para organizar.",
+      "Apague apenas duplicados e arquivos que reconhece como desnecessários.",
+      "Crie nomes e pastas fáceis de encontrar depois.",
+      "Confira se documentos importantes estão protegidos ou salvos."
+    ]
   }
 ];
 
@@ -4085,7 +4209,10 @@ function skillForCategory(category) {
     Pet: "Responsabilidade",
     Emoções: "Consciência emocional",
     Movimento: "Desenvolvimento físico",
-    Criatividade: "Criatividade"
+    Criatividade: "Criatividade",
+    "Vida prática": "Vida prática",
+    Finanças: "Educação financeira",
+    Foco: "Foco e atenção"
   };
 
   return skills[category] || "Autonomia";
@@ -4115,7 +4242,9 @@ function openTaskGuide(task) {
   const steps = guideForTask(task);
   $("#taskGuideTitle").textContent = task.title;
   $("#taskGuideIntro").textContent =
-    "Você não precisa fazer tudo de uma vez. Siga estes passos:";
+    child()?.age >= 13
+      ? "Use este plano como ponto de partida e ajuste do seu jeito:"
+      : "Você não precisa fazer tudo de uma vez. Siga estes passos:";
   $("#taskGuideSteps").innerHTML = steps
     .map((step, index) => `<li><span>${index + 1}</span><p>${step}</p></li>`)
     .join("");
@@ -5322,7 +5451,7 @@ async function clearTestData() {
 
 
 /* =============================================
-   CRESCER — DESENVOLVIMENTO 5 A 12 ANOS
+   CRESCER — DESENVOLVIMENTO 5 A 16 ANOS
 ============================================= */
 
 function developmentStage(age) {
@@ -5340,9 +5469,16 @@ function developmentStage(age) {
     };
   }
 
+  if (age <= 12) {
+    return {
+      title: "Construir autonomia",
+      text: "Planejar, dividir tarefas e avaliar o próprio resultado passam a ser o foco."
+    };
+  }
+
   return {
-    title: "Construir autonomia",
-    text: "Planejar, dividir tarefas e avaliar o próprio resultado passam a ser o foco."
+    title: "Assumir o próprio plano",
+    text: "Dos 13 aos 16, o Lelê apoia prioridades, decisões, prazos e vida prática sem tratar o adolescente como criança."
   };
 }
 
@@ -5371,14 +5507,19 @@ function renderDevelopment() {
   const stage = developmentStage(c.age);
   const summary = developmentSummary(tasks);
   const reflection = localStorage.getItem(reflectionKey(c)) || "";
-  const ageIsSupported = c.age >= 5 && c.age <= 12;
+  const ageIsSupported = c.age >= 5 && c.age <= 16;
+  const isTeen = c.age >= 13;
 
   $("#developmentView").innerHTML = `
     <div class="hero development-hero">
-      <span class="age-pill">5 a 12 anos</span>
+      <span class="age-pill">5 a 16 anos</span>
       <h1>🌱 Crescer fazendo</h1>
       <p>
-        O Lelê ajuda ${c.name} a entender, tentar e aprender com as tarefas do dia.
+        ${
+          isTeen
+            ? `O Lelê ajuda ${c.name} a planejar, decidir e avançar com mais autonomia.`
+            : `O Lelê ajuda ${c.name} a entender, tentar e aprender com as tarefas do dia.`
+        }
       </p>
       <div class="stage-card">
         <b>${stage.title}</b>
@@ -5387,7 +5528,7 @@ function renderDevelopment() {
       ${
         ageIsSupported
           ? ""
-          : `<div class="callout age-warning">O perfil está com ${c.age} anos. Esta experiência foi planejada para crianças de 5 a 12 anos.</div>`
+          : `<div class="callout age-warning">O perfil está com ${c.age} anos. Esta experiência foi planejada dos 5 aos 16 anos.</div>`
       }
     </div>
 
@@ -5420,7 +5561,11 @@ function renderDevelopment() {
       <div>
         <span class="companion-icon">🧭</span>
         <h2>Quando algo parecer difícil</h2>
-        <p>Abra uma tarefa e toque em <b>Como fazer</b>. O Lelê divide a atividade em passos pequenos e pode ler tudo em voz alta.</p>
+        <p>${
+          isTeen
+            ? `Abra uma atividade e toque em <b>Como fazer</b>. O Lelê transforma objetivos em um plano curto, sem fazer por você.`
+            : `Abra uma tarefa e toque em <b>Como fazer</b>. O Lelê divide a atividade em passos pequenos e pode ler tudo em voz alta.`
+        }</p>
       </div>
       <button id="goToTasksBtn" class="primary" type="button">Ver tarefas de hoje</button>
     </section>
@@ -5429,7 +5574,10 @@ function renderDevelopment() {
       <h2>Como foi hoje?</h2>
       <p class="muted">Não existe resposta errada. Escolha o que mais combina.</p>
       <div class="reflection-options" role="group" aria-label="Como foi o dia">
-        ${["😊 Consegui", "😐 Foi mais ou menos", "😟 Precisei de ajuda"].map(option => `
+        ${(isTeen
+          ? ["✅ Avancei bem", "➖ Avancei um pouco", "🆘 Preciso reorganizar"]
+          : ["😊 Consegui", "😐 Foi mais ou menos", "😟 Precisei de ajuda"]
+        ).map(option => `
           <button
             class="reflection-btn ${reflection === option ? "selected" : ""}"
             data-reflection="${option}"
@@ -6164,7 +6312,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          "./sw.js?v=15"
+          "./sw.js?v=16"
         )
         .catch(
           error =>
