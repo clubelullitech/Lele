@@ -3396,12 +3396,13 @@ function renderHome() {
 ${
   membroAtual?.role !== "child"
     ? `
-      <button
-        id="addFamilyMemberBtn"
-        class="primary"
-        type="button"
-        style="margin-top:12px"
-      >
+    <button
+  id="addFamilyMemberBtn"
+  class="primary"
+  type="button"
+  style="margin-top:12px"
+  onclick="adicionarPessoaFamilia()"
+>
         ➕ Adicionar pessoa
       </button>
     `
@@ -4566,8 +4567,7 @@ ${
       render();
     });
 
-$("#addFamilyMemberBtn")
-  ?.addEventListener("click", async () => {
+async function adicionarPessoaFamilia() {
 
     const nome = prompt(
       "Nome da pessoa:"
@@ -4672,8 +4672,6 @@ $("#addFamilyMemberBtn")
     await carregarFamiliaReal();
 
     render();
-  });
-
 }
 
 /* =============================================
