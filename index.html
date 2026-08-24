@@ -8,7 +8,7 @@
   />
   <meta name="theme-color" content="#7567e8" />
 
-  <title>Lelê — Rotina em família</title>
+  <title>Lelê — Crescer fazendo</title>
 
   <link
     rel="manifest"
@@ -17,7 +17,7 @@
 
   <link
     rel="stylesheet"
-    href="styles.css?v=11"
+    href="styles.css?v=14"
   />
 </head>
 
@@ -156,6 +156,11 @@
     ></section>
 
     <section
+      id="developmentView"
+      class="view"
+    ></section>
+
+    <section
       id="familyView"
       class="view"
     ></section>
@@ -200,6 +205,14 @@
       type="button"
     >
       Escola
+    </button>
+
+    <button
+      data-view="developmentView"
+      class="nav-btn"
+      type="button"
+    >
+      Crescer
     </button>
 
     <button
@@ -355,6 +368,18 @@
 
         <option value="Pet">
           🐾 Pet
+        </option>
+
+        <option value="Emoções">
+          💛 Emoções
+        </option>
+
+        <option value="Movimento">
+          🏃 Movimento
+        </option>
+
+        <option value="Criatividade">
+          🎨 Criatividade
         </option>
 
       </select>
@@ -876,6 +901,27 @@
   </form>
 
 </dialog>
+
+<!-- AJUDA PASSO A PASSO -->
+
+<dialog id="taskGuideDialog">
+  <div class="modal-card guide-modal">
+    <div class="modal-head">
+      <div>
+        <span class="age-pill">Lelê ajuda</span>
+        <h2 id="taskGuideTitle">Vamos fazer juntos</h2>
+      </div>
+      <button id="closeTaskGuide" class="icon-btn" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <p id="taskGuideIntro" class="muted"></p>
+    <ol id="taskGuideSteps" class="guide-steps"></ol>
+    <div class="guide-skill" id="taskGuideSkill"></div>
+    <div class="modal-actions">
+      <button id="speakTaskGuide" class="ghost" type="button">🔊 Ouvir passos</button>
+      <button id="understoodTaskGuide" class="primary" type="button">Entendi, vou tentar!</button>
+    </div>
+  </div>
+</dialog>
 <!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -883,7 +929,8 @@
 
 <!-- LELÊ -->
 
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
+<script src="notifications.js?v=14"></script>
 <script src="school.js?v=1"></script>
 
 </body>
