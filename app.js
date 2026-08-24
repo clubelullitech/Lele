@@ -4436,9 +4436,23 @@ function renderFamily() {
   $("#familyView").innerHTML = `
     <div class="hero">
 
-      <h1>
-        👨‍👩‍👧 ${state.familyName}
-      </h1>
+     <h1>
+  👨‍👩‍👧 ${state.familyName}
+
+  ${
+    membroAtual?.role !== "child"
+      ? `
+        <button
+          id="editFamilyNameBtn"
+          class="ghost"
+          type="button"
+        >
+          ✏️ Editar
+        </button>
+      `
+      : ""
+  }
+</h1>
 
       <p class="muted">
         Perfis conectados à rotina.
@@ -4492,8 +4506,39 @@ function renderFamily() {
 
     </section>
   `;
-}
+    </section>
+  `;
 
+  $("#editFamilyNameBtn")
+    ?.addEventListener("click", async () => {
+
+      const novoNome = prompt(
+        "Nome da família:",
+        state.familyName
+      );
+
+      if (!novoNome?.trim()) return;
+
+      const { error } =
+        await leleDb
+          .from("families")
+          .update({
+            name: novoNome.trim()
+          })
+          .eq("id", familiaAtual);
+
+      if (error) {
+        alert("Não foi possível alterar o nome.");
+        console.error(error);
+        return;
+      }
+
+      state.familyName = novoNome.trim();
+      save();
+      render();
+    });
+
+}
 
 /* =============================================
    RECADOS
