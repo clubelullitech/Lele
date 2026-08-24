@@ -4338,6 +4338,9 @@ function renderSchool() {
 
   if (!c) return;
 
+  const projects =
+    childProjects();
+
   $("#schoolView").innerHTML = `
     <div class="hero">
 
@@ -4362,7 +4365,13 @@ function renderSchool() {
         </div>
 
         <div class="stat">
-          <b>${childProjects().length}</b>
+          <b>
+            ${
+              projects.filter(
+                project => !project.done
+              ).length
+            }
+          </b>
           Trabalhos
         </div>
 
@@ -4395,32 +4404,129 @@ function renderSchool() {
       </div>
 
       ${
-        childProjects().length
-          ? childProjects().map(project => `
-              <article class="project">
+        projects.length
+          ? projects.map(project => `
+
+              <article
+                class="project"
+                style="
+                  opacity:${project.done ? ".6" : "1"};
+                  margin-bottom:14px;
+                "
+              >
 
                 <h3>
-                  ${project.title}
+                  📚 ${project.title}
                 </h3>
 
-                <div class="muted">
-                  ${project.subject || ""}
-                </div>
+                ${
+                  project.subject
+                    ? `
+                      <div class="muted">
+                        ${project.subject}
+                      </div>
+                    `
+                    : ""
+                }
 
                 <p>
-                  Entrega:
+                  📅 Entrega:
                   <b>
                     ${fmtDate(project.due)}
                   </b>
                 </p>
 
                 ${
+                  project.materials
+                    ? `
+                      <p>
+                        🎒 <b>Material:</b>
+                        ${project.materials}
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
+                  project.reminder
+                    ? `
+                      <p>
+                        🔔 <b>Lembrete:</b>
+                        ${
+                          new Date(
+                            project.reminder
+                          ).toLocaleString(
+                            "pt-BR",
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            }
+                          )
+                        }
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
                   project.notes
-                    ? `<p>${project.notes}</p>`
+                    ? `
+                      <p>
+                        📝 ${project.notes}
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
+                  project.done
+                    ? `
+                      <div class="callout">
+                        ✅ Trabalho concluído
+                      </div>
+                    `
+                    : ""
+                }
+
+                ${
+                  membroAtual?.role !== "child" &&
+                  !project.done
+                    ? `
+                      <div
+                        style="
+                          display:flex;
+                          gap:8px;
+                          margin-top:12px;
+                          flex-wrap:wrap;
+                        "
+                      >
+
+                        <button
+                          type="button"
+                          class="ghost school-edit-btn"
+                          data-project-id="${project.id}"
+                        >
+                          ✏️ Editar
+                        </button>
+
+                        <button
+                          type="button"
+                          class="primary school-done-btn"
+                          data-project-id="${project.id}"
+                        >
+                          ✓ Concluir
+                        </button>
+
+                      </div>
+                    `
                     : ""
                 }
 
               </article>
+
             `).join("")
           : `
             <div class="callout">
@@ -4432,7 +4538,6 @@ function renderSchool() {
     </section>
   `;
 }
-
 
 /* =============================================
    FAMÍLIA
