@@ -4434,231 +4434,351 @@ function renderSchool() {
 ============================================= */
 
 function renderFamily() {
+
   $("#familyView").innerHTML = `
     <div class="hero">
 
-     <h1>
-  👨‍👩‍👧 ${state.familyName}
+      <h1>
+        👨‍👩‍👧 ${state.familyName}
 
-  ${
-    membroAtual?.role !== "child"
-      ? `
-        <button
-          id="editFamilyNameBtn"
-          class="ghost"
-          type="button"
-        >
-          ✏️ Editar
-        </button>
-      `
-      : ""
-  }
-</h1>
+        ${
+          membroAtual?.role !== "child"
+            ? `
+              <button
+                id="editFamilyNameBtn"
+                class="ghost"
+                type="button"
+              >
+                ✏️ Editar
+              </button>
+            `
+            : ""
+        }
+      </h1>
 
       <p class="muted">
         Perfis conectados à rotina.
       </p>
 
-${
-  membroAtual?.role !== "child"
-    ? `
-      <button
-        id="addFamilyMemberBtn"
-        class="primary"
-        type="button"
-        style="margin-top:12px"
-      >
-        ➕ Adicionar pessoa
-      </button>
-    `
-    : ""
-}
+      ${
+        membroAtual?.role !== "child"
+          ? `
+            <button
+              id="addFamilyMemberBtn"
+              class="primary"
+              type="button"
+              style="margin-top:12px"
+            >
+              ➕ Adicionar pessoa
+            </button>
+          `
+          : ""
+      }
 
     </div>
 
     <section class="section">
 
       ${
-        state.children.map(
-          (c, index) => `
-            <article class="task">
+        state.children.length
+          ? state.children.map(
+              (c, index) => `
+                <article class="task">
 
-              <div class="task-emoji">
-                ${
-                  c.age >= 13
-                    ? "😎"
-                    : "🙂"
-                }
+                  <div class="task-emoji">
+                    ${
+                      c.age >= 13
+                        ? "😎"
+                        : "🙂"
+                    }
+                  </div>
+
+                  <div>
+                    <div class="task-title">
+                      ${c.name}
+                    </div>
+
+                    <div class="task-meta">
+                      ${c.age} anos
+                    </div>
+                  </div>
+
+                  ${
+                    membroAtual?.role !== "child"
+                      ? `
+                        <button
+                          class="ghost child-select-btn"
+                          data-child-index="${index}"
+                          type="button"
+                        >
+                          Ver perfil
+                        </button>
+                      `
+                      : ""
+                  }
+
+                </article>
+              `
+            ).join("")
+          : `
+              <div class="callout">
+                Nenhuma criança cadastrada.
               </div>
-
-              <div>
-                <div class="task-title">
-                   ${c.name}
-                </div>
-
-                <div class="task-meta">
-                  ${c.age} anos
-                </div>
-              </div>
-
-              ${
-                membroAtual?.role !== "child"
-                  ? `
-                    <button
-                      class="ghost child-select-btn"
-                      data-child-index="${index}"
-                      type="button"
-                    >
-                      Ver perfil
-                    </button>
-                  `
-                  : ""
-              }
-
-            </article>
-          `
-        ).join("")
+            `
       }
 
-       </section>
+    </section>
   `;
 
+
+  /* EDITAR NOME */
+
   $("#editFamilyNameBtn")
-    ?.addEventListener("click", async () => {
+    ?.addEventListener(
+      "click",
+      async () => {
 
-      const novoNome = prompt(
-        "Nome da família:",
-        state.familyName
-      );
+        const novoNome =
+          prompt(
+            "Nome da família:",
+            state.familyName
+          );
 
-      if (!novoNome?.trim()) return;
+        if (!novoNome?.trim()) {
+          return;
+        }
 
-      const { error } =
-        await leleDb
-          .from("families")
-          .update({
-            name: novoNome.trim()
-          })
-          .eq("id", familiaAtual);
+        const { error } =
+          await leleDb
+            .from("families")
+            .update({
+              name:
+                novoNome.trim()
+            })
+            .eq(
+              "id",
+              familiaAtual
+            );
 
-      if (error) {
-        alert("Não foi possível alterar o nome.");
-        console.error(error);
-        return;
+        if (error) {
+
+          console.error(error);
+
+          alert(
+            "Não foi possível alterar o nome."
+          );
+
+          return;
+        }
+
+        state.familyName =
+          novoNome.trim();
+
+        save();
+        render();
       }
+    );
 
-      state.familyName = novoNome.trim();
-      save();
-      render();
-    });
 
-window.adicionarPessoaFamilia = async function () {
+  /* ADICIONAR PESSOA */
 
-    const nome = prompt(
+  $("#addFamilyMemberBtn")
+    ?.addEventListener(
+      "click",
+      adicionarPessoaFamilia
+    );
+
+
+  /* ABRIR PERFIL */
+
+  $$(".child-select-btn")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            state.activeChild =
+              Number(
+                button.dataset
+                  .childIndex
+              );
+
+            save();
+            render();
+          }
+        );
+      }
+    );
+}
+
+
+/* =============================================
+   ADICIONAR PESSOA À FAMÍLIA
+============================================= */
+
+async function adicionarPessoaFamilia() {
+
+  const nome =
+    prompt(
       "Nome da pessoa:"
     );
 
-    if (!nome?.trim()) return;
+  if (!nome?.trim()) {
+    return;
+  }
 
-    const tipo = prompt(
+
+  const tipo =
+    prompt(
       "Digite:\n1 = Criança\n2 = Pai/Responsável",
       "1"
     );
 
-    if (
-      tipo !== "1" &&
-      tipo !== "2"
-    ) {
-      alert("Escolha 1 ou 2.");
-      return;
-    }
+  if (
+    tipo !== "1" &&
+    tipo !== "2"
+  ) {
 
-    let nascimento = null;
+    alert(
+      "Digite 1 para Criança ou 2 para Pai/Responsável."
+    );
 
-    if (tipo === "1") {
-      nascimento = prompt(
-        "Data de nascimento (AAAA-MM-DD):"
+    return;
+  }
+
+
+  let nascimento = null;
+
+  if (tipo === "1") {
+
+    nascimento =
+      prompt(
+        "Data de nascimento:\nAAAA-MM-DD"
       );
 
-      if (!nascimento) return;
+    if (!nascimento) {
+      return;
     }
+  }
 
-    const usuario = prompt(
+
+  const usuario =
+    prompt(
       "Nome de usuário para login:"
     );
 
-    if (!usuario?.trim()) return;
+  if (!usuario?.trim()) {
+    return;
+  }
 
-    const senha = prompt(
-      "Senha (mínimo 6 caracteres):"
+
+  const senha =
+    prompt(
+      "Senha:\nMínimo de 6 caracteres"
     );
 
-    if (!senha) return;
+  if (!senha) {
+    return;
+  }
 
-    if (senha.length < 6) {
-      alert(
-        "A senha precisa ter pelo menos 6 caracteres."
-      );
-      return;
-    }
+
+  if (senha.length < 6) {
+
+    alert(
+      "A senha precisa ter pelo menos 6 caracteres."
+    );
+
+    return;
+  }
+
+
+  try {
 
     const {
       data,
       error
     } =
-      await leleDb.functions.invoke(
-        "create-family-user",
-        {
-          body: {
-            displayName:
-              nome.trim(),
+      await leleDb
+        .functions
+        .invoke(
+          "create-family-user",
+          {
+            body: {
 
-            username:
-              usuario.trim(),
+              displayName:
+                nome.trim(),
 
-            password:
-              senha,
+              username:
+                usuario
+                  .trim()
+                  .toLowerCase(),
 
-            role:
-              tipo === "1"
-                ? "child"
-                : "parent",
+              password:
+                senha,
 
-            birthDate:
-              nascimento
+              role:
+                tipo === "1"
+                  ? "child"
+                  : "parent",
+
+              birthDate:
+                nascimento
+            }
           }
-        }
-      );
+        );
+
 
     if (error) {
-      console.error(error);
+
+      console.error(
+        "Erro Edge Function:",
+        error
+      );
 
       alert(
         data?.error ||
-        "Não foi possível criar a pessoa."
+        error?.message ||
+        "Não foi possível adicionar a pessoa."
       );
 
       return;
     }
+
 
     if (!data?.success) {
+
       alert(
         data?.error ||
-        "Não foi possível criar a pessoa."
+        "Não foi possível adicionar a pessoa."
       );
 
       return;
     }
 
+
     alert(
-      `✅ ${nome} foi adicionado!\n\nUsuário: ${usuario}`
+      `✅ ${nome.trim()} foi adicionado!\n\nUsuário: ${usuario.trim()}`
     );
+
 
     await carregarFamiliaReal();
 
     render();
-};
 
+  } catch (error) {
+
+    console.error(
+      "Erro ao adicionar pessoa:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Não foi possível adicionar a pessoa."
+    );
+  }
 }
 
 /* =============================================
