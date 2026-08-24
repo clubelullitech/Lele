@@ -29,6 +29,9 @@ let messagesRealtimeChannel = null;
 
 let pendingPhotoTask = null;
 let pendingPhotoData = null;
+let chatRecorder = null;
+let chatAudioChunks = [];
+let chatAudioBlob = null;
 
 /* =============================================
    UTILITÁRIOS
@@ -683,6 +686,8 @@ const initial = {
     "Família Lelê",
 
   children: [],
+
+  familyMembers: [],
 
   tasks: [],
 
@@ -1945,7 +1950,6 @@ async function carregarFamiliaReal() {
     familia?.name ||
     "Família Lelê";
 
-
   /*
     Membros da família.
   */
@@ -1976,6 +1980,13 @@ async function carregarFamiliaReal() {
   if (erroMembros) {
     throw erroMembros;
   }
+
+  state.familyMembers = (membros || []).map(member => ({
+    id: member.id,
+    userId: member.user_id,
+    name: member.display_name,
+    role: member.role
+  }));
 
 
   let filhos;
@@ -2149,6 +2160,12 @@ async function carregarFamiliaReal() {
       "Usando hidratação local:",
       error
     );
+  }
+
+  try {
+    await loadMessagesFromSupabase();
+  } catch (error) {
+    console.error("Usando recados locais:", error);
   }
 
   save();
@@ -2443,66 +2460,191 @@ function startTasksRealtime() {
 
 
 /* =============================================
-   PEDIDOS DE AJUDA EM TEMPO REAL
+   CHAT FAMILIAR — RETENÇÃO DE 48 HORAS
 ============================================= */
 
-async function sendHelpRequest(task) {
-  const c = child();
-  if (!task || !c || !familiaAtual || !membroAtual) return;
+const chatPrefix = "LELE_CHAT:";
 
-  const body = `${c.name} pediu ajuda com: ${task.title}`;
-  const { error } = await leleDb
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function memberName(memberId) {
+  return state.familyMembers.find(member => member.id === memberId)?.name || "Família";
+}
+
+function encodeChatBody(data) {
+  return chatPrefix + JSON.stringify(data);
+}
+
+function decodeChatBody(body, row = {}) {
+  if (String(body || "").startsWith(chatPrefix)) {
+    try {
+      return { ...JSON.parse(body.slice(chatPrefix.length)), legacy: false };
+    } catch (error) {
+      console.warn("Recado inválido:", error);
+    }
+  }
+
+  return {
+    text: body || "",
+    recipientId: "all",
+    kind: row.message_type || "system",
+    legacy: true
+  };
+}
+
+function messageIsForCurrentUser(message) {
+  return message.senderId === membroAtual?.id ||
+    message.recipientId === "all" ||
+    message.recipientId === membroAtual?.id;
+}
+
+async function signedChatAudio(path) {
+  if (!path) return "";
+  const { data, error } = await leleDb.storage
+    .from("task-evidence")
+    .createSignedUrl(path, 60 * 60);
+  if (error) return "";
+  return data?.signedUrl || "";
+}
+
+async function loadMessagesFromSupabase() {
+  if (!familiaAtual || !membroAtual) return;
+
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+  /* A interface nunca exibe mensagens vencidas. Banco e áudios são limpos em segundo plano. */
+  const expired = await leleDb.from("messages")
+    .select("id,audio_path")
+    .eq("family_id", familiaAtual)
+    .lt("created_at", cutoff);
+
+  const expiredAudio = (expired.data || [])
+    .map(message => message.audio_path)
+    .filter(Boolean);
+
+  if (expiredAudio.length) {
+    leleDb.storage.from("task-evidence").remove(expiredAudio)
+      .then(({ error }) => error && console.warn("Limpeza de áudios pendente:", error));
+  }
+
+  leleDb.from("messages")
+    .delete()
+    .eq("family_id", familiaAtual)
+    .lt("created_at", cutoff)
+    .then(({ error }) => error && console.warn("Limpeza de recados pendente:", error));
+
+  const { data, error } = await leleDb
     .from("messages")
-    .insert({
-      family_id: familiaAtual,
-      child_id: c.id,
-      sender_id: membroAtual.id,
-      message_type: "system",
-      body
-    });
+    .select("*")
+    .eq("family_id", familiaAtual)
+    .gte("created_at", cutoff)
+    .order("created_at", { ascending: true });
 
   if (error) throw error;
 
-  state.messages.unshift({
-    text: `🙋 ${body}`,
-    createdAt: new Date().toISOString()
-  });
+  const messages = await Promise.all((data || []).map(async row => {
+    const decoded = decodeChatBody(row.body, row);
+    return {
+      id: row.id,
+      senderId: row.sender_id,
+      senderName: memberName(row.sender_id),
+      recipientId: decoded.recipientId || "all",
+      recipientName: decoded.recipientId === "all" ? "Toda a família" : memberName(decoded.recipientId),
+      text: decoded.text || "",
+      kind: decoded.kind || row.message_type || "text",
+      audioPath: row.audio_path || "",
+      audioUrl: await signedChatAudio(row.audio_path),
+      createdAt: row.created_at
+    };
+  }));
+
+  state.messages = messages.filter(messageIsForCurrentUser);
   save();
+}
+
+async function uploadChatAudio(blob) {
+  const path = `${familiaAtual}/${membroAtual.id}/chat-${Date.now()}.webm`;
+  const { error } = await leleDb.storage
+    .from("task-evidence")
+    .upload(path, blob, {
+      cacheControl: "0",
+      upsert: false,
+      contentType: blob.type || "audio/webm"
+    });
+  if (error) throw error;
+  return path;
+}
+
+async function sendChatMessage({ text = "", recipientId = "all", audioBlob = null, kind = "text" }) {
+  if (!familiaAtual || !membroAtual) return;
+  if (!text.trim() && !audioBlob) throw new Error("Escreva ou grave uma mensagem.");
+
+  const audioPath = audioBlob ? await uploadChatAudio(audioBlob) : null;
+  const childId = membroAtual.role === "child"
+    ? membroAtual.id
+    : (state.children[0]?.id || null);
+
+  const { error } = await leleDb.from("messages").insert({
+    family_id: familiaAtual,
+    child_id: childId,
+    sender_id: membroAtual.id,
+    message_type: audioBlob ? "audio" : kind,
+    body: encodeChatBody({ text: text.trim(), recipientId, kind: audioBlob ? "audio" : kind }),
+    audio_path: audioPath
+  });
+
+  if (error) {
+    if (audioPath) await leleDb.storage.from("task-evidence").remove([audioPath]);
+    throw error;
+  }
+
+  await loadMessagesFromSupabase();
+  render();
+  showView("messagesView");
+}
+
+async function sendHelpRequest(task) {
+  const c = child();
+  if (!task || !c) return;
+  const parents = state.familyMembers.filter(member => member.role !== "child");
+  const recipientId = parents.length === 1 ? parents[0].id : "all";
+  await sendChatMessage({
+    text: `${c.name} pediu ajuda com: ${task.title}`,
+    recipientId,
+    kind: "system"
+  });
 }
 
 function startMessagesRealtime() {
   if (!familiaAtual) return;
-
-  if (messagesRealtimeChannel) {
-    leleDb.removeChannel(messagesRealtimeChannel);
-  }
+  if (messagesRealtimeChannel) leleDb.removeChannel(messagesRealtimeChannel);
 
   messagesRealtimeChannel = leleDb
     .channel(`lele-messages-${familiaAtual}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `family_id=eq.${familiaAtual}`
-      },
-      async event => {
-        const message = event.new;
-        if (!message?.body || message.sender_id === membroAtual?.id) return;
-
-        state.messages.unshift({
-          text: `🙋 ${message.body}`,
-          createdAt: message.created_at
-        });
-        save();
-        render();
-
-        if (membroAtual?.role !== "child") {
-          await showLocalNotification("Lelê • Pedido de ajuda", message.body);
-        }
+    .on("postgres_changes", {
+      event: "*",
+      schema: "public",
+      table: "messages",
+      filter: `family_id=eq.${familiaAtual}`
+    }, async event => {
+      await loadMessagesFromSupabase();
+      render();
+      const decoded = decodeChatBody(event.new?.body, event.new || {});
+      const directedHere = decoded.recipientId === "all" || decoded.recipientId === membroAtual?.id;
+      if (event.eventType === "INSERT" && event.new?.sender_id !== membroAtual?.id && directedHere) {
+        await showLocalNotification(
+          decoded.kind === "system" ? "Lelê • Pedido de ajuda" : `Lelê • ${memberName(event.new.sender_id)}`,
+          decoded.text || "Você recebeu um novo áudio."
+        );
       }
-    )
+    })
     .subscribe();
 }
 
@@ -3573,6 +3715,14 @@ function renderHome() {
       )
     );
 
+  const attentionPhrase = c.age >= 13
+    ? pending
+      ? `${c.name}, escolha uma prioridade e comece pela primeira etapa. Você não precisa resolver tudo agora.`
+      : `${c.name}, o que estava planejado para hoje foi concluído. Bom trabalho.`
+    : pending
+      ? `${c.name}, o Lelê está com você. Vamos começar por uma tarefa pequena?`
+      : `${c.name}, você concluiu o que estava planejado. Muito bem!`;
+
   $("#homeView").innerHTML = `
     <div class="hero">
 
@@ -3613,6 +3763,20 @@ function renderHome() {
       </div>
 
     </div>
+
+    <button
+      id="attentionCard"
+      class="attention-card ${pending ? "needs-attention" : "is-complete"}"
+      type="button"
+      data-phrase="${escapeHtml(attentionPhrase)}"
+    >
+      <span class="attention-icon">${pending ? (c.age >= 13 ? "🎯" : "✨") : "✅"}</span>
+      <span>
+        <b>${pending ? (c.age >= 13 ? "Sua próxima prioridade" : "O Lelê chamou você") : "Plano do dia concluído"}</b>
+        <small>${escapeHtml(attentionPhrase)}</small>
+      </span>
+      <span class="attention-audio">🔊</span>
+    </button>
 
 
     <section class="section">
@@ -5264,39 +5428,113 @@ async function adicionarPessoaFamilia() {
 ============================================= */
 
 function renderMessages() {
+  const recipients = (state.familyMembers || [])
+    .filter(member => member.id !== membroAtual?.id);
+
   $("#messagesView").innerHTML = `
-    <div class="hero">
-
-      <h1>
-        💬 Recados
-      </h1>
-
-      <p class="muted">
-        Espaço da família para lembretes e mensagens.
-      </p>
-
+    <div class="hero chat-hero">
+      <h1>💬 Conversas da família</h1>
+      <p class="muted">Mensagens por texto ou áudio. Tudo é apagado após 48 horas.</p>
     </div>
 
-    <section class="section">
-
+    <section class="section chat-shell">
+      <div id="chatMessages" class="chat-messages">
       ${
         state.messages.length
-          ? state.messages.map(
-              message => `
-                <div class="message">
-                  ${message.text || message}
-                </div>
-              `
-            ).join("")
+          ? state.messages.map(message => {
+              const mine = message.senderId === membroAtual?.id;
+              const time = new Date(message.createdAt).toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+              });
+              return `
+                <article class="message ${mine ? "me" : ""}">
+                  <div class="message-head">
+                    <b>${escapeHtml(mine ? "Você" : message.senderName)}</b>
+                    <span>para ${escapeHtml(message.recipientName)} • ${time}</span>
+                  </div>
+                  ${message.text ? `<p>${escapeHtml(message.text)}</p>` : ""}
+                  ${message.audioUrl ? `
+                    <audio controls preload="metadata" src="${message.audioUrl}">
+                      Seu navegador não conseguiu reproduzir este áudio.
+                    </audio>
+                  ` : ""}
+                  ${message.kind === "system" ? `<span class="system-chip">🙋 Pedido de ajuda</span>` : ""}
+                </article>
+              `;
+            }).join("")
           : `
             <div class="callout">
-              Nenhum recado por enquanto.
+              Nenhuma mensagem nas últimas 48 horas.
             </div>
           `
       }
+      </div>
 
+      <form id="chatForm" class="chat-composer">
+        <label>
+          Enviar para
+          <select id="chatRecipient" required>
+            <option value="all">👨‍👩‍👧 Toda a família</option>
+            ${recipients.map(member => `
+              <option value="${member.id}">
+                ${member.role === "child" ? "🧑" : "👤"} ${escapeHtml(member.name)}
+              </option>
+            `).join("")}
+          </select>
+        </label>
+
+        <div class="chatbar">
+          <input id="chatText" maxlength="600" placeholder="Escreva uma mensagem…" autocomplete="off" />
+          <button id="recordChatAudioBtn" class="ghost record-btn" type="button" aria-label="Gravar áudio">🎙️</button>
+          <button id="sendChatBtn" class="primary" type="submit">Enviar</button>
+        </div>
+
+        <div id="chatAudioPreview" class="chat-audio-preview ${chatAudioBlob ? "" : "hidden"}">
+          <span>${chatAudioBlob ? "🎤 Áudio pronto para enviar" : ""}</span>
+          <button id="discardChatAudioBtn" class="small danger" type="button">Descartar</button>
+        </div>
+        <small class="muted">Os áudios podem ter até 60 segundos.</small>
+      </form>
     </section>
   `;
+}
+
+async function toggleChatRecording() {
+  const button = $("#recordChatAudioBtn");
+
+  if (chatRecorder?.state === "recording") {
+    chatRecorder.stop();
+    button?.classList.remove("recording");
+    if (button) button.textContent = "🎙️";
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia || !("MediaRecorder" in window)) {
+    alert("A gravação de áudio não está disponível neste navegador.");
+    return;
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  chatAudioChunks = [];
+  chatAudioBlob = null;
+  chatRecorder = new MediaRecorder(stream);
+  chatRecorder.ondataavailable = event => event.data.size && chatAudioChunks.push(event.data);
+  chatRecorder.onstop = () => {
+    chatAudioBlob = new Blob(chatAudioChunks, { type: chatRecorder.mimeType || "audio/webm" });
+    stream.getTracks().forEach(track => track.stop());
+    renderMessages();
+    bindChatEvents();
+  };
+  chatRecorder.start();
+  button?.classList.add("recording");
+  if (button) button.textContent = "⏹️";
+
+  setTimeout(() => {
+    if (chatRecorder?.state === "recording") chatRecorder.stop();
+  }, 60000);
 }
 
 
@@ -5650,11 +5888,60 @@ function render() {
 }
 
 
+function bindChatEvents() {
+  $("#chatForm")?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = $("#sendChatBtn");
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Enviando…";
+    }
+    try {
+      await sendChatMessage({
+        text: $("#chatText")?.value || "",
+        recipientId: $("#chatRecipient")?.value || "all",
+        audioBlob: chatAudioBlob
+      });
+      chatAudioBlob = null;
+      chatAudioChunks = [];
+    } catch (error) {
+      console.error("Erro ao enviar recado:", error);
+      alert(error?.message || "Não foi possível enviar a mensagem.");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Enviar";
+      }
+    }
+  });
+
+  $("#recordChatAudioBtn")?.addEventListener("click", () =>
+    toggleChatRecording().catch(error => {
+      console.error("Erro ao gravar áudio:", error);
+      alert("Não foi possível acessar o microfone. Confira a permissão do navegador.");
+    })
+  );
+
+  $("#discardChatAudioBtn")?.addEventListener("click", () => {
+    chatAudioBlob = null;
+    chatAudioChunks = [];
+    renderMessages();
+    bindChatEvents();
+  });
+}
+
 /* =============================================
    EVENTOS DINÂMICOS
 ============================================= */
 
 function bindDynamicEvents() {
+
+  $("#attentionCard")?.addEventListener("click", event => {
+    speak(event.currentTarget.dataset.phrase || "Vamos começar.");
+    event.currentTarget.classList.add("attention-heard");
+  });
+
+  bindChatEvents();
 
   $("#clearTestDataBtn")?.addEventListener("click", clearTestData);
 
@@ -6312,7 +6599,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          "./sw.js?v=16"
+          "./sw.js?v=17"
         )
         .catch(
           error =>
