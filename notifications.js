@@ -251,6 +251,14 @@ async function checkLeleTaskAlerts() {
 
   const now = new Date();
 
+  if (
+    typeof childIsInSchoolNow === "function" &&
+    typeof child === "function" &&
+    childIsInSchoolNow(child(), now)
+  ) {
+    return;
+  }
+
   const nowMinutes =
     now.getHours() * 60 +
     now.getMinutes();
@@ -312,6 +320,7 @@ async function checkHourlyHydrationReminder() {
   const currentChild = typeof child === "function" ? child() : null;
 
   if (!app || app.classList.contains("hidden") || !currentChild) return;
+  if (typeof childIsInSchoolNow === "function" && childIsInSchoolNow(currentChild)) return;
 
   const now = new Date();
   const hourId = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}-${now.getHours()}-${currentChild.id || currentChild.name}`;

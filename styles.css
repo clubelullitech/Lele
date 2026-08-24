@@ -1099,6 +1099,84 @@ body.mode-child .task-emoji{
   font-weight:750;
 }
 
+.school-days{
+  margin:14px 0 10px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+}
+
+.school-now,
+.home-school-status.is-active{
+  color:#315e49;
+  background:#e8f7ef;
+  border-color:#bfe5d0;
+}
+
+.school-now{
+  margin-top:14px;
+  padding:11px 13px;
+  border:1px solid #bfe5d0;
+  border-radius:14px;
+  font-size:13px;
+  font-weight:800;
+}
+
+.school-schedule-editor{
+  margin-top:16px;
+  padding:15px;
+  border:1px solid var(--line);
+  border-radius:17px;
+  background:#fff;
+}
+
+.school-time-fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.school-schedule-editor input[type="time"]{
+  width:100%;
+  margin-top:5px;
+}
+
+.school-schedule-editor fieldset{
+  margin:14px 0;
+  border:0;
+  padding:0;
+}
+
+.school-day-options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:8px;
+}
+
+.school-day-options label{
+  padding:7px 9px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#faf8ff;
+  font-size:12px;
+}
+
+.home-school-status{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:12px 0;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+}
+
+.home-school-status > span{font-size:25px}
+.home-school-status b,.home-school-status small{display:block}
+.home-school-status small{margin-top:3px;color:var(--muted)}
+
 /* CHAMADAS VISUAIS E SONORAS */
 
 .attention-card{

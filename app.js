@@ -32,6 +32,7 @@ let pendingPhotoData = null;
 let chatRecorder = null;
 let chatAudioChunks = [];
 let chatAudioBlob = null;
+let chatAudioExtension = "webm";
 
 /* =============================================
    UTILITÁRIOS
@@ -749,6 +750,34 @@ const initial = {
   avatars: {}
 };
 
+function schoolScheduleKey(childId) {
+  return `lele-school-schedule-${childId}`;
+}
+
+function loadSchoolSchedule(childId, fallback) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(schoolScheduleKey(childId)) || "null");
+    return saved && saved.start && saved.end && Array.isArray(saved.days)
+      ? saved
+      : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function childIsInSchoolNow(targetChild = child(), at = new Date()) {
+  const school = targetChild?.school;
+  if (!school?.start || !school?.end || !school?.days?.length) return false;
+  const day = at.getDay() === 0 ? 7 : at.getDay();
+  if (!school.days.includes(day)) return false;
+  const current = at.getHours() * 60 + at.getMinutes();
+  const toMinutes = value => {
+    const [hour, minute] = String(value).split(":").map(Number);
+    return hour * 60 + minute;
+  };
+  return current >= toMinutes(school.start) && current < toMinutes(school.end);
+}
+
 let state =
   JSON.parse(
     localStorage.getItem(
@@ -1184,6 +1213,24 @@ async function loadTasksFromSupabase() {
 
   state.tasks =
     tarefasBanco;
+
+  /* O horário escolar é sincronizado como uma rotina especial entre pais e filhos. */
+  state.children.forEach(currentChild => {
+    const schoolTask = tarefasBanco.find(task =>
+      task.childId === currentChild.id &&
+      task.title === "Horário de aula" &&
+      task.recurrenceEnabled
+    );
+    if (!schoolTask?.time || !schoolTask.recurrenceDays?.length) return;
+    const [hour, minute] = schoolTask.time.split(":").map(Number);
+    const endTotal = hour * 60 + minute + Number(schoolTask.duration || 1);
+    currentChild.school = {
+      start: schoolTask.time,
+      end: `${String(Math.floor(endTotal / 60) % 24).padStart(2, "0")}:${String(endTotal % 60).padStart(2, "0")}`,
+      days: schoolTask.recurrenceDays
+    };
+    localStorage.setItem(schoolScheduleKey(currentChild.id), JSON.stringify(currentChild.school));
+  });
 
   save();
 }
@@ -2103,7 +2150,7 @@ async function carregarFamiliaReal() {
             x.birth_date,
 
           school:
-            anterior.school || {
+            loadSchoolSchedule(x.id, anterior.school || {
               start:
                 "07:00",
 
@@ -2112,7 +2159,7 @@ async function carregarFamiliaReal() {
 
               days:
                 [1,2,3,4,5]
-            },
+            }),
 
           waterGoal:
             x.water_goal_ml ||
@@ -2619,7 +2666,7 @@ async function loadMessagesFromSupabase() {
 }
 
 async function uploadChatAudio(blob) {
-  const path = `${familiaAtual}/${membroAtual.id}/chat-${Date.now()}.webm`;
+  const path = `${familiaAtual}/${membroAtual.id}/chat-${Date.now()}.${chatAudioExtension}`;
   const { error } = await leleDb.storage
     .from("task-evidence")
     .upload(path, blob, {
@@ -3793,6 +3840,8 @@ function renderHome() {
       ? `${c.name}, o Lelê está com você. Vamos começar por uma tarefa pequena?`
       : `${c.name}, você concluiu o que estava planejado. Muito bem!`;
 
+  const inSchool = childIsInSchoolNow(c);
+
   $("#homeView").innerHTML = `
     <div class="hero">
 
@@ -3832,6 +3881,14 @@ function renderHome() {
         <div style="width:${progress}%"></div>
       </div>
 
+    </div>
+
+    <div class="home-school-status ${inSchool ? "is-active" : ""}">
+      <span>${inSchool ? "📚" : "🕒"}</span>
+      <div>
+        <b>${inSchool ? "Aula em andamento" : "Horário de aula"}</b>
+        <small>${(c.school?.days || []).length ? `${c.school.start} às ${c.school.end}` : "Não configurado"}${inSchool ? " • alertas pausados" : ""}</small>
+      </div>
     </div>
 
     <button
@@ -5181,6 +5238,36 @@ function renderSchool() {
 
       </div>
 
+      <div class="school-days">
+        ${(c.school?.days || []).map(day => ["", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"][day]).join(" • ")}
+      </div>
+
+      ${membroAtual?.role !== "child" ? `
+        <button id="editSchoolScheduleBtn" class="ghost" type="button">✏️ Ajustar horário de aula</button>
+      ` : ""}
+
+      ${childIsInSchoolNow(c) ? `
+        <div class="school-now">📚 Aula em andamento — o Lelê não interrompe neste período.</div>
+      ` : ""}
+
+      ${membroAtual?.role !== "child" ? `
+        <form id="schoolScheduleEditor" class="school-schedule-editor hidden">
+          <div class="school-time-fields">
+            <label>Entrada<input id="schoolStart" type="time" value="${c.school?.start || "07:00"}" required></label>
+            <label>Saída<input id="schoolEnd" type="time" value="${c.school?.end || "12:30"}" required></label>
+          </div>
+          <fieldset>
+            <legend>Dias de aula</legend>
+            <div class="school-day-options">
+              ${[1,2,3,4,5,6,7].map(day => `
+                <label><input name="schoolDay" type="checkbox" value="${day}" ${(c.school?.days || []).includes(day) ? "checked" : ""}>${["", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"][day]}</label>
+              `).join("")}
+            </div>
+          </fieldset>
+          <button class="primary" type="submit">Salvar horário</button>
+        </form>
+      ` : ""}
+
     </div>
 
     <section class="section">
@@ -5341,6 +5428,59 @@ function renderSchool() {
 
     </section>
   `;
+
+  $("#editSchoolScheduleBtn")?.addEventListener("click", () => {
+    const panel = $("#schoolScheduleEditor");
+    panel?.classList.toggle("hidden");
+  });
+
+  $("#schoolScheduleEditor")?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const days = $$("input[name='schoolDay']:checked").map(input => Number(input.value));
+    const start = $("#schoolStart")?.value;
+    const end = $("#schoolEnd")?.value;
+    if (!start || !end || start >= end || !days.length) {
+      alert("Confira os dias e os horários de entrada e saída.");
+      return;
+    }
+    c.school = { start, end, days };
+    localStorage.setItem(schoolScheduleKey(c.id), JSON.stringify(c.school));
+    save();
+
+    const [startHour, startMinute] = start.split(":").map(Number);
+    const [endHour, endMinute] = end.split(":").map(Number);
+    const duration = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+    const existing = state.tasks.find(task =>
+      task.childId === c.id && task.title === "Horário de aula" && task.recurrenceEnabled
+    );
+
+    try {
+      await saveTaskToSupabase(existing?.id || null, {
+        childId: c.id,
+        title: "Horário de aula",
+        cat: "Escola",
+        time: start,
+        duration,
+        type: "fixed",
+        voice: false,
+        shared: false,
+        needsHelp: false,
+        icon: "🏫",
+        requirePhoto: false,
+        recurrenceType: "weekly",
+        recurrenceDays: days,
+        recurrenceEndDate: null,
+        recurrenceEnabled: true,
+        scheduledDate: todayKey()
+      });
+      await loadTasksFromSupabase();
+    } catch (error) {
+      console.error("Erro ao sincronizar horário escolar:", error);
+      alert("O horário ficou salvo neste aparelho, mas não foi sincronizado. Tente novamente com internet.");
+    }
+    render();
+    showView("schoolView");
+  });
 }
 
 /* =============================================
@@ -5793,9 +5933,13 @@ async function toggleChatRecording() {
   chatAudioChunks = [];
   chatAudioBlob = null;
   chatRecorder = new MediaRecorder(stream);
+  const recorderType = chatRecorder.mimeType || "audio/webm";
+  chatAudioExtension = recorderType.includes("mp4") ? "m4a"
+    : recorderType.includes("ogg") ? "ogg"
+    : "webm";
   chatRecorder.ondataavailable = event => event.data.size && chatAudioChunks.push(event.data);
   chatRecorder.onstop = () => {
-    chatAudioBlob = new Blob(chatAudioChunks, { type: chatRecorder.mimeType || "audio/webm" });
+    chatAudioBlob = new Blob(chatAudioChunks, { type: recorderType });
     stream.getTracks().forEach(track => track.stop());
     renderMessages();
     bindChatEvents();
@@ -6193,6 +6337,9 @@ function render() {
 
 
 function bindChatEvents() {
+  const chatMessages = $("#chatMessages");
+  if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+
   $("#chatForm")?.addEventListener("submit", async event => {
     event.preventDefault();
     const button = $("#sendChatBtn");
