@@ -19,6 +19,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 
 const storeKey = "lele-demo-v3";
 const offlineQueueKey = "lele-offline-queue-v1";
+const testDataCutoff = "2026-08-24T12:05:00.000Z";
 
 let usuarioAtual = null;
 let membroAtual = null;
@@ -636,6 +637,15 @@ state = {
   ...state
 };
 
+/* Remove uma única vez os registros locais criados durante os testes anteriores. */
+if (!localStorage.getItem("lele-test-data-cleared-v1")) {
+  state.tasks = (state.tasks || []).filter(task =>
+    task.createdAt && task.createdAt > testDataCutoff
+  );
+  state.projects = [];
+  localStorage.setItem("lele-test-data-cleared-v1", "true");
+}
+
 function save() {
   localStorage.setItem(
     storeKey,
@@ -1041,6 +1051,9 @@ async function loadTasksFromSupabase() {
 
   const tarefasBanco =
     (data || [])
+      .filter(task =>
+        task.created_at && task.created_at > testDataCutoff
+      )
       .map(
         mapTaskFromDb
       );
