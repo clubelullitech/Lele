@@ -969,7 +969,8 @@ function childTasks() {
   return state.tasks
     .filter(
       task =>
-        task.childId === c.id
+        task.childId === c.id &&
+        task.title !== "Horário de aula"
     )
     .map(
       normalizeRecurringTask
@@ -4847,7 +4848,8 @@ function tasksForCalendarDate(date) {
   return state.tasks
     .filter(
       task =>
-        task.childId === c.id
+        task.childId === c.id &&
+        task.title !== "Horário de aula"
     )
     .filter(
       task =>
