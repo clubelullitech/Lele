@@ -110,6 +110,14 @@ function daysUntil(s) {
 
 let leleVoices = [];
 const leleVoicePreferenceKey = "lele-natural-voice-v1";
+const leleVoiceStyleKey = "lele-voice-style-v1";
+
+const leleVoiceStyles = {
+  natural: { label: "Natural", rate: 0.94, pitch: 1 },
+  calma: { label: "Calma", rate: 0.84, pitch: 0.98 },
+  jovem: { label: "Jovem", rate: 1.03, pitch: 1.02 },
+  clara: { label: "Clara e pausada", rate: 0.88, pitch: 1.01 }
+};
 
 function carregarVozesLele() {
   if (!("speechSynthesis" in window)) return;
@@ -188,9 +196,10 @@ function speak(text) {
     fala.voice = vozEscolhida;
   }
 
-  const idade = child()?.age || 10;
-  fala.rate = idade >= 13 ? 0.98 : 0.94;
-  fala.pitch = idade >= 13 ? 1 : 1.04;
+  const styleName = localStorage.getItem(leleVoiceStyleKey) || "natural";
+  const style = leleVoiceStyles[styleName] || leleVoiceStyles.natural;
+  fala.rate = style.rate;
+  fala.pitch = style.pitch;
   fala.volume = 1;
 
   speechSynthesis.speak(fala);
@@ -2767,7 +2776,7 @@ function startMessagesRealtime() {
           }
         );
 
-        if (typeof showLeleActionBanner === "function") {
+        if (document.visibilityState !== "visible" && typeof showLeleActionBanner === "function") {
           showLeleActionBanner({
             icon: isHelp ? "🙋" : "💬",
             label: isHelp ? "LELÊ ESTÁ TE CHAMANDO" : "VOCÊ TEM UM ALERTA NO LELÊ",
@@ -3245,6 +3254,10 @@ async function showLocalNotification(
   options = {}
 ) {
 
+  if (document.visibilityState === "visible") {
+    return;
+  }
+
   const allowed =
     await requestNotificationPermission();
 
@@ -3308,7 +3321,7 @@ const notificationHistory =
 function checkTaskNotifications() {
 
   if (
-    document.hidden
+    !document.hidden
   ) {
     return;
   }
@@ -6048,12 +6061,20 @@ function renderSettings() {
               `).join("")}
             </select>
 
+            <select id="leleVoiceStyleSelect" aria-label="Escolher estilo da voz do Lelê">
+              ${Object.entries(leleVoiceStyles).map(([key, style]) => `
+                <option value="${key}" ${(localStorage.getItem(leleVoiceStyleKey) || "natural") === key ? "selected" : ""}>
+                  Estilo: ${style.label}
+                </option>
+              `).join("")}
+            </select>
+
             <button id="testLeleVoiceBtn" class="secondary" type="button">
               Ouvir teste
             </button>
           </div>
 
-          <small class="muted">As opções mudam conforme o celular ou computador.</small>
+          <small class="muted">O Lelê mostra as vozes em português instaladas no aparelho. O estilo altera ritmo e entonação.</small>
 
         </div>
       ` : ""}
@@ -6066,7 +6087,7 @@ function renderSettings() {
         <b>🔔 Notificações</b>
 
         <p>
-          Permita notificações para receber lembretes das tarefas.
+          Permita alertas do celular. Com o Lelê aberto na tela, nenhum banner de notificação será exibido.
         </p>
 
         <button
@@ -6632,6 +6653,11 @@ function bindDynamicEvents() {
     if (value) localStorage.setItem(leleVoicePreferenceKey, value);
     else localStorage.removeItem(leleVoicePreferenceKey);
     speak("Oi! Eu sou o Lelê. Vamos fazer uma coisa de cada vez, no seu ritmo.");
+  });
+
+  $("#leleVoiceStyleSelect")?.addEventListener("change", event => {
+    localStorage.setItem(leleVoiceStyleKey, event.currentTarget.value);
+    speak("Oi! Este é o novo jeito de falar do Lelê. Vamos no seu ritmo.");
   });
 
   $("#testLeleVoiceBtn")?.addEventListener("click", () =>

@@ -129,6 +129,7 @@ function showLeleActionBanner({ icon = "🔔", label, title, detail, targetView 
 }
 
 function showLeleTaskBanner(task, childName) {
+  if (document.visibilityState === "visible") return;
   const icon = typeof getTaskEmoji === "function"
     ? getTaskEmoji(task)
     : task.icon || "⭐";
@@ -148,6 +149,7 @@ async function showLeleNotification(
   childName
 ) {
   if (
+    document.visibilityState === "visible" ||
     !("Notification" in window) ||
     Notification.permission !== "granted" ||
     !("serviceWorker" in navigator)
@@ -206,10 +208,7 @@ async function triggerLeleAlert(task) {
   const childName =
     currentChild?.name || "";
 
-  showLeleTaskBanner(
-    task,
-    childName
-  );
+  /* Com o app aberto, não exibimos banner nem notificação do sistema. */
 
   try {
     await showLeleNotification(
@@ -331,19 +330,11 @@ async function checkHourlyHydrationReminder() {
   alerts[`water-${hourId}`] = now.toISOString();
   saveLeleAlerts(alerts);
 
-  showLeleActionBanner({
-    icon: "💧",
-    label: "LELÊ ESTÁ TE CHAMANDO",
-    title: "Hora de tomar água",
-    detail: "Faça uma pausa e beba água.",
-    targetView: "homeView"
-  });
-
   if (typeof speak === "function" && document.visibilityState === "visible") {
     speak(`${currentChild.name}, hora de tomar água.`);
   }
 
-  if ("Notification" in window && Notification.permission === "granted" && "serviceWorker" in navigator) {
+  if (document.visibilityState !== "visible" && "Notification" in window && Notification.permission === "granted" && "serviceWorker" in navigator) {
     const registration = await navigator.serviceWorker.ready;
     await registration.showNotification("Lelê está te chamando", {
       body: "💧 Hora de tomar água.",

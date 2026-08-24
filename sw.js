@@ -1,11 +1,11 @@
-const CACHE_NAME = "lele-v27";
+const CACHE_NAME = "lele-v28";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./styles.css?v=27",
-  "./app.js?v=27",
-  "./notifications.js?v=27",
+  "./styles.css?v=28",
+  "./app.js?v=28",
+  "./notifications.js?v=28",
   "./assets/guides/escovar-dentes-1.webp",
   "./assets/guides/escovar-dentes-2.webp",
   "./assets/guides/escovar-dentes-3.webp",
@@ -336,6 +336,32 @@ self.addEventListener(
 /* =============================================
    NOTIFICAÇÕES
 ============================================= */
+
+self.addEventListener("push", event => {
+  let data = {};
+  try {
+    data = event.data?.json() || {};
+  } catch {
+    data = { body: event.data?.text() || "Você tem um alerta no Lelê." };
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(
+      data.title || "Você tem um alerta no Lelê",
+      {
+        body: data.body || "Abra o Lelê para ver a próxima ação.",
+        icon: "./icons/icon-192.svg",
+        badge: "./icons/icon-192.svg",
+        tag: data.tag || "lele-push",
+        renotify: true,
+        data: {
+          targetView: data.targetView || "homeView",
+          action: data.action || "push"
+        }
+      }
+    )
+  );
+});
 
 self.addEventListener(
   "notificationclick",
