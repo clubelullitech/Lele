@@ -5276,12 +5276,11 @@ function saveProjectFromForm(event) {
 
   if (!c) return;
 
-  const project = {
-    id:
-      `project-${Date.now()}`,
+  const projectId =
+    $("#projectId")?.value || "";
 
-    childId:
-      c.id,
+  const data = {
+    childId: c.id,
 
     title:
       $("#projectTitle").value.trim(),
@@ -5296,16 +5295,44 @@ function saveProjectFromForm(event) {
       $("#projectMaterials").value.trim(),
 
     notes:
-      $("#projectNotes").value.trim()
+      $("#projectNotes").value.trim(),
+
+    reminder:
+      $("#projectReminder")?.value || "",
+
+    done: false
   };
 
-  state.projects.push(project);
+  if (projectId) {
+
+    const project =
+      state.projects.find(
+        item =>
+          String(item.id) ===
+          String(projectId)
+      );
+
+    if (project) {
+      Object.assign(project, data);
+    }
+
+  } else {
+
+    state.projects.push({
+      id: `project-${Date.now()}`,
+      ...data
+    });
+  }
 
   save();
 
   $("#projectDialog").close();
 
   $("#projectForm").reset();
+
+  if ($("#projectId")) {
+    $("#projectId").value = "";
+  }
 
   render();
 }
