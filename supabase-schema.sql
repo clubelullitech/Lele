@@ -53,6 +53,14 @@ create table messages (
   created_at timestamptz default now()
 );
 
+create index if not exists messages_family_created_idx
+  on messages (family_id, created_at desc);
+
+-- O aplicativo exibe e remove mensagens com mais de 48 horas.
+-- Para garantir a exclusão mesmo quando ninguém abrir o app, recomenda-se
+-- também uma rotina agendada no Supabase executando:
+-- delete from messages where created_at < now() - interval '48 hours';
+
 -- IMPORTANTE:
 -- Em produção, ativar RLS em TODAS as tabelas e criar políticas por family_id.
 -- Nunca liberar SELECT/INSERT/UPDATE global para usuários autenticados.
