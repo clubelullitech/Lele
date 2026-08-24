@@ -4567,7 +4567,7 @@ ${
       render();
     });
 
-async function adicionarPessoaFamilia() {
+window.adicionarPessoaFamilia = async function () {
 
     const nome = prompt(
       "Nome da pessoa:"
@@ -4672,7 +4672,7 @@ async function adicionarPessoaFamilia() {
     await carregarFamiliaReal();
 
     render();
-}
+};
 
 }
 
