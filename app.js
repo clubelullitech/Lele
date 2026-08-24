@@ -3403,8 +3403,8 @@ ${
   style="margin-top:12px"
   onclick="adicionarPessoaFamilia()"
 >
-        ➕ Adicionar pessoa
-      </button>
+  ➕ Adicionar pessoa
+</button>
     `
     : ""
 }
@@ -4672,6 +4672,8 @@ async function adicionarPessoaFamilia() {
     await carregarFamiliaReal();
 
     render();
+}
+
 }
 
 /* =============================================
