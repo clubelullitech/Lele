@@ -2045,11 +2045,16 @@ async function fazerLogin(
 ) {
   event.preventDefault();
 
-  const email =
-    $("#loginEmail")
-      .value
-      .trim();
+  const login =
+  $("#loginEmail")
+    .value
+    .trim()
+    .toLowerCase();
 
+const email =
+  login.includes("@")
+    ? login
+    : `${login}@login.lele.app`;
   const senha =
     $("#loginPassword")
       .value;
