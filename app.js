@@ -3884,16 +3884,232 @@ function renderTaskCard(task) {
    ROTINA
 ============================================= */
 
+let routineCalendarDate = new Date();
+
+
+function dateKeyFromParts(year, month, day) {
+  return [
+    year,
+    String(month + 1).padStart(2, "0"),
+    String(day).padStart(2, "0")
+  ].join("-");
+}
+
+
+function leleWeekDayFromDate(date) {
+  const jsDay = date.getDay();
+  return jsDay === 0 ? 7 : jsDay;
+}
+
+
+function taskIsForDate(task, date) {
+  const dateKey =
+    dateKeyFromParts(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+  if (
+    task.recurrenceEndDate &&
+    dateKey > task.recurrenceEndDate
+  ) {
+    return false;
+  }
+
+  /*
+    Tarefa criada apenas uma vez.
+    Usa a data em que ela foi cadastrada.
+  */
+  if (
+    !task.recurrenceEnabled ||
+    task.recurrenceType === "once"
+  ) {
+    if (!task.scheduledDate) {
+      return dateKey === todayKey();
+    }
+
+    return task.scheduledDate === dateKey;
+  }
+
+  const weekDay =
+    leleWeekDayFromDate(date);
+
+  if (
+    task.recurrenceType === "daily"
+  ) {
+    return true;
+  }
+
+  if (
+    task.recurrenceType === "weekdays"
+  ) {
+    return weekDay >= 1 &&
+           weekDay <= 5;
+  }
+
+  if (
+    task.recurrenceType === "weekly"
+  ) {
+    return (
+      task.recurrenceDays || []
+    ).includes(weekDay);
+  }
+
+  return false;
+}
+
+
+function tasksForCalendarDate(date) {
+  const c = child();
+
+  if (!c) return [];
+
+  return state.tasks
+    .filter(
+      task =>
+        task.childId === c.id
+    )
+    .filter(
+      task =>
+        taskIsForDate(task, date)
+    )
+    .sort(
+      (a, b) =>
+        (a.time || "99:99")
+          .localeCompare(
+            b.time || "99:99"
+          )
+    );
+}
+
+
+function monthName(date) {
+  return date.toLocaleDateString(
+    "pt-BR",
+    {
+      month: "long",
+      year: "numeric"
+    }
+  );
+}
+
+
+function buildRoutineCalendar() {
+  const year =
+    routineCalendarDate.getFullYear();
+
+  const month =
+    routineCalendarDate.getMonth();
+
+  const firstDay =
+    new Date(year, month, 1);
+
+  const daysInMonth =
+    new Date(
+      year,
+      month + 1,
+      0
+    ).getDate();
+
+  /*
+    Calendário começa na segunda.
+  */
+  let startOffset =
+    firstDay.getDay() - 1;
+
+  if (startOffset < 0) {
+    startOffset = 6;
+  }
+
+  const cells = [];
+
+  for (
+    let i = 0;
+    i < startOffset;
+    i++
+  ) {
+    cells.push(
+      `<div class="calendar-day empty"></div>`
+    );
+  }
+
+  for (
+    let day = 1;
+    day <= daysInMonth;
+    day++
+  ) {
+    const date =
+      new Date(
+        year,
+        month,
+        day
+      );
+
+    const tasks =
+      tasksForCalendarDate(date);
+
+    const key =
+      dateKeyFromParts(
+        year,
+        month,
+        day
+      );
+
+    const isToday =
+      key === todayKey();
+
+    const emojis =
+      tasks
+        .slice(0, 6)
+        .map(
+          task =>
+            `<span
+              class="calendar-task-emoji"
+              title="${task.title}"
+            >
+              ${getTaskEmoji(task)}
+            </span>`
+        )
+        .join("");
+
+    const extra =
+      tasks.length > 6
+        ? `<span class="calendar-more">
+            +${tasks.length - 6}
+           </span>`
+        : "";
+
+    cells.push(`
+      <button
+        class="calendar-day
+          ${isToday ? "today" : ""}
+          ${tasks.length ? "has-tasks" : ""}"
+        data-calendar-date="${key}"
+        type="button"
+      >
+        <span class="calendar-number">
+          ${day}
+        </span>
+
+        <div class="calendar-emojis">
+          ${emojis}
+          ${extra}
+        </div>
+      </button>
+    `);
+  }
+
+  return cells.join("");
+}
+
 function renderRoutine() {
   const c = child();
 
   if (!c) return;
 
-  const tasks =
-    childTasks();
-
   $("#routineView").innerHTML = `
-    <div class="section-head">
+    <div class="section-head routine-calendar-head">
 
       <div>
         <h2>
@@ -3901,7 +4117,7 @@ function renderRoutine() {
         </h2>
 
         <div class="muted">
-          Veja os horários no formato digital e analógico.
+          Veja todas as tarefas previstas no mês.
         </div>
       </div>
 
@@ -3918,6 +4134,182 @@ function renderRoutine() {
           `
           : ""
       }
+
+    </div>
+
+
+    <section class="routine-calendar">
+
+      <div class="calendar-toolbar">
+
+        <button
+          id="previousRoutineMonth"
+          class="ghost calendar-nav-btn"
+          type="button"
+          aria-label="Mês anterior"
+        >
+          ‹
+        </button>
+
+        <strong class="calendar-month-title">
+          ${monthName(routineCalendarDate)}
+        </strong>
+
+        <button
+          id="nextRoutineMonth"
+          class="ghost calendar-nav-btn"
+          type="button"
+          aria-label="Próximo mês"
+        >
+          ›
+        </button>
+
+      </div>
+
+
+      <div class="calendar-weekdays">
+        <span>Seg</span>
+        <span>Ter</span>
+        <span>Qua</span>
+        <span>Qui</span>
+        <span>Sex</span>
+        <span>Sáb</span>
+        <span>Dom</span>
+      </div>
+
+
+      <div class="calendar-grid">
+        ${buildRoutineCalendar()}
+      </div>
+
+    </section>
+
+
+    <section
+      id="routineDayDetails"
+      class="section hidden"
+    ></section>
+  `;
+
+
+  $("#previousRoutineMonth")
+    ?.addEventListener(
+      "click",
+      () => {
+        routineCalendarDate =
+          new Date(
+            routineCalendarDate
+              .getFullYear(),
+            routineCalendarDate
+              .getMonth() - 1,
+            1
+          );
+
+        renderRoutine();
+        bindRoutineCalendarEvents();
+      }
+    );
+
+
+  $("#nextRoutineMonth")
+    ?.addEventListener(
+      "click",
+      () => {
+        routineCalendarDate =
+          new Date(
+            routineCalendarDate
+              .getFullYear(),
+            routineCalendarDate
+              .getMonth() + 1,
+            1
+          );
+
+        renderRoutine();
+        bindRoutineCalendarEvents();
+      }
+    );
+
+
+  bindRoutineCalendarEvents();
+}
+
+
+function bindRoutineCalendarEvents() {
+  $$(".calendar-day[data-calendar-date]")
+    .forEach(
+      button => {
+        button.addEventListener(
+          "click",
+          () => {
+            const key =
+              button.dataset
+                .calendarDate;
+
+            const [
+              year,
+              month,
+              day
+            ] =
+              key
+                .split("-")
+                .map(Number);
+
+            const date =
+              new Date(
+                year,
+                month - 1,
+                day
+              );
+
+            const tasks =
+              tasksForCalendarDate(
+                date
+              );
+
+            const details =
+              $("#routineDayDetails");
+
+            if (!details) return;
+
+            const title =
+              date.toLocaleDateString(
+                "pt-BR",
+                {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "long"
+                }
+              );
+
+            details.classList
+              .remove("hidden");
+
+            details.innerHTML = `
+              <h3>
+                ${title}
+              </h3>
+
+              ${
+                tasks.length
+                  ? tasks
+                      .map(
+                        renderTaskCard
+                      )
+                      .join("")
+                  : `
+                    <div class="callout">
+                      Nenhuma tarefa neste dia.
+                    </div>
+                  `
+              }
+            `;
+
+            bindDynamicEvents();
+          }
+        );
+      }
+    );
+}
 
     </div>
 
