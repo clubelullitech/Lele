@@ -6164,7 +6164,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          "./sw.js?v=14"
+          "./sw.js?v=15"
         )
         .catch(
           error =>
