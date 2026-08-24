@@ -1,11 +1,11 @@
-const CACHE_NAME = "lele-v19";
+const CACHE_NAME = "lele-v20";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./styles.css?v=19",
-  "./app.js?v=19",
-  "./notifications.js?v=19",
+  "./styles.css?v=20",
+  "./app.js?v=20",
+  "./notifications.js?v=20",
   "./assets/guides/escovar-dentes-1.webp",
   "./assets/guides/escovar-dentes-2.webp",
   "./assets/guides/escovar-dentes-3.webp",
@@ -14,6 +14,30 @@ const APP_FILES = [
   "./assets/guides/arrumar-cama-2.webp",
   "./assets/guides/arrumar-cama-3.webp",
   "./assets/guides/arrumar-cama-4.webp",
+  "./assets/guides/lixo-1.webp",
+  "./assets/guides/lixo-2.webp",
+  "./assets/guides/lixo-3.webp",
+  "./assets/guides/lixo-4.webp",
+  "./assets/guides/roupas-1.webp",
+  "./assets/guides/roupas-2.webp",
+  "./assets/guides/roupas-3.webp",
+  "./assets/guides/roupas-4.webp",
+  "./assets/guides/brinquedos-1.webp",
+  "./assets/guides/brinquedos-2.webp",
+  "./assets/guides/brinquedos-3.webp",
+  "./assets/guides/brinquedos-4.webp",
+  "./assets/guides/sapatos-1.webp",
+  "./assets/guides/sapatos-2.webp",
+  "./assets/guides/sapatos-3.webp",
+  "./assets/guides/sapatos-4.webp",
+  "./assets/guides/mochila-1.webp",
+  "./assets/guides/mochila-2.webp",
+  "./assets/guides/mochila-3.webp",
+  "./assets/guides/mochila-4.webp",
+  "./assets/guides/garrafa-1.webp",
+  "./assets/guides/garrafa-2.webp",
+  "./assets/guides/garrafa-3.webp",
+  "./assets/guides/garrafa-4.webp",
   "./manifest.webmanifest"
 ];
 

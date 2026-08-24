@@ -480,6 +480,48 @@ const taskLibrary = [
   },
 
   {
+    title: "Jogar o lixo fora",
+    cat: "Casa",
+    ages: [7, 16],
+    icon: "🗑️"
+  },
+
+  {
+    title: "Guardar as roupas",
+    cat: "Organização",
+    ages: [6, 16],
+    icon: "👕"
+  },
+
+  {
+    title: "Guardar os sapatos",
+    cat: "Organização",
+    ages: [5, 16],
+    icon: "👟"
+  },
+
+  {
+    title: "Encher a garrafa de água",
+    cat: "Água",
+    ages: [6, 16],
+    icon: "🚰"
+  },
+
+  {
+    title: "Brincar livremente",
+    cat: "Lazer",
+    ages: [5, 12],
+    icon: "🧸"
+  },
+
+  {
+    title: "Assistir TV no horário combinado",
+    cat: "Lazer",
+    ages: [5, 16],
+    icon: "📺"
+  },
+
+  {
     title: "Preparar a mochila",
     cat: "Escola",
     ages: [6, 12],
@@ -4158,6 +4200,7 @@ async function destroyViewedEvidence() {
 function renderTaskCard(task) {
   const icon =
     getTaskEmoji(task);
+  const illustration = guideDetailsForTask(task).images?.[0] || "";
 
   const evidence =
   task.evidencePath &&
@@ -4192,7 +4235,9 @@ function renderTaskCard(task) {
         title="Ouvir tarefa"
         aria-label="Ouvir ${task.title}"
       >
-        ${icon}
+        ${illustration
+          ? `<img class="task-illustration" src="${illustration}" alt="${escapeHtml(task.title)}">`
+          : icon}
       </button>
 
       <div>
@@ -4328,6 +4373,66 @@ const taskGuides = [
       "Puxe e alise o lençol para tirar as partes amassadas.",
       "Estenda a coberta por igual e acerte as laterais.",
       "Coloque os travesseiros no lugar e confira se ficou organizado."
+    ]
+  },
+  {
+    words: ["jogar o lixo", "levar o lixo", "lixo fora"],
+    images: ["assets/guides/lixo-1.webp", "assets/guides/lixo-2.webp", "assets/guides/lixo-3.webp", "assets/guides/lixo-4.webp"],
+    steps: [
+      "Feche bem o saco de lixo, sem apertar objetos que possam machucar.",
+      "Leve o saco com as duas mãos e caminhe com cuidado.",
+      "Coloque o saco dentro da lixeira correta e feche a tampa.",
+      "Lave as mãos com água e sabão quando terminar."
+    ]
+  },
+  {
+    words: ["guardar as roupas", "cuidar das próprias roupas", "separar roupa"],
+    images: ["assets/guides/roupas-1.webp", "assets/guides/roupas-2.webp", "assets/guides/roupas-3.webp", "assets/guides/roupas-4.webp"],
+    steps: [
+      "Separe as roupas limpas por tipo.",
+      "Dobre cada peça com calma e deixe as pilhas pequenas.",
+      "Guarde as roupas dobradas nas gavetas certas.",
+      "Confira se o armário ficou organizado e fácil de usar."
+    ]
+  },
+  {
+    words: ["guardar brinquedos", "brinquedo"],
+    images: ["assets/guides/brinquedos-1.webp", "assets/guides/brinquedos-2.webp", "assets/guides/brinquedos-3.webp", "assets/guides/brinquedos-4.webp"],
+    steps: [
+      "Junte os brinquedos que ficaram no chão.",
+      "Separe carrinhos, bonecos, blocos e livros.",
+      "Coloque cada grupo na caixa ou prateleira certa.",
+      "Confira se o caminho ficou livre e seguro."
+    ]
+  },
+  {
+    words: ["guardar os sapatos", "sapato"],
+    images: ["assets/guides/sapatos-1.webp", "assets/guides/sapatos-2.webp", "assets/guides/sapatos-3.webp", "assets/guides/sapatos-4.webp"],
+    steps: [
+      "Encontre o par de cada sapato.",
+      "Retire a sujeira seca com um pano, se for necessário.",
+      "Coloque os pares lado a lado na sapateira.",
+      "Deixe o caminho livre e confira se tudo ficou no lugar."
+    ]
+  },
+  {
+    words: ["preparar a mochila", "organizar a mochila", "material escolar"],
+    images: ["assets/guides/mochila-1.webp", "assets/guides/mochila-2.webp", "assets/guides/mochila-3.webp", "assets/guides/mochila-4.webp"],
+    steps: [
+      "Confira as aulas e atividades que terá.",
+      "Separe livros, cadernos e estojo.",
+      "Coloque os livros maiores perto das costas e os itens menores na frente.",
+      "Feche a mochila e coloque a garrafa no bolso lateral."
+    ]
+  },
+  {
+    words: ["encher a garrafa", "beber água", "garrafa de água"],
+    images: ["assets/guides/garrafa-1.webp", "assets/guides/garrafa-2.webp", "assets/guides/garrafa-3.webp", "assets/guides/garrafa-4.webp"],
+    steps: [
+      "Pegue uma garrafa limpa e abra a tampa.",
+      "Encha com água própria para beber, sem encostar a garrafa na saída.",
+      "Feche bem a tampa para não vazar.",
+      "Coloque a garrafa em pé no local combinado."
     ]
   },
   {
