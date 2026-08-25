@@ -207,6 +207,40 @@ function speak(text) {
   speechSynthesis.speak(fala);
 }
 
+let leleReactionTimer = null;
+
+function ensureLeleCompanion() {
+  if ($("#leleCompanion") || !$("#app") || $("#app").classList.contains("hidden")) return;
+  const companion = document.createElement("button");
+  companion.id = "leleCompanion";
+  companion.className = "lele-companion";
+  companion.type = "button";
+  companion.innerHTML = `
+    <img src="assets/lele-boas-vindas-v1.webp" alt="Lelê" />
+    <span class="lele-companion-bubble">Oi! Toque em mim 💜</span>
+  `;
+  companion.addEventListener("click", () => {
+    const message = companion.dataset.message || "Oi! Eu estou aqui para fazer tudo com você, um passo de cada vez.";
+    companion.classList.add("is-talking");
+    speak(message);
+    setTimeout(() => companion.classList.remove("is-talking"), 1800);
+  });
+  $("#app").appendChild(companion);
+}
+
+function showLeleReaction(message, mood = "happy") {
+  ensureLeleCompanion();
+  const companion = $("#leleCompanion");
+  if (!companion) return;
+  clearTimeout(leleReactionTimer);
+  companion.dataset.message = message;
+  companion.dataset.mood = mood;
+  const bubble = companion.querySelector(".lele-companion-bubble");
+  if (bubble) bubble.textContent = message;
+  companion.classList.add("is-active");
+  leleReactionTimer = setTimeout(() => companion.classList.remove("is-active"), 7000);
+}
+
 /* =============================================
    EMOJIS
 ============================================= */
@@ -1663,6 +1697,10 @@ async function setTaskStatusReal(
       save();
     }
 
+    if (newStatus === "done") {
+      showLeleReaction(`Muito bem! Você concluiu ${task.title}. Eu sabia que você conseguia!`, "celebrate");
+    }
+
     return;
   }
 
@@ -1718,6 +1756,10 @@ async function setTaskStatusReal(
 
   save();
   render();
+
+  if (newStatus === "done") {
+    showLeleReaction(`Muito bem! Você concluiu ${task.title}. Eu sabia que você conseguia!`, "celebrate");
+  }
 }
 
 
@@ -2029,6 +2071,7 @@ async function addHydrationReal(
 
   save();
   render();
+  showLeleReaction("Boa! Você lembrou de tomar água. Seu corpo agradece!", "water");
 
   const payload = {
     family_id:
@@ -2899,31 +2942,36 @@ function startMessagesRealtime() {
       const directedHere = decoded.recipientId === "all" || decoded.recipientId === membroAtual?.id;
       if (event.eventType === "INSERT" && event.new?.sender_id !== membroAtual?.id && directedHere) {
         const isHelp = decoded.kind === "system";
+        const isReflection = decoded.kind === "reflection";
         const sender = memberName(event.new.sender_id);
-        const notificationTitle = isHelp
-          ? "Lelê está te chamando"
-          : "Você tem um alerta no Lelê";
-        const notificationBody = isHelp
-          ? `${decoded.text || `${sender} pediu ajuda.`} Toque para responder.`
-          : `${sender}: ${decoded.text || "enviou um novo áudio."}`;
+        const notificationTitle = isReflection
+          ? `Como ${sender} se sentiu hoje`
+          : isHelp
+            ? "Lelê está te chamando"
+            : "Você tem um alerta no Lelê";
+        const notificationBody = isReflection
+          ? `${decoded.text || `${sender} enviou o resumo do dia.`} Toque para acompanhar.`
+          : isHelp
+            ? `${decoded.text || `${sender} pediu ajuda.`} Toque para responder.`
+            : `${sender}: ${decoded.text || "enviou um novo áudio."}`;
 
         await showLocalNotification(
           notificationTitle,
           notificationBody,
           {
-            tag: isHelp ? `lele-help-${event.new.id}` : `lele-message-${event.new.id}`,
-            targetView: "messagesView",
-            action: isHelp ? "help" : "message"
+            tag: isReflection ? `lele-reflection-${event.new.id}` : isHelp ? `lele-help-${event.new.id}` : `lele-message-${event.new.id}`,
+            targetView: isReflection ? "indicatorsView" : "messagesView",
+            action: isReflection ? "reflection" : isHelp ? "help" : "message"
           }
         );
 
         if (document.visibilityState !== "visible" && typeof showLeleActionBanner === "function") {
           showLeleActionBanner({
-            icon: isHelp ? "🙋" : "💬",
-            label: isHelp ? "LELÊ ESTÁ TE CHAMANDO" : "VOCÊ TEM UM ALERTA NO LELÊ",
-            title: isHelp ? "Pedido de ajuda" : `Mensagem de ${sender}`,
+            icon: isReflection ? "💛" : isHelp ? "🙋" : "💬",
+            label: isReflection ? "COMO FOI O DIA" : isHelp ? "LELÊ ESTÁ TE CHAMANDO" : "VOCÊ TEM UM ALERTA NO LELÊ",
+            title: isReflection ? `Resumo de ${sender}` : isHelp ? "Pedido de ajuda" : `Mensagem de ${sender}`,
             detail: notificationBody,
-            targetView: "messagesView"
+            targetView: isReflection ? "indicatorsView" : "messagesView"
           });
         }
       }
@@ -3430,7 +3478,7 @@ async function showLocalNotification(
 
           tag: options.tag || "lele-alert",
           renotify: true,
-          requireInteraction: options.action === "help",
+          requireInteraction: options.action === "help" || options.action === "reflection",
           data: {
             targetView: options.targetView || "homeView",
             action: options.action || "alert"
@@ -3542,6 +3590,37 @@ setInterval(
   checkTaskNotifications,
   30000
 );
+
+async function checkDailyReflectionReminder() {
+  if (
+    membroAtual?.role !== "child" ||
+    document.visibilityState === "visible" ||
+    !("Notification" in window) ||
+    Notification.permission !== "granted"
+  ) return;
+
+  const c = child();
+  if (!c) return;
+  const now = new Date();
+  if (now.getHours() < 18) return;
+  if (localStorage.getItem(`lele-reflection-sent-${c.id}`) === todayKey()) return;
+
+  const reminderKey = `lele-reflection-reminder-${c.id}-${todayKey()}`;
+  if (localStorage.getItem(reminderKey)) return;
+
+  await showLocalNotification(
+    "Lelê quer saber de você 💛",
+    `${c.name}, como você se sentiu hoje? Toque para contar aos seus responsáveis.`,
+    {
+      tag: `lele-reflection-reminder-${c.id}`,
+      targetView: "developmentView",
+      action: "reflection"
+    }
+  );
+  localStorage.setItem(reminderKey, "true");
+}
+
+setInterval(checkDailyReflectionReminder, 5 * 60 * 1000);
 
 
 /* =============================================
@@ -7052,6 +7131,22 @@ function indicatorSummaryForChild(targetChild) {
   };
 }
 
+function positiveRewardForIndicator(info) {
+  if (info.totalToday > 0 && info.rate === 100) {
+    return { icon: "🏆", title: "Plano do dia completo", text: "Reconheça a constância e o esforço de hoje." };
+  }
+  if (info.rate >= 70) {
+    return { icon: "⭐", title: "Ótimo ritmo", text: "O dia está avançando muito bem." };
+  }
+  if (info.doneToday >= 1) {
+    return { icon: "🌟", title: "Já começou", text: "Um primeiro passo importante foi concluído." };
+  }
+  if (info.latestReflection) {
+    return { icon: "💛", title: "Compartilhou como se sente", text: "Dar nome ao que sente também é uma conquista." };
+  }
+  return null;
+}
+
 function renderIndicators() {
   const view = $("#indicatorsView");
   if (!view) return;
@@ -7074,6 +7169,7 @@ function renderIndicators() {
     <div class="indicator-children-grid">
       ${children.map(targetChild => {
         const info = indicatorSummaryForChild(targetChild);
+        const reward = positiveRewardForIndicator(info);
         return `
           <section class="section child-indicator-card">
             <div class="indicator-child-head">
@@ -7093,6 +7189,13 @@ function renderIndicators() {
             </div>
 
             <div class="indicator-summary"><b>Resumo</b><p>${info.status}</p></div>
+
+            ${membroAtual?.role !== "child" && reward ? `
+              <div class="positive-reward-card">
+                <span>${reward.icon}</span>
+                <div><b>${reward.title}</b><small>${reward.text}</small></div>
+              </div>
+            ` : ""}
 
             <div class="indicator-skills">
               <b>Habilidades em prática</b>
@@ -7164,6 +7267,17 @@ function render() {
   renderFamily();
   renderMessages();
   renderSettings();
+  ensureLeleCompanion();
+
+  if (!sessionStorage.getItem("lele-companion-greeted")) {
+    sessionStorage.setItem("lele-companion-greeted", "true");
+    setTimeout(() => showLeleReaction(
+      membroAtual?.role === "child"
+        ? `Oi, ${c?.name || ""}! Eu vou acompanhar você por aqui.`
+        : `Oi! Eu ajudo você a acompanhar ${c?.name || "a família"}.`,
+      "hello"
+    ), 700);
+  }
 
   const lastView =
     localStorage.getItem(
@@ -7364,6 +7478,7 @@ function bindDynamicEvents() {
       showView("developmentView");
       const message = $("#reflectionMessage");
       if (message) message.textContent = "Resumo enviado aos responsáveis 💛";
+      showLeleReaction("Obrigado por contar como foi seu dia. Falar sobre o que sentimos é muito importante!", "heart");
     } catch (error) {
       console.error("Erro ao enviar resumo do dia:", error);
       alert("Não foi possível enviar o resumo. Confira a internet e tente novamente.");
