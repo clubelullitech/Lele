@@ -1,11 +1,19 @@
-const CACHE_NAME = "lele-v39";
+const CACHE_NAME = "lele-v40";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./styles.css?v=39",
-  "./app.js?v=39",
-  "./notifications.js?v=39",
+  "./styles.css?v=40",
+  "./app.js?v=40",
+  "./notifications.js?v=40",
+  "./assets/audio/lele-cadu/agua.mp3",
+  "./assets/audio/lele-cadu/alerta.mp3",
+  "./assets/audio/lele-cadu/boas-vindas.mp3",
+  "./assets/audio/lele-cadu/chamando.mp3",
+  "./assets/audio/lele-cadu/estou-aqui.mp3",
+  "./assets/audio/lele-cadu/muito-bem.mp3",
+  "./assets/audio/lele-cadu/sentimento.mp3",
+  "./assets/audio/lele-cadu/vamos-comecar.mp3",
   "./assets/lele-boas-vindas-v1.webp",
   "./assets/lele-explica-v1.webp",
   "./assets/guides/escovar-dentes-1.webp",

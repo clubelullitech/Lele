@@ -112,6 +112,19 @@ let leleVoices = [];
 const leleVoicePreferenceKey = "lele-natural-voice-v1";
 const leleVoiceStyleKey = "lele-voice-style-v1";
 
+const leleAudioPack = new Map([
+  ["Oi! Eu sou o Lelê. Vamos fazer uma coisa de cada vez, no seu ritmo.", "assets/audio/lele-cadu/boas-vindas.mp3"],
+  ["Oi! Eu estou aqui para fazer tudo com você, um passo de cada vez.", "assets/audio/lele-cadu/estou-aqui.mp3"],
+  ["Vamos começar.", "assets/audio/lele-cadu/vamos-comecar.mp3"],
+  ["Muito bem! Você conseguiu!", "assets/audio/lele-cadu/muito-bem.mp3"],
+  ["Você tem um alerta no Lelê.", "assets/audio/lele-cadu/alerta.mp3"],
+  ["Lelê está te chamando.", "assets/audio/lele-cadu/chamando.mp3"],
+  ["Que tal tomar um pouco de água?", "assets/audio/lele-cadu/agua.mp3"],
+  ["Como você está se sentindo hoje?", "assets/audio/lele-cadu/sentimento.mp3"]
+]);
+
+let leleAudioAtual = null;
+
 const leleVoiceStyles = {
   garoto: { label: "Garoto — recomendada", rate: 0.96, pitch: 1.06 },
   natural: { label: "Natural", rate: 0.94, pitch: 1 },
@@ -180,7 +193,23 @@ if ("speechSynthesis" in window) {
   speechSynthesis.onvoiceschanged = carregarVozesLele;
 }
 
-function speak(text) {
+function falarComAudioPadrao(text) {
+  const audioPath = leleAudioPack.get(limparTextoParaVoz(text));
+  if (!audioPath) return false;
+
+  if (leleAudioAtual) {
+    leleAudioAtual.pause();
+    leleAudioAtual.currentTime = 0;
+  }
+
+  window.speechSynthesis?.cancel();
+  leleAudioAtual = new Audio(audioPath);
+  leleAudioAtual.preload = "auto";
+  leleAudioAtual.play().catch(() => falarComVozDoAparelho(text));
+  return true;
+}
+
+function falarComVozDoAparelho(text) {
   if (!("speechSynthesis" in window)) {
     alert("A voz não está disponível neste navegador.");
     return;
@@ -205,6 +234,12 @@ function speak(text) {
   fala.volume = 1;
 
   speechSynthesis.speak(fala);
+}
+
+function speak(text) {
+  if (!falarComAudioPadrao(text)) {
+    falarComVozDoAparelho(text);
+  }
 }
 
 let leleReactionTimer = null;
