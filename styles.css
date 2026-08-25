@@ -127,22 +127,24 @@ button{
 
 .auth-mascot{
   position:relative;
-  width:94px;
-  height:94px;
-  display:grid;
-  place-items:center;
+  width:126px;
+  height:126px;
   margin:2px auto 14px;
-  border-radius:34% 66% 58% 42% / 45% 42% 58% 55%;
-  color:white;
-  background:linear-gradient(145deg,#7567e8,#9b8ff5);
+  overflow:visible;
+  border:5px solid #fff;
+  border-radius:36px;
+  background:#dff3ee;
   box-shadow:0 12px 28px rgba(117,103,232,.28);
   animation:auth-float 3s ease-in-out infinite;
 }
 
-.auth-mascot-face{
-  font-size:25px;
-  font-weight:900;
-  letter-spacing:2px;
+.auth-mascot img{
+  width:100%;
+  height:100%;
+  display:block;
+  border-radius:31px;
+  object-fit:cover;
+  object-position:52% 38%;
 }
 
 .auth-mascot-wave{
