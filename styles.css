@@ -1440,6 +1440,60 @@ body.mode-child .task-emoji{
   animation:none;
 }
 
+.special-day-card{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin:14px 0;
+  padding:18px;
+  overflow:hidden;
+  border:1px solid #e4d28b;
+  border-radius:22px;
+  background:linear-gradient(135deg,#fff9dc,#f2edff);
+  box-shadow:0 10px 28px rgba(89,70,43,.1);
+}
+
+.special-day-card.is-today{
+  border-color:#efb951;
+  background:linear-gradient(135deg,#fff2b8,#ffe1ed,#e8e3ff);
+  animation:specialDayGlow 2.2s ease-in-out infinite;
+}
+
+.special-day-icon{font-size:44px}
+.special-day-card h2{margin:4px 0}
+.special-day-card p{margin:4px 0}
+.special-day-confetti{
+  position:absolute;
+  inset:5px 12px auto auto;
+  letter-spacing:7px;
+  animation:confettiFloat 2s ease-in-out infinite;
+}
+
+.family-profile-grid,
+.important-date-list{display:grid;gap:10px}
+
+.family-profile-card,
+.important-date-card{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:12px;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+}
+
+.family-profile-card>span,
+.important-date-card>span{font-size:30px}
+.family-profile-card small,
+.important-date-card small{display:block;color:var(--muted);margin-top:3px}
+.important-date-card.is-today{background:#fff4c9;border-color:#e9c760}
+
+@keyframes specialDayGlow{50%{transform:translateY(-2px);box-shadow:0 14px 34px rgba(218,155,50,.2)}}
+@keyframes confettiFloat{50%{transform:translateY(4px) rotate(2deg)}}
+
 @keyframes attentionGlow{
   0%,100%{transform:translateY(0);box-shadow:var(--shadow);}
   50%{transform:translateY(-2px);box-shadow:0 10px 28px rgba(117,103,232,.2);}

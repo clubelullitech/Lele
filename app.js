@@ -774,6 +774,8 @@ const initial = {
 
   familyMembers: [],
 
+  importantDates: [],
+
   tasks: [],
 
   projects: [],
@@ -867,6 +869,84 @@ function todayKey() {
     ).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function importantDatesKey() {
+  return `lele-important-dates-${familiaAtual || "local"}`;
+}
+
+function loadImportantDates() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(importantDatesKey()) || "[]");
+    state.importantDates = Array.isArray(saved) ? saved : [];
+  } catch {
+    state.importantDates = [];
+  }
+}
+
+function saveImportantDates() {
+  localStorage.setItem(importantDatesKey(), JSON.stringify(state.importantDates || []));
+  save();
+}
+
+async function loadImportantDatesFromSupabase() {
+  const { data, error } = await leleDb
+    .from("family_events")
+    .select("*")
+    .eq("family_id", familiaAtual)
+    .order("event_date");
+
+  if (error) throw error;
+
+  state.importantDates = (data || []).map(item => ({
+    id: item.id,
+    title: item.title,
+    date: item.event_date,
+    icon: item.icon || "🎉",
+    annual: item.annual !== false
+  }));
+  saveImportantDates();
+}
+
+function nextOccurrence(dateValue, annual = true) {
+  if (!dateValue) return null;
+  const [year, month, day] = dateValue.split("-").map(Number);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let occurrence = annual
+    ? new Date(today.getFullYear(), month - 1, day)
+    : new Date(year, month - 1, day);
+  occurrence.setHours(0, 0, 0, 0);
+  if (annual && occurrence < today) {
+    occurrence = new Date(today.getFullYear() + 1, month - 1, day);
+  }
+  return occurrence;
+}
+
+function daysUntil(dateValue, annual = true) {
+  const occurrence = nextOccurrence(dateValue, annual);
+  if (!occurrence) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((occurrence - today) / 86400000);
+}
+
+function familyCalendarItems() {
+  const birthdays = state.children
+    .filter(item => item.birthDate)
+    .map(item => ({
+      id: `birthday-${item.id}`,
+      title: `Aniversário de ${item.name}`,
+      date: item.birthDate,
+      icon: "🎂",
+      annual: true,
+      automatic: true
+    }));
+
+  return [...birthdays, ...(state.importantDates || [])]
+    .map(item => ({ ...item, days: daysUntil(item.date, item.annual !== false) }))
+    .filter(item => item.days !== null && item.days >= 0)
+    .sort((a, b) => a.days - b.days);
 }
 
 
@@ -2124,11 +2204,37 @@ async function carregarFamiliaReal() {
     throw erroMembros;
   }
 
+  /* Ajuste único solicitado para o perfil de demonstração da família. */
+  if (membro.role !== "child") {
+    const testProfile = (membros || []).find(item =>
+      String(item.display_name || "").trim().toLowerCase() === "teste"
+    );
+
+    if (
+      testProfile &&
+      (testProfile.role !== "child" || testProfile.birth_date !== "2019-01-01")
+    ) {
+      const { error: testProfileError } = await leleDb
+        .from("family_members")
+        .update({ role: "child", birth_date: "2019-01-01" })
+        .eq("id", testProfile.id)
+        .eq("family_id", familiaAtual);
+
+      if (testProfileError) {
+        console.warn("Não foi possível preparar o perfil Teste:", testProfileError);
+      } else {
+        testProfile.role = "child";
+        testProfile.birth_date = "2019-01-01";
+      }
+    }
+  }
+
   state.familyMembers = (membros || []).map(member => ({
     id: member.id,
     userId: member.user_id,
     name: member.display_name,
-    role: member.role
+    role: member.role,
+    birthDate: member.birth_date || null
   }));
 
 
@@ -2242,6 +2348,8 @@ async function carregarFamiliaReal() {
     state.activeChild = 0;
   }
 
+  loadImportantDates();
+
 
   /*
     Define o modo conforme
@@ -2305,6 +2413,12 @@ async function carregarFamiliaReal() {
     await loadMessagesFromSupabase();
   } catch (error) {
     console.error("Usando recados locais:", error);
+  }
+
+  try {
+    await loadImportantDatesFromSupabase();
+  } catch (error) {
+    console.warn("Usando datas importantes deste aparelho:", error);
   }
 
   save();
@@ -3892,6 +4006,9 @@ function renderHome() {
   const profileName = isParentDashboard
     ? (membroAtual?.display_name || "Responsável")
     : c.name;
+  const calendarItems = familyCalendarItems();
+  const todayEvents = calendarItems.filter(item => item.days === 0);
+  const upcomingEvents = calendarItems.filter(item => item.days > 0 && item.days <= 30).slice(0, 3);
 
   $("#homeView").innerHTML = `
     <div class="hero">
@@ -3935,6 +4052,28 @@ function renderHome() {
       </div>
 
     </div>
+
+    ${todayEvents.length ? `
+      <section class="special-day-card is-today">
+        <div class="special-day-confetti" aria-hidden="true">🎉 ✨ 🎈 ⭐ 🎊</div>
+        <span class="special-day-icon">${todayEvents[0].icon || "🎉"}</span>
+        <div>
+          <b>Hoje é um dia especial!</b>
+          <h2>${escapeHtml(todayEvents.map(item => item.title).join(" • "))}</h2>
+          <p>O Lelê veio comemorar com a família 💜</p>
+        </div>
+      </section>
+    ` : upcomingEvents.length ? `
+      <section class="special-day-card">
+        <span class="special-day-icon">${upcomingEvents[0].icon || "📅"}</span>
+        <div>
+          <b>Está chegando</b>
+          ${upcomingEvents.map(item => `
+            <p><strong>${escapeHtml(item.title)}</strong> • ${item.days === 1 ? "amanhã" : `faltam ${item.days} dias`}</p>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
 
     <div class="home-school-status ${inSchool ? "is-active" : ""}">
       <span>${inSchool ? "📚" : "🕒"}</span>
@@ -4079,6 +4218,51 @@ function renderHome() {
       }
 
     </section>
+
+    ${membroAtual?.role !== "child" ? `
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <h2>✏️ Editar perfis</h2>
+            <div class="muted">A idade muda automaticamente conforme a data de nascimento.</div>
+          </div>
+        </div>
+        <div class="family-profile-grid">
+          ${(state.familyMembers || []).map(member => `
+            <article class="family-profile-card">
+              <span>${member.role === "child" ? "🧒" : "👤"}</span>
+              <div>
+                <b>${escapeHtml(member.name)}</b>
+                <small>${member.role === "child" ? "Criança" : "Pai/Responsável"}${member.birthDate ? ` • ${calcularIdade(member.birthDate)} anos` : ""}</small>
+              </div>
+              <button class="ghost edit-family-profile-btn" data-member-id="${member.id}" type="button">Editar perfil</button>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+
+      <section class="section important-dates-section">
+        <div class="section-head">
+          <div>
+            <h2>🎉 Datas importantes</h2>
+            <div class="muted">Aniversários das crianças entram automaticamente. Cadastre outros aniversários e dias especiais.</div>
+          </div>
+          <button id="addImportantDateBtn" class="primary" type="button">+ Nova data</button>
+        </div>
+        <div class="important-date-list">
+          ${familyCalendarItems().map(item => `
+            <article class="important-date-card ${item.days === 0 ? "is-today" : ""}">
+              <span>${item.icon || "📅"}</span>
+              <div>
+                <b>${escapeHtml(item.title)}</b>
+                <small>${item.days === 0 ? "É hoje!" : item.days === 1 ? "É amanhã" : `Faltam ${item.days} dias`}</small>
+              </div>
+              ${item.automatic ? "" : `<button class="small danger delete-important-date-btn" data-event-id="${item.id}" type="button">Excluir</button>`}
+            </article>
+          `).join("") || `<div class="callout">Nenhuma data importante cadastrada.</div>`}
+        </div>
+      </section>
+    ` : ""}
   `;
 }
 
@@ -5758,6 +5942,28 @@ function renderFamily() {
       adicionarPessoaFamilia
     );
 
+  $$(".edit-family-profile-btn").forEach(button => {
+    button.addEventListener("click", () => editFamilyProfile(button.dataset.memberId));
+  });
+
+  $("#addImportantDateBtn")?.addEventListener("click", addImportantDate);
+
+  $$(".delete-important-date-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+      const eventId = button.dataset.eventId;
+      const { error } = await leleDb
+        .from("family_events")
+        .delete()
+        .eq("id", eventId)
+        .eq("family_id", familiaAtual);
+      if (error) console.warn("A data foi removida deste aparelho, mas a sincronização ficou pendente:", error);
+      state.importantDates = (state.importantDates || []).filter(item => item.id !== button.dataset.eventId);
+      saveImportantDates();
+      render();
+      showView("familyView");
+    });
+  });
+
 
   /* ABRIR PERFIL */
 
@@ -5781,6 +5987,105 @@ function renderFamily() {
         );
       }
     );
+}
+
+
+/* =============================================
+   EDIÇÃO DE PERFIS E DATAS IMPORTANTES
+============================================= */
+
+async function editFamilyProfile(memberId) {
+  if (membroAtual?.role === "child") return;
+
+  const member = (state.familyMembers || []).find(item => String(item.id) === String(memberId));
+  if (!member) return;
+
+  const name = prompt("Nome do perfil:", member.name);
+  if (!name?.trim()) return;
+
+  const type = prompt("Digite 1 para Criança ou 2 para Pai/Responsável:", member.role === "child" ? "1" : "2");
+  if (type !== "1" && type !== "2") {
+    alert("Escolha 1 ou 2.");
+    return;
+  }
+
+  const role = type === "1" ? "child" : "parent";
+  let birthDate = null;
+
+  if (role === "child") {
+    birthDate = prompt("Data de nascimento (AAAA-MM-DD):", member.birthDate || "2019-01-01");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate || "")) {
+      alert("Informe a data no formato AAAA-MM-DD.");
+      return;
+    }
+  }
+
+  const { error } = await leleDb
+    .from("family_members")
+    .update({
+      display_name: name.trim(),
+      role,
+      birth_date: birthDate
+    })
+    .eq("id", member.id)
+    .eq("family_id", familiaAtual);
+
+  if (error) {
+    console.error("Erro ao editar perfil:", error);
+    alert("Não foi possível editar o perfil. A permissão do Supabase ainda precisa ser atualizada.");
+    return;
+  }
+
+  await carregarFamiliaReal();
+  render();
+  showView("familyView");
+}
+
+async function addImportantDate() {
+  if (membroAtual?.role === "child") return;
+
+  const title = prompt("Nome da data importante:\nEx.: Aniversário da vovó");
+  if (!title?.trim()) return;
+
+  const date = prompt("Data (AAAA-MM-DD):");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) {
+    alert("Informe a data no formato AAAA-MM-DD.");
+    return;
+  }
+
+  const icon = prompt("Escolha um emoji para a data:", "🎉") || "🎉";
+  const localEvent = {
+    id: crypto.randomUUID ? crypto.randomUUID() : `event-${Date.now()}`,
+    title: title.trim(),
+    date,
+    icon: icon.trim() || "🎉",
+    annual: true
+  };
+
+  const { data, error } = await leleDb
+    .from("family_events")
+    .insert({
+      family_id: familiaAtual,
+      title: localEvent.title,
+      event_date: localEvent.date,
+      icon: localEvent.icon,
+      annual: true,
+      created_by: membroAtual.id
+    })
+    .select("id")
+    .single();
+
+  if (data?.id) localEvent.id = data.id;
+  if (error) {
+    console.warn("Data salva somente neste aparelho:", error);
+    alert("A data foi salva neste aparelho. Para aparecer nos demais celulares, ainda será necessário ativar a tabela de datas no Supabase.");
+  }
+
+  state.importantDates = [...(state.importantDates || []), localEvent];
+
+  saveImportantDates();
+  render();
+  showView("familyView");
 }
 
 
