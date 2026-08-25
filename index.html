@@ -17,7 +17,7 @@
 
   <link
     rel="stylesheet"
-    href="styles.css?v=35"
+    href="styles.css?v=36"
   />
 </head>
 
@@ -964,6 +964,32 @@
     </div>
   </div>
 </dialog>
+
+<!-- LELÊ EXPLICA — PÍLULAS ANIMADAS -->
+
+<dialog id="growthExplainerDialog">
+  <div class="modal-card growth-explainer-modal">
+    <div class="modal-head growth-explainer-head">
+      <div>
+        <span class="age-pill">Vídeo do Lelê</span>
+        <h2><span id="growthExplainerIcon">✨</span> <span id="growthExplainerTitle">Lelê explica</span></h2>
+      </div>
+      <button id="closeGrowthExplainer" class="icon-btn" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="growth-explainer-stage">
+      <img src="assets/lele-explica-v1.webp" alt="Lelê explicando" />
+      <div class="growth-explainer-board">
+        <small id="growthExplainerStepNumber">Passo 1 de 3</small>
+        <p id="growthExplainerText"></p>
+      </div>
+    </div>
+    <div class="growth-explainer-progress"><div id="growthExplainerProgress"></div></div>
+    <div class="modal-actions">
+      <button id="playGrowthExplainer" class="primary" type="button">▶ Assistir</button>
+      <button id="nextGrowthExplainer" class="ghost" type="button">Próximo ›</button>
+    </div>
+  </div>
+</dialog>
 <!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -971,8 +997,8 @@
 
 <!-- LELÊ -->
 
-<script src="app.js?v=35"></script>
-<script src="notifications.js?v=35"></script>
+<script src="app.js?v=36"></script>
+<script src="notifications.js?v=36"></script>
 <script src="school.js?v=1"></script>
 
 </body>

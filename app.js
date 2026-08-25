@@ -6723,6 +6723,106 @@ const safetyGrowthTracks = [
   }
 ];
 
+const childGrowthTracks = [
+  {
+    icon: "🎒",
+    title: "Preparar o que vou precisar",
+    text: "Olhar o dia seguinte, separar os materiais e conferir tudo com calma.",
+    action: "Organizar a mochila",
+    steps: ["Veja o que você fará amanhã.", "Separe cada coisa em cima da mesa.", "Guarde e faça uma última conferência."]
+  },
+  {
+    icon: "💛",
+    title: "Entender o que estou sentindo",
+    text: "Dar nome ao sentimento ajuda a explicar o que aconteceu e pedir ajuda.",
+    action: "Contar como estou me sentindo",
+    steps: ["Pare um pouquinho e perceba seu corpo.", "Escolha uma palavra para o sentimento.", "Conte a alguém de confiança o que você precisa."]
+  },
+  {
+    icon: "🤝",
+    title: "Cuidar das amizades",
+    text: "Amizade boa tem respeito, escuta, brincadeira segura e espaço para dizer não.",
+    action: "Conversar sobre algo que preciso",
+    steps: ["Observe se todos estão sendo respeitados.", "Fale com calma quando não gostar de algo.", "Procure um adulto se a situação não parar."]
+  },
+  {
+    icon: "🧩",
+    title: "Resolver uma coisa por vez",
+    text: "Uma tarefa grande fica mais fácil quando vira três passos pequenos.",
+    action: "Planejar as prioridades da semana",
+    steps: ["Escolha apenas uma coisa para começar.", "Divida em uma etapa bem pequena.", "Termine a etapa e só depois escolha a próxima."]
+  }
+];
+
+const growthLessonSteps = {
+  "Informações pessoais ficam protegidas": ["Pare antes de responder perguntas pessoais.", "Não informe endereço, escola, rotina, senhas ou fotos.", "Chame um responsável ou profissional da escola."],
+  "Avisar onde vai e onde está": ["Conte para onde quer ir e com quem estará.", "Peça permissão antes de mudar o combinado.", "Avise se o plano ou o horário mudar."],
+  "Saber a quem pedir ajuda": ["Combine quais adultos são de confiança.", "Na escola, procure um profissional identificado.", "Conte o que aconteceu sem guardar um segredo que assuste."],
+  "Dizer não, sair e contar": ["Diga não quando algo causar medo ou desconforto.", "Afaste-se e vá para um lugar seguro.", "Conte a um adulto de confiança até alguém ajudar."],
+  "Decisões e prioridades": ["Liste o que precisa acontecer.", "Marque o que é urgente e importante.", "Escolha uma primeira ação pequena e possível."],
+  "Emoções e comunicação": ["Perceba e nomeie o que está sentindo.", "Explique o fato sem atacar a outra pessoa.", "Diga com clareza o que precisa ou qual é seu limite."],
+  "Relações saudáveis": ["Observe se existe respeito e liberdade para dizer não.", "Não normalize pressão, humilhação ou controle.", "Converse com alguém de confiança quando houver dúvida."],
+  "Dinheiro na vida real": ["Anote quanto você tem e o que pretende comprar.", "Compare preço, necessidade e alternativas.", "Guarde uma parte e desconfie de ofertas urgentes demais."],
+  "Vida prática": ["Leia o que precisa ser feito antes de começar.", "Separe materiais e cuide da segurança.", "Faça, confira e organize o espaço ao terminar."],
+  "Vida digital": ["Proteja senhas e dados pessoais.", "Cheque a fonte antes de acreditar ou compartilhar.", "Faça pausas quando a tela atrapalhar sono, foco ou humor."],
+  "Corpo e bem-estar": ["Observe como estão sono, alimentação e energia.", "Escolha um cuidado pequeno que cabe no dia.", "Peça ajuda adulta ou profissional quando algo não estiver bem."],
+  "Futuro sem pressão": ["Liste assuntos e atividades que despertam curiosidade.", "Experimente algo pequeno antes de decidir.", "Registre o que gostou, aprendeu e quer explorar depois."]
+};
+
+let growthExplainerTimer = null;
+let growthExplainerStep = 0;
+let currentGrowthTrack = null;
+
+function stepsForGrowthTrack(track) {
+  return track?.steps || growthLessonSteps[track?.title] || [track?.text, track?.action];
+}
+
+function renderGrowthExplainerStep(shouldSpeak = false) {
+  if (!currentGrowthTrack) return;
+  const steps = stepsForGrowthTrack(currentGrowthTrack);
+  growthExplainerStep = Math.max(0, Math.min(growthExplainerStep, steps.length - 1));
+  const step = steps[growthExplainerStep];
+  if ($("#growthExplainerIcon")) $("#growthExplainerIcon").textContent = currentGrowthTrack.icon;
+  if ($("#growthExplainerTitle")) $("#growthExplainerTitle").textContent = currentGrowthTrack.title;
+  if ($("#growthExplainerStepNumber")) $("#growthExplainerStepNumber").textContent = `Passo ${growthExplainerStep + 1} de ${steps.length}`;
+  if ($("#growthExplainerText")) $("#growthExplainerText").textContent = step;
+  if ($("#growthExplainerProgress")) $("#growthExplainerProgress").style.width = `${((growthExplainerStep + 1) / steps.length) * 100}%`;
+  if (shouldSpeak) speak(step);
+}
+
+function stopGrowthExplainer() {
+  clearInterval(growthExplainerTimer);
+  growthExplainerTimer = null;
+  if ($("#playGrowthExplainer")) $("#playGrowthExplainer").textContent = "▶ Assistir";
+}
+
+function openGrowthExplainer(track) {
+  currentGrowthTrack = track;
+  growthExplainerStep = 0;
+  stopGrowthExplainer();
+  renderGrowthExplainerStep(false);
+  $("#growthExplainerDialog")?.showModal();
+}
+
+function playGrowthExplainer() {
+  if (!currentGrowthTrack) return;
+  if (growthExplainerTimer) {
+    stopGrowthExplainer();
+    return;
+  }
+  $("#playGrowthExplainer").textContent = "⏸ Pausar";
+  renderGrowthExplainerStep(true);
+  growthExplainerTimer = setInterval(() => {
+    const steps = stepsForGrowthTrack(currentGrowthTrack);
+    if (growthExplainerStep >= steps.length - 1) {
+      stopGrowthExplainer();
+      return;
+    }
+    growthExplainerStep += 1;
+    renderGrowthExplainerStep(true);
+  }, 4200);
+}
+
 function renderDevelopment() {
   const c = child();
   if (!c || !$("#developmentView")) return;
@@ -6734,6 +6834,8 @@ function renderDevelopment() {
   const ageIsSupported = c.age >= 5 && c.age <= 16;
   const isTeen = c.age >= 13;
   const canSendReflection = state.mode === "child";
+  const featuredTracks = isTeen ? teenGrowthTracks : childGrowthTracks;
+  const featuredTrack = featuredTracks[0];
 
   $("#developmentView").innerHTML = `
     <div class="hero development-hero">
@@ -6757,6 +6859,31 @@ function renderDevelopment() {
       }
     </div>
 
+    <section class="growth-video-feature">
+      <img src="assets/lele-explica-v1.webp" alt="Lelê apresentando uma pílula de conhecimento" />
+      <div class="growth-video-copy">
+        <span class="growth-now-badge">▶ Lelê explica</span>
+        <h2>${escapeHtml(featuredTrack.title)}</h2>
+        <p>${escapeHtml(featuredTrack.text)}</p>
+        <button class="primary growth-explainer-btn" data-growth-title="${escapeHtml(featuredTrack.title)}" type="button">Assistir em 3 passos</button>
+      </div>
+    </section>
+
+    <section class="section teen-growth-section">
+      <div class="section-head"><div><h2>✨ Pílulas para crescer</h2><div class="muted">Toque para o Lelê mostrar e explicar cada ideia.</div></div></div>
+      <div class="teen-growth-grid">
+        ${featuredTracks.map(track => `
+          <article class="teen-growth-card knowledge-pill">
+            <span class="teen-growth-icon">${track.icon}</span>
+            <span class="pill-duration">3 passos</span>
+            <h3>${track.title}</h3>
+            <p>${track.text}</p>
+            <button class="ghost growth-explainer-btn" data-growth-title="${escapeHtml(track.title)}" type="button">▶ Lelê explica</button>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+
     <section class="section teen-growth-section">
       <div class="section-head">
         <div>
@@ -6770,6 +6897,7 @@ function renderDevelopment() {
             <span class="teen-growth-icon">${track.icon}</span>
             <h3>${track.title}</h3>
             <p>${track.text}</p>
+            <button class="ghost growth-explainer-btn" data-growth-title="${escapeHtml(track.title)}" type="button">▶ Ver explicação</button>
             <button class="ghost teen-growth-action" data-task-title="${escapeHtml(track.action)}" type="button">
               + Praticar com a família
             </button>
@@ -7176,6 +7304,26 @@ function bindDynamicEvents() {
         alert("Não foi possível adicionar agora. Confira a internet e tente novamente.");
       }
     });
+  });
+
+  $$(".growth-explainer-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const allTracks = [...childGrowthTracks, ...teenGrowthTracks, ...safetyGrowthTracks];
+      const track = allTracks.find(item => item.title === button.dataset.growthTitle);
+      if (track) openGrowthExplainer(track);
+    });
+  });
+
+  $("#playGrowthExplainer")?.addEventListener("click", playGrowthExplainer);
+  $("#nextGrowthExplainer")?.addEventListener("click", () => {
+    if (!currentGrowthTrack) return;
+    stopGrowthExplainer();
+    growthExplainerStep = (growthExplainerStep + 1) % stepsForGrowthTrack(currentGrowthTrack).length;
+    renderGrowthExplainerStep(true);
+  });
+  $("#closeGrowthExplainer")?.addEventListener("click", () => {
+    stopGrowthExplainer();
+    $("#growthExplainerDialog")?.close();
   });
 
   $$(".reflection-btn").forEach(button => {
