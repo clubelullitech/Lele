@@ -1318,14 +1318,15 @@ async function loadTasksFromSupabase() {
     return;
   }
 
+  /*
+    A limpeza dos registros de teste é feita somente pelo botão próprio.
+    Não filtramos tarefas pela data de criação: uma tarefa antiga pode
+    continuar válida, ser recorrente ou ter sido cadastrada para outro dia.
+  */
   const tarefasBanco =
-    (data || [])
-      .filter(task =>
-        task.created_at && task.created_at > testDataCutoff
-      )
-      .map(
-        mapTaskFromDb
-      );
+    (data || []).map(
+      mapTaskFromDb
+    );
 
   state.tasks =
     tarefasBanco;

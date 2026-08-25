@@ -1,11 +1,11 @@
-const CACHE_NAME = "lele-v33";
+const CACHE_NAME = "lele-v34";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./styles.css?v=33",
-  "./app.js?v=33",
-  "./notifications.js?v=33",
+  "./styles.css?v=34",
+  "./app.js?v=34",
+  "./notifications.js?v=34",
   "./assets/guides/escovar-dentes-1.webp",
   "./assets/guides/escovar-dentes-2.webp",
   "./assets/guides/escovar-dentes-3.webp",
