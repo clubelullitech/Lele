@@ -1537,23 +1537,44 @@ async function setTaskStatusReal(
     queueOfflineAction({
       type: "taskStatus",
       taskId: task.id,
-      status: newStatus
+      status: newStatus,
+      recurring: !!task.recurrenceEnabled,
+      completionDate:
+        task.recurrenceEnabled && newStatus === "done"
+          ? todayKey()
+          : null
     });
+
+    if (task.recurrenceEnabled) {
+      task.lastCompletedDate =
+        newStatus === "done" ? todayKey() : null;
+      save();
+    }
 
     return;
   }
 
-  const { error } =
-    await leleDb.rpc(
-      "set_task_status",
-      {
-        p_task_id:
-          task.id,
+  const completionDate =
+    task.recurrenceEnabled && newStatus === "done"
+      ? todayKey()
+      : null;
 
-        p_status:
-          newStatus
-      }
-    );
+  const { error } = task.recurrenceEnabled
+    ? await leleDb
+        .from("tasks")
+        .update({
+          status: "pending",
+          last_completed_date: completionDate,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", task.id)
+    : await leleDb.rpc(
+        "set_task_status",
+        {
+          p_task_id: task.id,
+          p_status: newStatus
+        }
+      );
 
   if (error) {
     console.error(
@@ -1577,40 +1598,9 @@ async function setTaskStatusReal(
     return;
   }
 
-if (task.recurrenceEnabled) {
-  const completionDate =
-    newStatus === "done"
-      ? todayKey()
-      : null;
-
-  const {
-    error: recurrenceError
-  } =
-    await leleDb
-      .from("tasks")
-      .update({
-        last_completed_date:
-          completionDate,
-
-        updated_at:
-          new Date()
-            .toISOString()
-      })
-      .eq(
-        "id",
-        task.id
-      );
-
-  if (recurrenceError) {
-    console.error(
-      "Erro ao registrar conclusão recorrente:",
-      recurrenceError
-    );
+  if (task.recurrenceEnabled) {
+    task.lastCompletedDate = completionDate;
   }
-
-  task.lastCompletedDate =
-    completionDate;
-}
   
   await loadTasksFromSupabase();
 
@@ -1660,17 +1650,22 @@ async function syncOfflineQueue() {
           continue;
         }
 
-        const { error } =
-          await leleDb.rpc(
-            "set_task_status",
-            {
-              p_task_id:
-                action.taskId,
-
-              p_status:
-                action.status
-            }
-          );
+        const { error } = action.recurring
+          ? await leleDb
+              .from("tasks")
+              .update({
+                status: "pending",
+                last_completed_date: action.completionDate || null,
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", action.taskId)
+          : await leleDb.rpc(
+              "set_task_status",
+              {
+                p_task_id: action.taskId,
+                p_status: action.status
+              }
+            );
 
         if (error) {
           throw error;
@@ -2317,7 +2312,7 @@ const email =
     $("#loginMessage");
 
   mensagem.textContent =
-    "Entrando no Lelê...";
+    "Carregando...";
 
 
   let error;
@@ -4882,6 +4877,12 @@ function tasksForCalendarDate(date) {
 
   if (!c) return [];
 
+  const dateKey = dateKeyFromParts(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+
   return state.tasks
     .filter(
       task =>
@@ -4892,6 +4893,20 @@ function tasksForCalendarDate(date) {
       task =>
         taskIsForDate(task, date)
     )
+    .map(task => {
+      if (!task.recurrenceEnabled || task.recurrenceType === "once") {
+        return task;
+      }
+
+      const completedOnThisDate =
+        task.lastCompletedDate === dateKey;
+
+      return {
+        ...task,
+        done: completedOnThisDate,
+        status: completedOnThisDate ? "done" : "pending"
+      };
+    })
     .sort(
       (a, b) =>
         (a.time || "99:99")
