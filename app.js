@@ -1010,68 +1010,8 @@ function currentWeekDay() {
 
 
 function taskIsForToday(task) {
-  const today =
-    todayKey();
-
-  /*
-    Se existe data final e ela passou,
-    a tarefa não aparece mais.
-  */
-  if (
-    task.recurrenceEndDate &&
-    today > task.recurrenceEndDate
-  ) {
-    return false;
-  }
-
-  /*
-    Tarefa sem recorrência.
-  */
-  if (
-    !task.recurrenceEnabled ||
-    task.recurrenceType === "once"
-  ) {
-    return true;
-  }
-
-  const weekDay =
-    currentWeekDay();
-
-  /*
-    Todos os dias.
-  */
-  if (
-    task.recurrenceType === "daily"
-  ) {
-    return true;
-  }
-
-  /*
-    Segunda a sexta.
-  */
-  if (
-    task.recurrenceType === "weekdays"
-  ) {
-    return (
-      weekDay >= 1 &&
-      weekDay <= 5
-    );
-  }
-
-  /*
-    Dias específicos.
-  */
-  if (
-    task.recurrenceType === "weekly"
-  ) {
-    return (
-      task.recurrenceDays || []
-    ).includes(
-      weekDay
-    );
-  }
-
-  return true;
+  /* A tela Hoje e o calendário usam exatamente a mesma regra. */
+  return taskIsForDate(task, new Date());
 }
 
 
@@ -1291,7 +1231,7 @@ recurrenceType:
 
 recurrenceDays:
   Array.isArray(t.recurrence_days)
-    ? t.recurrence_days
+    ? t.recurrence_days.map(Number).filter(Number.isFinite)
     : [],
 
 recurrenceEndDate:
@@ -3721,6 +3661,10 @@ function openTaskDialog(task = null) {
   $("#taskId").value =
     task?.id || "";
 
+  if ($("#taskStartDate")) {
+    $("#taskStartDate").value = task?.scheduledDate || todayKey();
+  }
+
   const taskChildSelect = $("#taskChildId");
   const taskChildWrap = $("#taskChildWrap");
   const selectedChildId = String(task?.childId || child()?.id || "");
@@ -3956,6 +3900,13 @@ const recurrenceEndDate =
       )
     : null;
 
+const scheduledDate = $("#taskStartDate")?.value || todayKey();
+
+if (recurrenceEndDate && recurrenceEndDate < scheduledDate) {
+  alert("A data final não pode ser anterior à data de início.");
+  return;
+}
+
 
 /*
   Validação dos dias escolhidos
@@ -4025,6 +3976,7 @@ if (
 recurrenceDays,
 recurrenceEndDate,
 recurrenceEnabled,
+scheduledDate,
     
   };
 
@@ -5164,9 +5116,8 @@ function taskIsForDate(task, date) {
     );
 
 const taskStartDate =
-  task.createdAt
-    ? task.createdAt.slice(0, 10)
-    : null;
+  task.scheduledDate ||
+  (task.createdAt ? task.createdAt.slice(0, 10) : null);
 
 if (
   taskStartDate &&
@@ -7762,6 +7713,12 @@ function updateRecurrenceForm() {
     "hidden",
     !needsDays
   );
+
+  if ($("#taskStartDateLabel")) {
+    $("#taskStartDateLabel").textContent = recurrence === "once"
+      ? "Data da tarefa"
+      : "Começa em";
+  }
 
   const endMode =
     $("#taskRecurrenceEndMode")
