@@ -217,14 +217,17 @@ function ensureLeleCompanion() {
   companion.type = "button";
   companion.innerHTML = `
     <img src="assets/lele-boas-vindas-v1.webp" alt="Lelê" />
+    <span class="lele-companion-accessory" aria-hidden="true">${localStorage.getItem("lele-accessory") || "✨"}</span>
     <span class="lele-companion-bubble">Oi! Toque em mim 💜</span>
   `;
   companion.addEventListener("click", () => {
     const message = companion.dataset.message || "Oi! Eu estou aqui para fazer tudo com você, um passo de cada vez.";
     companion.classList.add("is-talking");
     speak(message);
+    openLeleAssistant();
     setTimeout(() => companion.classList.remove("is-talking"), 1800);
   });
+  companion.dataset.color = localStorage.getItem("lele-companion-color") || "teal";
   $("#app").appendChild(companion);
 }
 
@@ -239,6 +242,82 @@ function showLeleReaction(message, mood = "happy") {
   if (bubble) bubble.textContent = message;
   companion.classList.add("is-active");
   leleReactionTimer = setTimeout(() => companion.classList.remove("is-active"), 7000);
+}
+
+function tomorrowDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  return date;
+}
+
+function tomorrowTasks() {
+  return tasksForCalendarDate(tomorrowDate());
+}
+
+function leleSafeReply(rawText) {
+  const text = String(rawText || "").trim();
+  const normalized = text.toLocaleLowerCase("pt-BR");
+  const c = child();
+  const pending = childTasks().filter(task => !task.done);
+
+  if (!text) return "Escolha uma pergunta ou escreva o que você precisa.";
+  if (/machucar|me bater|bateram|ameaç|ameac|medo|abuso|segredo ruim|morrer|sumir/.test(normalized)) {
+    return "Isso é importante. Procure agora um responsável ou outro adulto de confiança. Se estiver em perigo, vá para um lugar seguro e peça ajuda imediatamente.";
+  }
+  if (/ajuda|difícil|dificil|não consigo|nao consigo/.test(normalized)) {
+    return pending.length
+      ? `Vamos por uma parte pequena. Comece por “${pending[0].title}” e toque em Como fazer. Se continuar difícil, use Preciso de ajuda para chamar seus responsáveis.`
+      : "Você pode contar com seus responsáveis. Explique o que aconteceu e diga claramente de que ajuda precisa.";
+  }
+  if (/amanhã|amanha|mochila|depois/.test(normalized)) {
+    const tasks = tomorrowTasks();
+    return tasks.length
+      ? `Para amanhã você tem: ${tasks.slice(0, 4).map(task => task.title).join(", ")}. Confira materiais e horários antes de dormir.`
+      : "Não encontrei tarefas para amanhã. Mesmo assim, vale conferir mochila, roupa e horário da escola.";
+  }
+  if (/tarefa|agora|começ|comec|primeiro/.test(normalized)) {
+    return pending.length
+      ? `Sua próxima ação pode ser “${pending[0].title}”${pending[0].time ? `, às ${pending[0].time}` : ""}. Vamos começar pelo primeiro passo?`
+      : "As tarefas previstas para hoje estão concluídas. Bom trabalho!";
+  }
+  if (/triste|nervos|ansios|bravo|raiva|sentindo|sentimento/.test(normalized)) {
+    return "Obrigado por contar. Respire devagar, escolha como você se sente na guia Crescer e compartilhe com seus responsáveis. Você não precisa resolver isso sozinho.";
+  }
+  if (/água|agua/.test(normalized)) {
+    return "Se estiver com sede, faça uma pausa e tome água. Depois toque em Tomei água para registrar.";
+  }
+  if (/oi|olá|ola|tudo bem/.test(normalized)) {
+    return `Oi, ${c?.name || ""}! Eu posso ajudar com tarefas, amanhã, sentimentos, escola e pedidos de ajuda.`;
+  }
+  return "Eu só converso sobre sua rotina, tarefas, escola, sentimentos e segurança. Tente perguntar: “O que faço agora?” ou “O que tenho amanhã?”.";
+}
+
+function appendLeleAssistantMessage(role, text) {
+  const box = $("#leleAssistantMessages");
+  if (!box) return;
+  const item = document.createElement("div");
+  item.className = `lele-assistant-message ${role}`;
+  item.textContent = text;
+  box.appendChild(item);
+  box.scrollTop = box.scrollHeight;
+}
+
+function askLeleAssistant(text) {
+  if (!text?.trim()) return;
+  appendLeleAssistantMessage("user", text.trim());
+  const answer = leleSafeReply(text);
+  appendLeleAssistantMessage("lele", answer);
+  speak(answer);
+}
+
+function openLeleAssistant() {
+  const dialog = $("#leleAssistantDialog");
+  if (!dialog) return;
+  const messages = $("#leleAssistantMessages");
+  if (messages && !messages.children.length) {
+    appendLeleAssistantMessage("lele", "Oi! Posso ajudar com tarefas, escola, amanhã e sentimentos. Sobre o que quer conversar?");
+  }
+  if (!dialog.open) dialog.showModal();
 }
 
 /* =============================================
@@ -4142,6 +4221,19 @@ function renderHome() {
       </div>
     </div>
 
+    <section class="tomorrow-card">
+      <div class="tomorrow-head">
+        <span>🌙</span>
+        <div><b>Preparar o amanhã</b><small>${tomorrowDate().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" })}</small></div>
+        <button id="speakTomorrowBtn" class="ghost" type="button">🔊 Ouvir</button>
+      </div>
+      <div class="tomorrow-items">
+        ${tomorrowTasks().length
+          ? tomorrowTasks().slice(0, 5).map(task => `<span>${getTaskEmoji(task)} ${escapeHtml(task.title)}${task.time ? ` • ${task.time}` : ""}</span>`).join("")
+          : `<span>🎒 Conferir mochila e materiais</span><span>👕 Separar a roupa</span><span>⏰ Conferir o horário</span>`}
+      </div>
+    </section>
+
     <button
       id="attentionCard"
       class="attention-card ${pending ? "needs-attention" : "is-complete"}"
@@ -5374,6 +5466,22 @@ function renderRoutine() {
 
     </div>
 
+    <section class="week-plan-strip">
+      ${Array.from({ length: 7 }, (_, offset) => {
+        const date = new Date();
+        date.setDate(date.getDate() + offset);
+        const tasks = tasksForCalendarDate(date);
+        return `
+          <article class="week-plan-day ${offset === 0 ? "is-today" : ""}">
+            <small>${offset === 0 ? "Hoje" : date.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</small>
+            <b>${date.getDate()}</b>
+            <span>${tasks.length} tarefa${tasks.length === 1 ? "" : "s"}</span>
+            <div>${tasks.slice(0, 3).map(task => getTaskEmoji(task)).join(" ") || "—"}</div>
+          </article>
+        `;
+      }).join("")}
+    </section>
+
 
     <section class="routine-calendar">
 
@@ -5940,6 +6048,22 @@ function renderFamily() {
       }
 
     </section>
+
+    ${membroAtual?.role !== "child" ? `
+      <section class="section family-missions-section">
+        <div class="section-head"><div><h2>🤝 Missões em família</h2><div class="muted">Atividades coletivas sem competição entre irmãos.</div></div></div>
+        <div class="family-mission-grid">
+          ${[
+            ["🍳", "Preparar algo juntos"],
+            ["📵", "Uma hora em família sem telas"],
+            ["🧺", "Organizar um espaço juntos"],
+            ["💬", "Conversar sobre como foi a semana"]
+          ].map(([icon, title]) => `
+            <button class="family-mission-btn" data-mission-title="${title}" data-mission-icon="${icon}" type="button"><span>${icon}</span><b>${title}</b><small>Adicionar para todos</small></button>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
   `;
 
 
@@ -6517,6 +6641,19 @@ function renderSettings() {
           <small class="muted">O Lelê mostra as vozes em português instaladas no aparelho. O estilo altera ritmo e entonação.</small>
 
         </div>
+
+        <div class="callout lele-customization" style="margin-top:10px;">
+          <b>🎨 Aparência do Lelê</b>
+          <p>Somente os responsáveis alteram o personagem neste aparelho.</p>
+          <div class="voice-settings-row">
+            <select id="leleCompanionColor" aria-label="Cor do Lelê">
+              ${[["teal","Verde Lelê"],["purple","Roxo"],["blue","Azul"],["gold","Dourado"]].map(([value,label]) => `<option value="${value}" ${(localStorage.getItem("lele-companion-color") || "teal") === value ? "selected" : ""}>${label}</option>`).join("")}
+            </select>
+            <select id="leleAccessory" aria-label="Acessório do Lelê">
+              ${[["✨","Estrelinhas"],["🎧","Fone"],["🧢","Boné"],["📚","Livros"],["🚀","Foguete"]].map(([value,label]) => `<option value="${value}" ${(localStorage.getItem("lele-accessory") || "✨") === value ? "selected" : ""}>${value} ${label}</option>`).join("")}
+            </select>
+          </div>
+        </div>
       ` : ""}
 
       <div
@@ -7082,6 +7219,16 @@ function indicatorSummaryForChild(targetChild) {
   };
 }
 
+function achievementBadgesForChild(targetChild, info) {
+  const badges = [];
+  if (info.doneToday >= 1) badges.push({ icon: "🌟", label: "Deu o primeiro passo" });
+  if (info.totalToday > 0 && info.rate === 100) badges.push({ icon: "🏆", label: "Completou o plano" });
+  if (info.latestReflection) badges.push({ icon: "💛", label: "Falou sobre o dia" });
+  if (Number(targetChild.water || 0) > 0) badges.push({ icon: "💧", label: "Lembrou da água" });
+  if (info.strongestSkills.length >= 2) badges.push({ icon: "🌱", label: "Praticou novas habilidades" });
+  return badges.slice(0, 4);
+}
+
 function positiveRewardForIndicator(info) {
   if (info.totalToday > 0 && info.rate === 100) {
     return { icon: "🏆", title: "Plano do dia completo", text: "Reconheça a constância e o esforço de hoje." };
@@ -7117,10 +7264,19 @@ function renderIndicators() {
       </p>
     </div>
 
+    ${membroAtual?.role !== "child" ? (() => {
+      const summaries = children.map(targetChild => ({ child: targetChild, info: indicatorSummaryForChild(targetChild) }));
+      const completed = summaries.reduce((total, item) => total + item.info.doneToday, 0);
+      const pending = summaries.reduce((total, item) => total + item.info.pendingToday, 0);
+      const feelings = summaries.filter(item => item.info.latestReflection).length;
+      return `<section class="smart-parent-summary"><span>🧠</span><div><b>Resumo inteligente de hoje</b><p>${completed} atividade${completed === 1 ? "" : "s"} concluída${completed === 1 ? "" : "s"}, ${pending} pendente${pending === 1 ? "" : "s"} e ${feelings} relato${feelings === 1 ? "" : "s"} sobre como foi o dia.</p></div></section>`;
+    })() : ""}
+
     <div class="indicator-children-grid">
       ${children.map(targetChild => {
         const info = indicatorSummaryForChild(targetChild);
         const reward = positiveRewardForIndicator(info);
+        const achievements = achievementBadgesForChild(targetChild, info);
         return `
           <section class="section child-indicator-card">
             <div class="indicator-child-head">
@@ -7147,6 +7303,10 @@ function renderIndicators() {
                 <div><b>${reward.title}</b><small>${reward.text}</small></div>
               </div>
             ` : ""}
+
+            <div class="achievement-row">
+              ${achievements.map(item => `<span title="${escapeHtml(item.label)}">${item.icon} ${escapeHtml(item.label)}</span>`).join("") || `<small>As conquistas aparecerão conforme o dia avançar.</small>`}
+            </div>
 
             <div class="indicator-skills">
               <b>Habilidades em prática</b>
@@ -7291,6 +7451,64 @@ function bindChatEvents() {
 ============================================= */
 
 function bindDynamicEvents() {
+
+  $("#closeLeleAssistant")?.addEventListener("click", () => $("#leleAssistantDialog")?.close());
+  $("#leleAssistantForm")?.addEventListener("submit", event => {
+    event.preventDefault();
+    const input = $("#leleAssistantInput");
+    askLeleAssistant(input?.value || "");
+    if (input) input.value = "";
+  });
+  $$(".lele-quick-question").forEach(button => {
+    button.addEventListener("click", () => askLeleAssistant(button.dataset.question));
+  });
+
+  $("#speakTomorrowBtn")?.addEventListener("click", () => {
+    const tasks = tomorrowTasks();
+    speak(tasks.length
+      ? `Para amanhã: ${tasks.map(task => task.title).join(", ")}.`
+      : "Para amanhã, confira a mochila, os materiais, a roupa e o horário.");
+  });
+
+  $("#leleCompanionColor")?.addEventListener("change", event => {
+    localStorage.setItem("lele-companion-color", event.currentTarget.value);
+    const companion = $("#leleCompanion");
+    if (companion) companion.dataset.color = event.currentTarget.value;
+  });
+  $("#leleAccessory")?.addEventListener("change", event => {
+    localStorage.setItem("lele-accessory", event.currentTarget.value);
+    const accessory = $("#leleCompanion .lele-companion-accessory");
+    if (accessory) accessory.textContent = event.currentTarget.value;
+  });
+
+  $$(".family-mission-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+      if (membroAtual?.role === "child") return;
+      const title = button.dataset.missionTitle;
+      const icon = button.dataset.missionIcon || "🤝";
+      button.disabled = true;
+      button.querySelector("small").textContent = "Adicionando…";
+      try {
+        for (const profile of state.children) {
+          const exists = state.tasks.some(task => sameProfileId(task.childId, profile.id) && task.title === title && task.scheduledDate === todayKey());
+          if (!exists) {
+            await saveTaskToSupabase(null, {
+              childId: profile.id, title, cat: "Família", time: "", duration: 30,
+              type: "fixed", voice: true, shared: true, needsHelp: true,
+              requirePhoto: false, icon, recurrenceType: "once", recurrenceDays: [],
+              recurrenceEndDate: null, recurrenceEnabled: false, scheduledDate: todayKey()
+            });
+          }
+        }
+        button.querySelector("small").textContent = "✓ Adicionada para todos";
+        showLeleReaction("Missão em família adicionada. Juntos fica mais divertido!", "celebrate");
+      } catch (error) {
+        console.error("Erro ao adicionar missão:", error);
+        button.disabled = false;
+        button.querySelector("small").textContent = "Tentar novamente";
+      }
+    });
+  });
 
   $("#attentionCard")?.addEventListener("click", event => {
     speak(event.currentTarget.dataset.phrase || "Vamos começar.");

@@ -17,7 +17,7 @@
 
   <link
     rel="stylesheet"
-    href="styles.css?v=38"
+    href="styles.css?v=39"
   />
 </head>
 
@@ -1000,6 +1000,28 @@
     </div>
   </div>
 </dialog>
+
+<!-- ASSISTENTE SEGURO DO LELÊ -->
+<dialog id="leleAssistantDialog">
+  <div class="modal-card lele-assistant-modal">
+    <div class="modal-head">
+      <div><span class="age-pill">Conversa segura</span><h2>Falar com o Lelê</h2></div>
+      <button id="closeLeleAssistant" class="icon-btn" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <p class="muted">O Lelê conversa apenas sobre rotina, escola, tarefas, sentimentos e segurança. Ele não fala com desconhecidos nem pesquisa na internet.</p>
+    <div class="lele-quick-questions">
+      <button class="lele-quick-question" data-question="O que faço agora?" type="button">O que faço agora?</button>
+      <button class="lele-quick-question" data-question="O que tenho amanhã?" type="button">O que tenho amanhã?</button>
+      <button class="lele-quick-question" data-question="Estou com dificuldade" type="button">Estou com dificuldade</button>
+      <button class="lele-quick-question" data-question="Quero falar como estou me sentindo" type="button">Como estou me sentindo</button>
+    </div>
+    <div id="leleAssistantMessages" class="lele-assistant-messages" aria-live="polite"></div>
+    <form id="leleAssistantForm" class="lele-assistant-form">
+      <input id="leleAssistantInput" maxlength="180" placeholder="Escreva para o Lelê…" autocomplete="off" />
+      <button class="primary" type="submit">Enviar</button>
+    </form>
+  </div>
+</dialog>
 <!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1007,8 +1029,8 @@
 
 <!-- LELÊ -->
 
-<script src="app.js?v=38"></script>
-<script src="notifications.js?v=38"></script>
+<script src="app.js?v=39"></script>
+<script src="notifications.js?v=39"></script>
 <script src="school.js?v=1"></script>
 
 </body>

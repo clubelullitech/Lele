@@ -481,6 +481,32 @@ button{
 .lele-companion[data-mood="water"] img{border-color:#8edbea}
 .lele-companion[data-mood="heart"] img{border-color:#ef9fc5}
 .lele-companion[data-mood="celebrate"] img{border-color:#ffd466}
+.lele-companion-accessory{position:absolute;right:-2px;top:-8px;font-size:24px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.18));animation:rewardShine 2.2s ease-in-out infinite}
+.lele-companion[data-color="purple"] img{border-color:#b8a8ff}
+.lele-companion[data-color="blue"] img{border-color:#87c7ed}
+.lele-companion[data-color="gold"] img{border-color:#ffd466}
+
+.lele-assistant-modal{max-width:620px}
+.lele-quick-questions{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.lele-quick-question{padding:8px 11px;border:1px solid #d9d2ff;border-radius:999px;background:#f6f3ff;color:#5d50b7;font-size:12px;font-weight:800}
+.lele-assistant-messages{display:flex;min-height:180px;max-height:310px;overflow:auto;flex-direction:column;gap:9px;padding:12px;border-radius:18px;background:#f6f5fa}
+.lele-assistant-message{max-width:84%;padding:10px 12px;border-radius:16px;font-size:13px;line-height:1.45}
+.lele-assistant-message.lele{align-self:flex-start;border-bottom-left-radius:4px;background:white}
+.lele-assistant-message.user{align-self:flex-end;border-bottom-right-radius:4px;background:#7567e8;color:white}
+.lele-assistant-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+
+.tomorrow-card{margin:14px 0;padding:16px;border:1px solid #ddd5ff;border-radius:22px;background:linear-gradient(135deg,#f7f3ff,#fff);box-shadow:0 9px 24px rgba(61,48,105,.08)}
+.tomorrow-head{display:flex;align-items:center;gap:10px}.tomorrow-head>span{font-size:28px}.tomorrow-head>div{display:flex;flex:1;flex-direction:column}.tomorrow-head small{color:var(--muted)}
+.tomorrow-items{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.tomorrow-items span{padding:8px 10px;border-radius:12px;background:white;font-size:12px;font-weight:750}
+
+.week-plan-strip{display:grid;grid-template-columns:repeat(7,minmax(90px,1fr));gap:8px;margin:14px 0;overflow-x:auto;padding-bottom:5px}
+.week-plan-day{display:flex;min-width:90px;flex-direction:column;gap:5px;padding:12px;border:1px solid #e6e1f4;border-radius:17px;background:white;text-align:center}.week-plan-day.is-today{border-color:#7567e8;background:#f3f0ff}.week-plan-day small,.week-plan-day span{color:var(--muted);font-size:11px}.week-plan-day b{font-size:22px}
+
+.smart-parent-summary{display:flex;align-items:center;gap:13px;margin:14px 0;padding:16px;border:1px solid #cce9dd;border-radius:20px;background:linear-gradient(135deg,#edfaf5,#fff)}
+.smart-parent-summary>span{font-size:34px}.smart-parent-summary p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.achievement-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.achievement-row span{padding:7px 9px;border-radius:999px;background:#f5f2ff;color:#504678;font-size:11px;font-weight:800}
+
+.family-mission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.family-mission-btn{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:center;padding:13px;border:1px solid #e1dcf2;border-radius:17px;background:white;text-align:left}.family-mission-btn>span{grid-row:1/3;font-size:29px}.family-mission-btn small{color:var(--muted)}
 
 .positive-reward-card{
   display:flex;
@@ -514,6 +540,8 @@ button{
   .lele-companion{right:9px;bottom:76px}
   .lele-companion img{width:58px;height:58px}
   .lele-companion.is-active .lele-companion-bubble{max-width:190px}
+  .family-mission-grid{grid-template-columns:1fr}
+  .lele-assistant-form{grid-template-columns:1fr}
 }
 
 @media(prefers-reduced-motion:reduce){
