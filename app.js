@@ -113,6 +113,7 @@ const leleVoicePreferenceKey = "lele-natural-voice-v1";
 const leleVoiceStyleKey = "lele-voice-style-v1";
 
 const leleVoiceStyles = {
+  garoto: { label: "Garoto — recomendada", rate: 0.96, pitch: 1.06 },
   natural: { label: "Natural", rate: 0.94, pitch: 1 },
   calma: { label: "Calma", rate: 0.84, pitch: 0.98 },
   jovem: { label: "Jovem", rate: 1.03, pitch: 1.02 },
@@ -141,9 +142,10 @@ function pontuarVozNatural(voice) {
   const lang = String(voice.lang || "").toLowerCase();
   let score = lang.startsWith("pt-br") ? 100 : 40;
 
-  if (/natural|neural|online|premium/.test(name)) score += 70;
+  if (/natural|neural|online|premium|enhanced/.test(name)) score += 70;
   if (/google|microsoft|apple/.test(name)) score += 25;
-  if (/francisca|thalita|luciana|maria/.test(name)) score += 20;
+  if (/antonio|antônio|fabio|fábio|donato|humberto|julio|júlio|nicolau|valerio|valério|macerio|macério|ricardo|thiago|daniel/.test(name)) score += 65;
+  if (/francisca|thalita|luciana|maria|brenda|giovanna|leila|leticia|letícia|manuela|yara/.test(name)) score -= 20;
   if (/espeak|compact|desktop|robot/.test(name)) score -= 60;
   if (voice.localService) score += 5;
 
@@ -196,8 +198,8 @@ function speak(text) {
     fala.voice = vozEscolhida;
   }
 
-  const styleName = localStorage.getItem(leleVoiceStyleKey) || "natural";
-  const style = leleVoiceStyles[styleName] || leleVoiceStyles.natural;
+  const styleName = localStorage.getItem(leleVoiceStyleKey) || "garoto";
+  const style = leleVoiceStyles[styleName] || leleVoiceStyles.garoto;
   fala.rate = style.rate;
   fala.pitch = style.pitch;
   fala.volume = 1;
@@ -729,6 +731,30 @@ const taskLibrary = [
     cat: "Emoções",
     ages: [13, 16],
     icon: "💬"
+  },
+  {
+    title: "Praticar como proteger informações pessoais",
+    cat: "Autonomia",
+    ages: [5, 16],
+    icon: "🛡️"
+  },
+  {
+    title: "Combinar como avisar onde estou",
+    cat: "Família",
+    ages: [5, 16],
+    icon: "📍"
+  },
+  {
+    title: "Revisar com quem posso pedir ajuda",
+    cat: "Autonomia",
+    ages: [5, 16],
+    icon: "🆘"
+  },
+  {
+    title: "Praticar como dizer não e pedir ajuda",
+    cat: "Emoções",
+    ages: [5, 16],
+    icon: "✋"
   }
 ];
 
@@ -4674,6 +4700,42 @@ const taskGuides = [
       "Crie nomes e pastas fáceis de encontrar depois.",
       "Confira se documentos importantes estão protegidos ou salvos."
     ]
+  },
+  {
+    words: ["proteger informações pessoais", "informações pessoais"],
+    steps: [
+      "Lembre quais dados não devem ser contados sem permissão: endereço, telefone, escola, rotina, senhas, fotos e informações da família.",
+      "Se um adulto perguntar sobre um amigo, colega ou outra pessoa, não tente responder por ela.",
+      "Diga: procure a escola ou o adulto responsável por essa pessoa.",
+      "Conte a um responsável se alguém insistir, pedir segredo ou fizer você se sentir desconfortável."
+    ]
+  },
+  {
+    words: ["avisar onde estou", "onde estou"],
+    steps: [
+      "Antes de sair ou mudar o lugar combinado, peça permissão ao responsável.",
+      "Avise com quem estará, para onde vai e como pretende voltar.",
+      "Se o plano mudar, avise antes de seguir para outro lugar.",
+      "Se não conseguir falar com o responsável, fique em um local seguro e procure um adulto de confiança."
+    ]
+  },
+  {
+    words: ["com quem posso pedir ajuda", "pedir ajuda"],
+    steps: [
+      "Escolha com a família três adultos de confiança que você pode procurar.",
+      "Saiba como encontrar um responsável da escola quando precisar.",
+      "Se algo parecer estranho, conte mesmo que alguém tenha pedido segredo.",
+      "Em perigo imediato, vá para um local movimentado e peça ajuda a um responsável identificado."
+    ]
+  },
+  {
+    words: ["dizer não e pedir ajuda", "dizer não"],
+    steps: [
+      "Perceba quando um pedido deixa você desconfortável ou confuso.",
+      "Diga não, afaste-se e não aceite guardar segredos que causem medo ou preocupação.",
+      "Procure um adulto de confiança e conte o que aconteceu com suas palavras.",
+      "Se a primeira pessoa não ajudar, continue contando até alguém agir para proteger você."
+    ]
   }
 ];
 
@@ -6078,7 +6140,7 @@ function renderSettings() {
 
             <select id="leleVoiceStyleSelect" aria-label="Escolher estilo da voz do Lelê">
               ${Object.entries(leleVoiceStyles).map(([key, style]) => `
-                <option value="${key}" ${(localStorage.getItem(leleVoiceStyleKey) || "natural") === key ? "selected" : ""}>
+                <option value="${key}" ${(localStorage.getItem(leleVoiceStyleKey) || "garoto") === key ? "selected" : ""}>
                   Estilo: ${style.label}
                 </option>
               `).join("")}
@@ -6301,6 +6363,33 @@ const teenGrowthTracks = [
   }
 ];
 
+const safetyGrowthTracks = [
+  {
+    icon: "🛡️",
+    title: "Informações pessoais ficam protegidas",
+    text: "Endereço, telefone, escola, rotina, senhas, fotos e dados da família só são compartilhados com permissão do responsável. Se um adulto quiser informações sobre um amigo ou colega, deve procurar a escola ou outro adulto responsável — não a criança.",
+    action: "Praticar como proteger informações pessoais"
+  },
+  {
+    icon: "📍",
+    title: "Avisar onde vai e onde está",
+    text: "Antes de sair ou mudar o combinado, é importante pedir permissão e avisar com quem estará, para onde vai e como pretende voltar.",
+    action: "Combinar como avisar onde estou"
+  },
+  {
+    icon: "🆘",
+    title: "Saber a quem pedir ajuda",
+    text: "Família e criança combinam quais adultos são de confiança. Na escola, a orientação é procurar um profissional identificado e contar quando algo parecer estranho.",
+    action: "Revisar com quem posso pedir ajuda"
+  },
+  {
+    icon: "✋",
+    title: "Dizer não, sair e contar",
+    text: "Ninguém precisa aceitar pressão, toque, conversa ou segredo que cause medo ou desconforto. Pode dizer não, afastar-se e contar a um adulto de confiança.",
+    action: "Praticar como dizer não e pedir ajuda"
+  }
+];
+
 function renderDevelopment() {
   const c = child();
   if (!c || !$("#developmentView")) return;
@@ -6334,6 +6423,27 @@ function renderDevelopment() {
           : `<div class="callout age-warning">O perfil está com ${c.age} anos. Esta experiência foi planejada dos 5 aos 16 anos.</div>`
       }
     </div>
+
+    <section class="section teen-growth-section">
+      <div class="section-head">
+        <div>
+          <h2>🛡️ Segurança e convivência</h2>
+          <div class="muted">Orientações práticas para amizades, escola, saídas e contato com outras pessoas.</div>
+        </div>
+      </div>
+      <div class="teen-growth-grid">
+        ${safetyGrowthTracks.map(track => `
+          <article class="teen-growth-card">
+            <span class="teen-growth-icon">${track.icon}</span>
+            <h3>${track.title}</h3>
+            <p>${track.text}</p>
+            <button class="ghost teen-growth-action" data-task-title="${escapeHtml(track.action)}" type="button">
+              + Praticar com a família
+            </button>
+          </article>
+        `).join("")}
+      </div>
+    </section>
 
     ${isTeen ? `
       <section class="section teen-growth-section">
