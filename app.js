@@ -120,7 +120,9 @@ const leleAudioPack = new Map([
   ["Você tem um alerta no Lelê.", "assets/audio/lele-cadu/alerta.mp3"],
   ["Lelê está te chamando.", "assets/audio/lele-cadu/chamando.mp3"],
   ["Que tal tomar um pouco de água?", "assets/audio/lele-cadu/agua.mp3"],
-  ["Como você está se sentindo hoje?", "assets/audio/lele-cadu/sentimento.mp3"]
+  ["Como você está se sentindo hoje?", "assets/audio/lele-cadu/sentimento.mp3"],
+  ["Oi! Este é o novo jeito de falar do Lelê. Vamos no seu ritmo.", "assets/audio/lele-cadu/novo-jeito.mp3"],
+  ["Oi! Eu sou o Lelê. Estou aqui para ajudar, sem pressa e sem complicação.", "assets/audio/lele-cadu/teste-voz.mp3"]
 ]);
 
 let leleAudioAtual = null;
