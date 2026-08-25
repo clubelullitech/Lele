@@ -228,6 +228,10 @@ async function triggerLeleAlert(task) {
   if (
     task.voice &&
     document.visibilityState === "visible" &&
+    typeof membroAtual !== "undefined" &&
+    membroAtual?.role === "child" &&
+    typeof state !== "undefined" &&
+    state.mode === "child" &&
     typeof speak === "function"
   ) {
     speak(
@@ -319,6 +323,13 @@ async function checkHourlyHydrationReminder() {
   const currentChild = typeof child === "function" ? child() : null;
 
   if (!app || app.classList.contains("hidden") || !currentChild) return;
+  /* Lembrete de hidratação pertence à experiência do filho, nunca ao painel dos pais. */
+  if (
+    typeof membroAtual === "undefined" ||
+    membroAtual?.role !== "child" ||
+    typeof state === "undefined" ||
+    state.mode !== "child"
+  ) return;
   if (typeof childIsInSchoolNow === "function" && childIsInSchoolNow(currentChild)) return;
 
   const now = new Date();

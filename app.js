@@ -4137,6 +4137,92 @@ async function addSuggestedTask(item) {
    RENDER HOME
 ============================================= */
 
+function isParentControlView() {
+  return membroAtual?.role !== "child" && state.mode === "parent";
+}
+
+function parentChildSwitcher() {
+  return `
+    <div class="parent-child-switcher" role="group" aria-label="Filho acompanhado">
+      ${state.children.map((profile, index) => `
+        <button class="parent-child-chip ${index === state.activeChild ? "active" : ""}" data-child-index="${index}" type="button">
+          <span>${profile.age >= 13 ? "🧑" : "🧒"}</span>
+          <b>${escapeHtml(profile.name)}</b>
+          <small>${profile.age} anos</small>
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function parentTaskStatusRow(task) {
+  const status = task.done || task.lastCompletedDate === todayKey() ? "Concluída" : "Pendente";
+  return `
+    <article class="parent-task-row ${status === "Concluída" ? "is-done" : ""}">
+      <span class="parent-task-icon">${getTaskEmoji(task)}</span>
+      <div>
+        <b>${escapeHtml(task.title)}</b>
+        <small>${categoryLabel(task.cat)}${task.time ? ` • ${task.time}` : " • sem horário"}</small>
+      </div>
+      <span class="parent-status-badge">${status === "Concluída" ? "✅ Concluída" : "⏳ Pendente"}</span>
+      <button class="small edit task-edit-btn" data-task-id="${task.id}" type="button">Configurar</button>
+    </article>
+  `;
+}
+
+function renderParentHome() {
+  const c = child();
+  if (!c) return;
+  const summaries = state.children.map(profile => ({ profile, info: indicatorSummaryForChild(profile) }));
+  const selected = summaries.find(item => sameProfileId(item.profile.id, c.id)) || summaries[0];
+  const tasks = childTasks();
+  const helpRequests = (state.messages || []).filter(message => message.kind === "system").slice(-5).reverse();
+  const latestReflection = selected?.info.latestReflection;
+
+  $("#homeView").innerHTML = `
+    <div class="hero parent-command-hero">
+      <span class="age-pill">🔐 Controle dos pais</span>
+      <h1>Olá, ${escapeHtml(membroAtual?.display_name || "Responsável")}</h1>
+      <p>Supervisione, organize e configure a rotina da família sem alterar a experiência do filho.</p>
+      ${parentChildSwitcher()}
+    </div>
+
+    <section class="parent-overview-grid">
+      ${summaries.map(({ profile, info }, index) => `
+        <button class="parent-overview-card child-select-btn" data-child-index="${index}" type="button">
+          <span>${profile.age >= 13 ? "🧑" : "🧒"}</span>
+          <div><b>${escapeHtml(profile.name)}</b><small>${info.status}</small></div>
+          <strong>${info.rate}%</strong>
+          <div class="progress"><div style="width:${info.rate}%"></div></div>
+          <small>${info.doneToday} concluída${info.doneToday === 1 ? "" : "s"} • ${info.pendingToday} pendente${info.pendingToday === 1 ? "" : "s"}</small>
+        </button>
+      `).join("")}
+    </section>
+
+    <section class="parent-action-grid">
+      <button class="parent-action-card" data-parent-view="routineView" type="button"><span>🗓️</span><b>Planejar rotina</b><small>Criar tarefas e definir horários</small></button>
+      <button class="parent-action-card" data-parent-view="schoolView" type="button"><span>🎓</span><b>Configurar escola</b><small>Horários, trabalhos e lembretes</small></button>
+      <button class="parent-action-card" data-parent-view="indicatorsView" type="button"><span>📊</span><b>Ver evolução</b><small>Hoje, semana e mês</small></button>
+      <button class="parent-action-card" data-parent-view="messagesView" type="button"><span>📌</span><b>Mural da família</b><small>Recados e pedidos de ajuda</small></button>
+    </section>
+
+    <div class="parent-dashboard-columns">
+      <section class="section">
+        <div class="section-head"><div><h2>Hoje de ${escapeHtml(c.name)}</h2><div class="muted">Acompanhe o andamento sem executar as tarefas pelo filho.</div></div><button id="newTaskBtn" class="primary" type="button">+ Tarefa</button></div>
+        <div class="parent-task-list">${tasks.length ? tasks.map(parentTaskStatusRow).join("") : `<div class="callout">Nenhuma tarefa prevista para hoje.</div>`}</div>
+      </section>
+
+      <section class="section parent-alert-center">
+        <h2>Central de acompanhamento</h2>
+        <div class="parent-supervision-item"><span>🙋</span><div><b>Pedidos de ajuda</b><small>${helpRequests.length ? `${helpRequests.length} registro${helpRequests.length === 1 ? "" : "s"} recente${helpRequests.length === 1 ? "" : "s"}` : "Nenhum pedido recente"}</small></div></div>
+        <div class="parent-supervision-item"><span>💛</span><div><b>Como foi o dia</b><small>${latestReflection ? escapeHtml(latestReflection.text) : `${escapeHtml(c.name)} ainda não enviou o resumo de hoje`}</small></div></div>
+        <div class="parent-supervision-item"><span>💧</span><div><b>Água</b><small>${c.lastWaterAt ? `Último registro às ${new Date(c.lastWaterAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : "Nenhum registro hoje"}</small></div></div>
+        <div class="parent-supervision-item"><span>🏫</span><div><b>Escola</b><small>${childIsInSchoolNow(c) ? "Aula em andamento" : `${c.school?.start || "--:--"} às ${c.school?.end || "--:--"}`}</small></div></div>
+      </section>
+    </div>
+  `;
+}
+
 function renderHome() {
   const c = child();
 
@@ -4148,6 +4234,11 @@ function renderHome() {
       </div>
     `;
 
+    return;
+  }
+
+  if (isParentControlView()) {
+    renderParentHome();
     return;
   }
 
@@ -5469,10 +5560,55 @@ function buildRoutineCalendar() {
   return cells.join("");
 }
 
+function renderParentRoutine() {
+  const c = child();
+  if (!c) return;
+  const days = Array.from({ length: 7 }, (_, offset) => {
+    const date = new Date();
+    date.setDate(date.getDate() + offset);
+    return { date, tasks: tasksForCalendarDate(date) };
+  });
+
+  $("#routineView").innerHTML = `
+    <div class="hero parent-section-hero">
+      <span class="age-pill">🗓️ Planejamento</span>
+      <h1>Rotina e tarefas</h1>
+      <p>Defina o que cada filho verá, os dias, horários, recorrências, lembretes e evidências necessárias.</p>
+      ${parentChildSwitcher()}
+    </div>
+    <section class="section parent-config-toolbar">
+      <div><b>Configurando ${escapeHtml(c.name)}</b><small>As alterações aparecem somente no perfil selecionado.</small></div>
+      <button id="newRoutineTaskBtn" class="primary" type="button">+ Nova tarefa</button>
+    </section>
+    <section class="parent-week-board">
+      ${days.map(({ date, tasks }, index) => `
+        <article class="parent-day-column ${index === 0 ? "is-today" : ""}">
+          <header><b>${index === 0 ? "Hoje" : date.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</b><span>${date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</span></header>
+          <div>${tasks.length ? tasks.map(parentTaskStatusRow).join("") : `<small class="muted">Sem tarefas</small>`}</div>
+        </article>
+      `).join("")}
+    </section>
+    <section class="section parent-routine-rules">
+      <h2>Regras da rotina de ${escapeHtml(c.name)}</h2>
+      <div class="parent-rule-grid">
+        <div><span>⏰</span><b>Com horário</b><small>Alerta no momento definido pelos pais.</small></div>
+        <div><span>🗓️</span><b>Sem horário</b><small>Fica disponível no dia, sem cobrança de hora.</small></div>
+        <div><span>🔁</span><b>Recorrência</b><small>Conclusão vale somente para a ocorrência atual.</small></div>
+        <div><span>📷</span><b>Evidência</b><small>Os pais decidem quando exigir uma foto.</small></div>
+      </div>
+    </section>
+  `;
+}
+
 function renderRoutine() {
   const c = child();
 
   if (!c) return;
+
+  if (isParentControlView()) {
+    renderParentRoutine();
+    return;
+  }
 
   $("#routineView").innerHTML = `
     <div class="section-head routine-calendar-head">
@@ -5702,19 +5838,25 @@ function renderSchool() {
 
   if (!c) return;
 
+  const parentControl = isParentControlView();
+
   const projects =
     childProjects();
 
   $("#schoolView").innerHTML = `
-    <div class="hero">
+    <div class="hero ${parentControl ? "parent-section-hero" : ""}">
 
       <h1>
-        🎒 Escola
+        ${parentControl ? "🎓 Supervisão escolar" : "🎒 Escola"}
       </h1>
 
       <p>
-        Área escolar de ${c.name}.
+        ${parentControl
+          ? `Configure horários, trabalhos e lembretes escolares de ${escapeHtml(c.name)}.`
+          : `Área escolar de ${escapeHtml(c.name)}.`}
       </p>
+
+      ${parentControl ? parentChildSwitcher() : ""}
 
       <div class="cards">
 
@@ -5777,9 +5919,7 @@ function renderSchool() {
 
       <div class="section-head">
 
-        <h2>
-          Trabalhos escolares
-        </h2>
+        <div><h2>${parentControl ? `Trabalhos de ${escapeHtml(c.name)}` : "Trabalhos escolares"}</h2>${parentControl ? `<div class="muted">Cadastre, acompanhe prazos e confirme as entregas.</div>` : ""}</div>
 
         ${
           membroAtual?.role !== "child"
@@ -5992,8 +6132,10 @@ function renderSchool() {
 
 function renderFamily() {
 
+  const parentControl = isParentControlView();
+
   $("#familyView").innerHTML = `
-    <div class="hero">
+    <div class="hero ${parentControl ? "parent-section-hero" : ""}">
 
       <h1>
         👨‍👩‍👧 ${state.familyName}
@@ -6014,7 +6156,7 @@ function renderFamily() {
       </h1>
 
       <p class="muted">
-        Perfis conectados à rotina.
+        ${parentControl ? "Gerencie perfis, acessos, datas importantes e atividades coletivas." : "Perfis conectados à rotina."}
       </p>
 
       ${
@@ -6085,6 +6227,29 @@ function renderFamily() {
       }
 
     </section>
+
+    ${parentControl ? `
+      <section class="section">
+        <div class="section-head"><div><h2>Gerenciar perfis e acessos</h2><div class="muted">Edite nome, tipo de perfil e data de nascimento.</div></div></div>
+        <div class="family-profile-grid">
+          ${(state.familyMembers || []).map(member => `
+            <article class="family-profile-card">
+              <span>${member.role === "child" ? "🧒" : "👤"}</span>
+              <div><b>${escapeHtml(member.name)}</b><small>${member.role === "child" ? "Filho" : "Pai/Responsável"}${member.birthDate ? ` • ${calcularIdade(member.birthDate)} anos` : ""}</small></div>
+              <button class="ghost edit-family-profile-btn" data-member-id="${member.id}" type="button">Editar perfil</button>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+      <section class="section important-dates-section">
+        <div class="section-head"><div><h2>🎉 Datas importantes</h2><div class="muted">Os pais controlam aniversários, feriados e outros dias especiais.</div></div><button id="addImportantDateBtn" class="primary" type="button">+ Nova data</button></div>
+        <div class="important-date-list">
+          ${familyCalendarItems().map(item => `
+            <article class="important-date-card ${item.days === 0 ? "is-today" : ""}"><span>${item.icon || "📅"}</span><div><b>${escapeHtml(item.title)}</b><small>${item.days === 0 ? "É hoje!" : item.days === 1 ? "É amanhã" : `Faltam ${item.days} dias`}</small></div>${item.automatic ? "" : `<button class="small danger delete-important-date-btn" data-event-id="${item.id}" type="button">Excluir</button>`}</article>
+          `).join("") || `<div class="callout">Nenhuma data importante cadastrada.</div>`}
+        </div>
+      </section>
+    ` : ""}
 
     ${membroAtual?.role !== "child" ? `
       <section class="section family-missions-section">
@@ -6482,11 +6647,13 @@ async function adicionarPessoaFamilia() {
 function renderMessages() {
   const recipients = (state.familyMembers || [])
     .filter(member => member.id !== membroAtual?.id);
+  const parentControl = isParentControlView();
 
   $("#messagesView").innerHTML = `
-    <div class="hero chat-hero">
-      <h1>📌 Mural da família</h1>
-      <p class="muted">Publique um recado para uma pessoa ou para toda a família. Ele fica disponível por 48 horas.</p>
+    <div class="hero chat-hero ${parentControl ? "parent-section-hero" : ""}">
+      <h1>${parentControl ? "📌 Comunicação da família" : "📌 Mural da família"}</h1>
+      <p class="muted">${parentControl ? "Envie orientações, consulte pedidos de ajuda e acompanhe os resumos enviados pelos filhos." : "Publique um recado para uma pessoa ou para toda a família. Ele fica disponível por 48 horas."}</p>
+      ${parentControl ? `<div class="parent-message-summary"><span><b>${state.messages.filter(item => item.kind === "system").length}</b> pedidos de ajuda</span><span><b>${state.messages.filter(item => item.kind === "reflection").length}</b> resumos do dia</span><span><b>${state.messages.filter(item => item.kind === "text").length}</b> recados</span></div>` : ""}
     </div>
 
     <section class="section chat-shell notice-board-shell">
@@ -7027,9 +7194,53 @@ function playGrowthExplainer() {
   }, 4200);
 }
 
+function renderParentDevelopment() {
+  const c = child();
+  if (!c || !$("#developmentView")) return;
+  const tasks = childTasks();
+  const summary = developmentSummary(tasks);
+  const tracks = c.age >= 13 ? teenGrowthTracks : childGrowthTracks;
+
+  $("#developmentView").innerHTML = `
+    <div class="hero parent-section-hero">
+      <span class="age-pill">🌱 Desenvolvimento</span>
+      <h1>Orientações e autonomia</h1>
+      <p>Escolha o que o Lelê apresentará a ${escapeHtml(c.name)} e acompanhe as habilidades praticadas.</p>
+      ${parentChildSwitcher()}
+    </div>
+    <section class="section">
+      <div class="section-head"><div><h2>Conteúdos adequados aos ${c.age} anos</h2><div class="muted">Os pais selecionam atividades; o filho recebe uma explicação adaptada à idade.</div></div></div>
+      <div class="parent-growth-config-grid">
+        ${[...tracks, ...safetyGrowthTracks].map(track => `
+          <article class="parent-growth-config-card">
+            <span>${track.icon}</span><div><b>${escapeHtml(track.title)}</b><small>${escapeHtml(track.text)}</small></div>
+            <button class="ghost teen-growth-action" data-task-title="${escapeHtml(track.action)}" type="button">Adicionar à rotina</button>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+    <section class="section">
+      <h2>Habilidades observadas</h2>
+      <div class="skill-grid">${summary.length
+        ? summary.map(([skill, count]) => `<article class="skill-card"><span>🌿</span><div><b>${escapeHtml(skill)}</b><small>${count} prática${count === 1 ? "" : "s"}</small></div></article>`).join("")
+        : `<div class="callout">Ainda não há atividades concluídas para analisar.</div>`}</div>
+    </section>
+    <section class="section parent-guidance-card">
+      <h2>Como apoiar sem fazer por ele</h2>
+      <p>Revise as pendências, combine uma prioridade por vez, reconheça o esforço e use os pedidos de ajuda para conversar sobre o que ficou difícil.</p>
+      <button class="primary" data-parent-view="indicatorsView" type="button">Abrir indicadores</button>
+    </section>
+  `;
+}
+
 function renderDevelopment() {
   const c = child();
   if (!c || !$("#developmentView")) return;
+
+  if (isParentControlView()) {
+    renderParentDevelopment();
+    return;
+  }
 
   const tasks = childTasks();
   const stage = developmentStage(c.age);
@@ -7282,6 +7493,31 @@ function positiveRewardForIndicator(info) {
   return null;
 }
 
+function indicatorPeriodSummaryForChild(targetChild, periodDays) {
+  if (periodDays === 1) return indicatorSummaryForChild(targetChild);
+  const cutoff = new Date();
+  cutoff.setHours(0, 0, 0, 0);
+  cutoff.setDate(cutoff.getDate() - (periodDays - 1));
+  const tasks = state.tasks.filter(task => sameProfileId(task.childId, targetChild.id) && task.title !== "Horário de aula");
+  const completed = tasks.filter(task => {
+    if (!task.lastCompletedDate) return false;
+    const date = new Date(`${task.lastCompletedDate}T00:00:00`);
+    return date >= cutoff;
+  });
+  const base = indicatorSummaryForChild(targetChild);
+  const rate = tasks.length ? Math.min(100, Math.round(completed.length / tasks.length * 100)) : 0;
+  return {
+    ...base,
+    totalToday: tasks.length,
+    doneToday: completed.length,
+    pendingToday: Math.max(0, tasks.length - completed.length),
+    rate,
+    status: completed.length
+      ? `${completed.length} atividade${completed.length === 1 ? "" : "s"} com conclusão registrada neste período.`
+      : "Ainda não há conclusões registradas neste período."
+  };
+}
+
 function renderIndicators() {
   const view = $("#indicatorsView");
   if (!view) return;
@@ -7289,6 +7525,9 @@ function renderIndicators() {
   const children = membroAtual?.role === "child"
     ? [child()].filter(Boolean)
     : state.children;
+  const parentControl = isParentControlView();
+  const indicatorPeriod = Number(localStorage.getItem("lele-parent-indicator-period") || "1");
+  const periodLabel = indicatorPeriod === 1 ? "hoje" : indicatorPeriod === 7 ? "nos últimos 7 dias" : "nos últimos 30 dias";
 
   view.innerHTML = `
     <div class="hero indicators-hero">
@@ -7299,19 +7538,20 @@ function renderIndicators() {
           ? "Veja seus avanços sem comparação com outras pessoas."
           : "Um resumo separado por filho, baseado nas atividades registradas no Lelê."}
       </p>
+      ${parentControl ? `${parentChildSwitcher()}<div class="indicator-period-filter"><button class="${indicatorPeriod === 1 ? "active" : ""}" data-indicator-period="1" type="button">Hoje</button><button class="${indicatorPeriod === 7 ? "active" : ""}" data-indicator-period="7" type="button">7 dias</button><button class="${indicatorPeriod === 30 ? "active" : ""}" data-indicator-period="30" type="button">30 dias</button></div>` : ""}
     </div>
 
     ${membroAtual?.role !== "child" ? (() => {
-      const summaries = children.map(targetChild => ({ child: targetChild, info: indicatorSummaryForChild(targetChild) }));
+      const summaries = children.map(targetChild => ({ child: targetChild, info: indicatorPeriodSummaryForChild(targetChild, indicatorPeriod) }));
       const completed = summaries.reduce((total, item) => total + item.info.doneToday, 0);
       const pending = summaries.reduce((total, item) => total + item.info.pendingToday, 0);
       const feelings = summaries.filter(item => item.info.latestReflection).length;
-      return `<section class="smart-parent-summary"><span>🧠</span><div><b>Resumo inteligente de hoje</b><p>${completed} atividade${completed === 1 ? "" : "s"} concluída${completed === 1 ? "" : "s"}, ${pending} pendente${pending === 1 ? "" : "s"} e ${feelings} relato${feelings === 1 ? "" : "s"} sobre como foi o dia.</p></div></section>`;
+      return `<section class="smart-parent-summary"><span>🧠</span><div><b>Resumo ${periodLabel}</b><p>${completed} atividade${completed === 1 ? "" : "s"} concluída${completed === 1 ? "" : "s"}, ${pending} pendente${pending === 1 ? "" : "s"} e ${feelings} relato${feelings === 1 ? "" : "s"} sobre como foi o dia.</p></div></section>`;
     })() : ""}
 
     <div class="indicator-children-grid">
       ${children.map(targetChild => {
-        const info = indicatorSummaryForChild(targetChild);
+        const info = membroAtual?.role === "child" ? indicatorSummaryForChild(targetChild) : indicatorPeriodSummaryForChild(targetChild, indicatorPeriod);
         const reward = positiveRewardForIndicator(info);
         const achievements = achievementBadgesForChild(targetChild, info);
         return `
@@ -7321,7 +7561,7 @@ function renderIndicators() {
                 <span class="indicator-avatar">${targetChild.age >= 13 ? "🧑" : "🧒"}</span>
                 <div><h2>${escapeHtml(targetChild.name)}</h2><small>${targetChild.age} anos</small></div>
               </div>
-              <strong>${info.rate}% hoje</strong>
+              <strong>${info.rate}% ${periodLabel}</strong>
             </div>
 
             <div class="progress indicator-progress"><div style="width:${info.rate}%"></div></div>
@@ -7403,9 +7643,33 @@ function render() {
   if ($("#modeBtn")) {
     $("#modeBtn").textContent =
       state.mode === "parent"
-        ? "Ver como filho"
-        : "Voltar aos pais";
+        ? "Prévia do filho"
+        : "Sair da prévia";
   }
+
+  const parentLabels = {
+    homeView: "Painel",
+    routineView: "Planejar",
+    schoolView: "Escola",
+    developmentView: "Orientações",
+    indicatorsView: "Indicadores",
+    familyView: "Família",
+    messagesView: "Comunicação",
+    settingsView: "Configurações"
+  };
+  const childLabels = {
+    homeView: "Hoje",
+    routineView: "Rotina",
+    schoolView: "Escola",
+    developmentView: "Crescer",
+    indicatorsView: "Evolução",
+    familyView: "Família",
+    messagesView: "Recados",
+    settingsView: "Ajustes"
+  };
+  $$(".nav-btn").forEach(button => {
+    button.textContent = (isParentControlView() ? parentLabels : childLabels)[button.dataset.view] || button.textContent;
+  });
 
   renderHome();
   renderRoutine();
@@ -7488,6 +7752,26 @@ function bindChatEvents() {
 ============================================= */
 
 function bindDynamicEvents() {
+
+  $$(".parent-child-chip").forEach(button => {
+    button.addEventListener("click", () => {
+      state.activeChild = Number(button.dataset.childIndex);
+      save();
+      render();
+    });
+  });
+
+  $$("[data-parent-view]").forEach(button => {
+    button.addEventListener("click", () => showView(button.dataset.parentView));
+  });
+
+  $$("[data-indicator-period]").forEach(button => {
+    button.addEventListener("click", () => {
+      localStorage.setItem("lele-parent-indicator-period", button.dataset.indicatorPeriod);
+      render();
+      showView("indicatorsView");
+    });
+  });
 
   $("#closeLeleAssistant")?.addEventListener("click", () => $("#leleAssistantDialog")?.close());
   $("#leleAssistantForm")?.addEventListener("submit", event => {
