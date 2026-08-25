@@ -852,6 +852,10 @@ function child() {
   );
 }
 
+function sameProfileId(left, right) {
+  return left != null && right != null && String(left) === String(right);
+}
+
 function todayKey() {
   const now = new Date();
 
@@ -1084,7 +1088,7 @@ function childTasks() {
   return state.tasks
     .filter(
       task =>
-        task.childId === c.id &&
+        sameProfileId(task.childId, c.id) &&
         task.title !== "Horário de aula"
     )
     .map(
@@ -1280,28 +1284,29 @@ async function loadTasksFromSupabase() {
       c => c.id
     );
 
-  const {
-    data,
-    error
-  } =
-    await leleDb
-      .from("tasks")
-      .select("*")
-      .eq(
-        "family_id",
-        familiaAtual
-      )
-      .in(
-        "member_id",
-        memberIds
-      )
-      .order(
-        "scheduled_time",
-        {
-          ascending: true,
-          nullsFirst: false
-        }
-      );
+  if (!memberIds.length) {
+    state.tasks = [];
+    save();
+    return;
+  }
+
+  let taskQuery = leleDb
+    .from("tasks")
+    .select("*")
+    .eq("family_id", familiaAtual);
+
+  /* Crianças nunca carregam tarefas de outro perfil, nem temporariamente. */
+  taskQuery = membroAtual?.role === "child"
+    ? taskQuery.eq("member_id", membroAtual.id)
+    : taskQuery.in("member_id", memberIds);
+
+  const { data, error } = await taskQuery.order(
+    "scheduled_time",
+    {
+      ascending: true,
+      nullsFirst: false
+    }
+  );
 
   if (error) {
     console.error(
@@ -1323,10 +1328,10 @@ async function loadTasksFromSupabase() {
     Não filtramos tarefas pela data de criação: uma tarefa antiga pode
     continuar válida, ser recorrente ou ter sido cadastrada para outro dia.
   */
-  const tarefasBanco =
-    (data || []).map(
-      mapTaskFromDb
-    );
+  const validMemberIds = new Set(memberIds.map(String));
+  const tarefasBanco = (data || [])
+    .filter(task => validMemberIds.has(String(task.member_id)))
+    .map(mapTaskFromDb);
 
   state.tasks =
     tarefasBanco;
@@ -1334,7 +1339,7 @@ async function loadTasksFromSupabase() {
   /* O horário escolar é sincronizado como uma rotina especial entre pais e filhos. */
   state.children.forEach(currentChild => {
     const schoolTask = tarefasBanco.find(task =>
-      task.childId === currentChild.id &&
+      sameProfileId(task.childId, currentChild.id) &&
       task.title === "Horário de aula" &&
       task.recurrenceEnabled
     );
@@ -3637,6 +3642,23 @@ function openTaskDialog(task = null) {
   $("#taskId").value =
     task?.id || "";
 
+  const taskChildSelect = $("#taskChildId");
+  const taskChildWrap = $("#taskChildWrap");
+  const selectedChildId = String(task?.childId || child()?.id || "");
+
+  if (taskChildSelect) {
+    taskChildSelect.innerHTML = state.children
+      .map(profile => `
+        <option value="${escapeHtml(String(profile.id))}" ${String(profile.id) === selectedChildId ? "selected" : ""}>
+          ${escapeHtml(profile.name)}
+        </option>
+      `)
+      .join("");
+    taskChildSelect.value = selectedChildId;
+  }
+
+  taskChildWrap?.classList.toggle("hidden", membroAtual?.role === "child");
+
   $("#taskTitle").value =
     task?.title || "";
 
@@ -3764,7 +3786,12 @@ if ($("#taskRecurrence")) {
 async function saveTaskFromForm(event) {
   event.preventDefault();
 
-  const c = child();
+  const selectedChildId = membroAtual?.role === "child"
+    ? membroAtual.id
+    : $("#taskChildId")?.value;
+  const c = state.children.find(profile =>
+    String(profile.id) === String(selectedChildId)
+  );
 
   if (!c) {
     alert("Selecione uma criança.");
@@ -5133,7 +5160,7 @@ function tasksForCalendarDate(date) {
   return state.tasks
     .filter(
       task =>
-        task.childId === c.id &&
+        sameProfileId(task.childId, c.id) &&
         task.title !== "Horário de aula"
     )
     .filter(
@@ -6854,7 +6881,7 @@ function renderDevelopment() {
 
 function indicatorSummaryForChild(targetChild) {
   const tasks = state.tasks.filter(task =>
-    task.childId === targetChild.id && task.title !== "Horário de aula"
+    sameProfileId(task.childId, targetChild.id) && task.title !== "Horário de aula"
   );
   const todayTasks = tasks.filter(taskIsForToday);
   const doneToday = todayTasks.filter(task =>
