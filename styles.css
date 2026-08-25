@@ -1191,6 +1191,35 @@ body.mode-child .task-emoji{
   padding:14px;
 }
 
+.notice-board{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  align-items:start;
+  gap:14px;
+  max-height:none;
+  background:
+    linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,.45)),
+    #e9dfca;
+}
+
+.notice-card,
+.notice-card.me{
+  width:100%;
+  max-width:none;
+  min-height:130px;
+  margin:0;
+  padding:16px;
+  border:1px solid rgba(103,82,48,.14);
+  border-radius:8px 8px 18px 8px;
+  background:#fffdf3;
+  box-shadow:0 8px 18px rgba(82,65,38,.1);
+}
+
+.notice-card.me{
+  background:#f0edff;
+  transform:rotate(.3deg);
+}
+
 .message{
   max-width:82%;
   margin:8px 0;
@@ -1252,8 +1281,19 @@ body.mode-child .task-emoji{
   margin-top:12px;
 }
 
-.chatbar input{
+.chatbar input,
+.chatbar textarea{
   flex:1;
+}
+
+.chatbar textarea{
+  min-height:104px;
+  resize:vertical;
+}
+
+.notice-composer .chatbar{
+  align-items:flex-end;
+  flex-wrap:wrap;
 }
 
 .record-btn{

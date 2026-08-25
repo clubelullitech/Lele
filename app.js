@@ -5961,12 +5961,12 @@ function renderMessages() {
 
   $("#messagesView").innerHTML = `
     <div class="hero chat-hero">
-      <h1>💬 Conversas da família</h1>
-      <p class="muted">Mensagens por texto ou áudio. Tudo é apagado após 48 horas.</p>
+      <h1>📌 Mural da família</h1>
+      <p class="muted">Publique um recado para uma pessoa ou para toda a família. Ele fica disponível por 48 horas.</p>
     </div>
 
-    <section class="section chat-shell">
-      <div id="chatMessages" class="chat-messages">
+    <section class="section chat-shell notice-board-shell">
+      <div id="chatMessages" class="chat-messages notice-board">
       ${
         state.messages.length
           ? state.messages.map(message => {
@@ -5978,7 +5978,7 @@ function renderMessages() {
                 minute: "2-digit"
               });
               return `
-                <article class="message ${mine ? "me" : ""}">
+                <article class="message notice-card ${mine ? "me" : ""}">
                   <div class="message-head">
                     <b>${escapeHtml(mine ? "Você" : message.senderName)}</b>
                     <span>para ${escapeHtml(message.recipientName)} • ${time}</span>
@@ -5996,15 +5996,15 @@ function renderMessages() {
             }).join("")
           : `
             <div class="callout">
-              Nenhuma mensagem nas últimas 48 horas.
+              O mural ainda não tem recados. Publique o primeiro!
             </div>
           `
       }
       </div>
 
-      <form id="chatForm" class="chat-composer">
+      <form id="chatForm" class="chat-composer notice-composer">
         <label>
-          Enviar para
+          Este recado é para
           <select id="chatRecipient" required>
             <option value="all">👨‍👩‍👧 Toda a família</option>
             ${recipients.map(member => `
@@ -6016,16 +6016,16 @@ function renderMessages() {
         </label>
 
         <div class="chatbar">
-          <input id="chatText" maxlength="600" placeholder="Escreva uma mensagem…" autocomplete="off" />
-          <button id="recordChatAudioBtn" class="ghost record-btn" type="button" aria-label="Gravar áudio">🎙️</button>
-          <button id="sendChatBtn" class="primary" type="submit">Enviar</button>
+          <textarea id="chatText" maxlength="600" rows="4" placeholder="Escreva o recado aqui…"></textarea>
+          <button id="recordChatAudioBtn" class="ghost record-btn" type="button" aria-label="Gravar áudio" title="Gravar áudio">🎙️</button>
+          <button id="sendChatBtn" class="primary" type="submit">Publicar</button>
         </div>
 
         <div id="chatAudioPreview" class="chat-audio-preview ${chatAudioBlob ? "" : "hidden"}">
           <span>${chatAudioBlob ? "🎤 Áudio pronto para enviar" : ""}</span>
           <button id="discardChatAudioBtn" class="small danger" type="button">Descartar</button>
         </div>
-        <small class="muted">Os áudios podem ter até 60 segundos.</small>
+        <small class="muted">O recado desaparece automaticamente 48 horas depois da publicação. Áudios podem ter até 60 segundos.</small>
       </form>
     </section>
   `;
@@ -6724,7 +6724,7 @@ function bindChatEvents() {
     const button = $("#sendChatBtn");
     if (button) {
       button.disabled = true;
-      button.textContent = "Enviando…";
+      button.textContent = "Publicando…";
     }
     try {
       await sendChatMessage({
@@ -6736,11 +6736,11 @@ function bindChatEvents() {
       chatAudioChunks = [];
     } catch (error) {
       console.error("Erro ao enviar recado:", error);
-      alert(error?.message || "Não foi possível enviar a mensagem.");
+      alert(error?.message || "Não foi possível publicar o recado.");
     } finally {
       if (button) {
         button.disabled = false;
-        button.textContent = "Enviar";
+        button.textContent = "Publicar";
       }
     }
   });
