@@ -113,16 +113,15 @@ const leleVoicePreferenceKey = "lele-natural-voice-v1";
 const leleVoiceStyleKey = "lele-voice-style-v1";
 
 const leleAudioPack = new Map([
-  ["Oi! Eu sou o Lelê. Vamos fazer uma coisa de cada vez, no seu ritmo.", "assets/audio/lele-cadu/boas-vindas.mp3"],
-  ["Oi! Eu estou aqui para fazer tudo com você, um passo de cada vez.", "assets/audio/lele-cadu/estou-aqui.mp3"],
-  ["Vamos começar.", "assets/audio/lele-cadu/vamos-comecar.mp3"],
-  ["Muito bem! Você conseguiu!", "assets/audio/lele-cadu/muito-bem.mp3"],
-  ["Você tem um alerta no Lelê.", "assets/audio/lele-cadu/alerta.mp3"],
-  ["Lelê está te chamando.", "assets/audio/lele-cadu/chamando.mp3"],
-  ["Que tal tomar um pouco de água?", "assets/audio/lele-cadu/agua.mp3"],
-  ["Como você está se sentindo hoje?", "assets/audio/lele-cadu/sentimento.mp3"],
-  ["Oi! Este é o novo jeito de falar do Lelê. Vamos no seu ritmo.", "assets/audio/lele-cadu/novo-jeito.mp3"],
-  ["Oi! Eu sou o Lelê. Estou aqui para ajudar, sem pressa e sem complicação.", "assets/audio/lele-cadu/teste-voz.mp3"]
+  ["Oi! Eu sou o Lelê. Vamos fazer uma coisa de cada vez, no seu ritmo.", "assets/audio/lele-cadu-final/boas-vindas/001-oi-eu-sou-o-lele-vamos-fazer-uma-coisa-de-cada-vez-no-seu-ritmo.mp3"],
+  ["Oi! Eu estou aqui para fazer tudo com você, um passo de cada vez.", "assets/audio/lele-cadu-final/boas-vindas/002-oi-eu-estou-aqui-para-fazer-tudo-com-voce-um-passo-de-cada-vez.mp3"],
+  ["Vamos começar.", "assets/audio/lele-cadu-final/boas-vindas/004-vamos-comecar.mp3"],
+  ["Muito bem! Você conseguiu!", "assets/audio/lele-cadu-final/conquistas/009-muito-bem-voce-conseguiu.mp3"],
+  ["Você tem um alerta no Lelê.", "assets/audio/lele-cadu-final/lembretes/021-voce-tem-um-alerta-no-lele.mp3"],
+  ["Lelê está te chamando.", "assets/audio/lele-cadu-final/lembretes/020-lele-esta-te-chamando.mp3"],
+  ["Que tal tomar um pouco de água?", "assets/audio/lele-cadu-final/lembretes/028-que-tal-tomar-um-pouco-de-agua.mp3"],
+  ["Como você está se sentindo hoje?", "assets/audio/lele-cadu-final/sentimentos/088-como-voce-esta-se-sentindo-hoje.mp3"],
+  ["Eu estou aqui para ajudar, sem pressa e sem complicação.", "assets/audio/lele-cadu-final/boas-vindas/006-eu-estou-aqui-para-ajudar-sem-pressa-e-sem-complicacao.mp3"]
 ]);
 
 let leleAudioAtual = null;
@@ -189,6 +188,33 @@ function limparTextoParaVoz(text) {
     .trim();
 }
 
+function normalizarChaveAudio(text) {
+  return limparTextoParaVoz(text)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+async function carregarPacoteCompletoLele() {
+  try {
+    const response = await fetch("assets/audio/lele-cadu-final/manifesto.json");
+    if (!response.ok) throw new Error(`Manifesto de áudio: ${response.status}`);
+    const entries = await response.json();
+    entries.forEach(entry => {
+      if (!entry?.texto || !/^[a-z0-9-]+\/[a-z0-9-]+\.mp3$/i.test(entry?.arquivo || "")) return;
+      const path = `assets/audio/lele-cadu-final/${entry.arquivo}`;
+      leleAudioPack.set(limparTextoParaVoz(entry.texto), path);
+      leleAudioPack.set(normalizarChaveAudio(entry.texto), path);
+    });
+  } catch (error) {
+    console.warn("Pacote completo de voz indisponível; usando os áudios essenciais.", error);
+  }
+}
+
+carregarPacoteCompletoLele();
+
 carregarVozesLele();
 
 if ("speechSynthesis" in window) {
@@ -196,7 +222,8 @@ if ("speechSynthesis" in window) {
 }
 
 function falarComAudioPadrao(text) {
-  const audioPath = leleAudioPack.get(limparTextoParaVoz(text));
+  const cleaned = limparTextoParaVoz(text);
+  const audioPath = leleAudioPack.get(cleaned) || leleAudioPack.get(normalizarChaveAudio(cleaned));
   if (!audioPath) return false;
 
   if (leleAudioAtual) {
@@ -6878,10 +6905,10 @@ function renderSettings() {
           style="margin-top:10px;"
         >
 
-          <b>🔊 Voz natural</b>
+          <b>🔊 Voz oficial do Lelê</b>
 
           <p>
-            Somente os responsáveis podem escolher a voz usada pelo Lelê neste aparelho.
+            O pacote Cadu agora é usado nas falas, tarefas, lembretes, sentimentos e orientações do aplicativo.
           </p>
 
           <div class="voice-settings-row">
@@ -6907,7 +6934,7 @@ function renderSettings() {
             </button>
           </div>
 
-          <small class="muted">O Lelê mostra as vozes em português instaladas no aparelho. O estilo altera ritmo e entonação.</small>
+          <small class="muted">As opções acima controlam somente frases dinâmicas, como nomes e tarefas novas que ainda não tenham áudio gravado.</small>
 
         </div>
 
@@ -7974,11 +8001,11 @@ function bindDynamicEvents() {
 
   $("#leleVoiceStyleSelect")?.addEventListener("change", event => {
     localStorage.setItem(leleVoiceStyleKey, event.currentTarget.value);
-    speak("Oi! Este é o novo jeito de falar do Lelê. Vamos no seu ritmo.");
+    speak("Oi! Eu sou o Lelê. Vamos fazer uma coisa de cada vez, no seu ritmo.");
   });
 
   $("#testLeleVoiceBtn")?.addEventListener("click", () =>
-    speak("Oi! Eu sou o Lelê. Estou aqui para ajudar, sem pressa e sem complicação.")
+    speak("Oi! Eu sou o Lelê. Vamos fazer uma coisa de cada vez, no seu ritmo.")
   );
 
   $("#clearTestDataBtn")?.addEventListener("click", clearTestData);

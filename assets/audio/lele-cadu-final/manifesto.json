@@ -1,0 +1,1568 @@
+[
+  {
+    "id": "001-oi-eu-sou-o-lele-vamos-fazer-uma-coisa-de-cada-vez-no-seu-ritmo",
+    "categoria": "boas-vindas",
+    "texto": "Oi! Eu sou o Lelê. Vamos fazer uma coisa de cada vez, no seu ritmo.",
+    "arquivo": "boas-vindas/001-oi-eu-sou-o-lele-vamos-fazer-uma-coisa-de-cada-vez-no-seu-ritmo.mp3"
+  },
+  {
+    "id": "002-oi-eu-estou-aqui-para-fazer-tudo-com-voce-um-passo-de-cada-vez",
+    "categoria": "boas-vindas",
+    "texto": "Oi! Eu estou aqui para fazer tudo com você, um passo de cada vez.",
+    "arquivo": "boas-vindas/002-oi-eu-estou-aqui-para-fazer-tudo-com-voce-um-passo-de-cada-vez.mp3"
+  },
+  {
+    "id": "003-oi-que-bom-ver-voce",
+    "categoria": "boas-vindas",
+    "texto": "Oi! Que bom ver você!",
+    "arquivo": "boas-vindas/003-oi-que-bom-ver-voce.mp3"
+  },
+  {
+    "id": "004-vamos-comecar",
+    "categoria": "boas-vindas",
+    "texto": "Vamos começar!",
+    "arquivo": "boas-vindas/004-vamos-comecar.mp3"
+  },
+  {
+    "id": "005-preparado-para-cuidar-do-seu-dia",
+    "categoria": "boas-vindas",
+    "texto": "Preparado para cuidar do seu dia?",
+    "arquivo": "boas-vindas/005-preparado-para-cuidar-do-seu-dia.mp3"
+  },
+  {
+    "id": "006-eu-estou-aqui-para-ajudar-sem-pressa-e-sem-complicacao",
+    "categoria": "boas-vindas",
+    "texto": "Eu estou aqui para ajudar, sem pressa e sem complicação.",
+    "arquivo": "boas-vindas/006-eu-estou-aqui-para-ajudar-sem-pressa-e-sem-complicacao.mp3"
+  },
+  {
+    "id": "007-toque-em-mim-quando-quiser-conversar",
+    "categoria": "boas-vindas",
+    "texto": "Toque em mim quando quiser conversar.",
+    "arquivo": "boas-vindas/007-toque-em-mim-quando-quiser-conversar.mp3"
+  },
+  {
+    "id": "008-hoje-pode-ser-um-dia-muito-legal",
+    "categoria": "boas-vindas",
+    "texto": "Hoje pode ser um dia muito legal!",
+    "arquivo": "boas-vindas/008-hoje-pode-ser-um-dia-muito-legal.mp3"
+  },
+  {
+    "id": "009-muito-bem-voce-conseguiu",
+    "categoria": "conquistas",
+    "texto": "Muito bem! Você conseguiu!",
+    "arquivo": "conquistas/009-muito-bem-voce-conseguiu.mp3"
+  },
+  {
+    "id": "010-boa-mais-uma-tarefa-concluida",
+    "categoria": "conquistas",
+    "texto": "Boa! Mais uma tarefa concluída!",
+    "arquivo": "conquistas/010-boa-mais-uma-tarefa-concluida.mp3"
+  },
+  {
+    "id": "011-mandou-bem",
+    "categoria": "conquistas",
+    "texto": "Mandou bem!",
+    "arquivo": "conquistas/011-mandou-bem.mp3"
+  },
+  {
+    "id": "012-voce-esta-arrasando",
+    "categoria": "conquistas",
+    "texto": "Você está arrasando!",
+    "arquivo": "conquistas/012-voce-esta-arrasando.mp3"
+  },
+  {
+    "id": "013-que-orgulho-de-voce",
+    "categoria": "conquistas",
+    "texto": "Que orgulho de você!",
+    "arquivo": "conquistas/013-que-orgulho-de-voce.mp3"
+  },
+  {
+    "id": "014-otimo-trabalho",
+    "categoria": "conquistas",
+    "texto": "Ótimo trabalho!",
+    "arquivo": "conquistas/014-otimo-trabalho.mp3"
+  },
+  {
+    "id": "015-voce-fez-isso-com-muita-responsabilidade",
+    "categoria": "conquistas",
+    "texto": "Você fez isso com muita responsabilidade.",
+    "arquivo": "conquistas/015-voce-fez-isso-com-muita-responsabilidade.mp3"
+  },
+  {
+    "id": "016-conquista-registrada",
+    "categoria": "conquistas",
+    "texto": "Conquista registrada!",
+    "arquivo": "conquistas/016-conquista-registrada.mp3"
+  },
+  {
+    "id": "017-um-passo-de-cada-vez-e-voce-chegou-la",
+    "categoria": "conquistas",
+    "texto": "Um passo de cada vez, e você chegou lá!",
+    "arquivo": "conquistas/017-um-passo-de-cada-vez-e-voce-chegou-la.mp3"
+  },
+  {
+    "id": "018-todas-as-tarefas-previstas-para-hoje-estao-concluidas-bom-trabalho",
+    "categoria": "conquistas",
+    "texto": "Todas as tarefas previstas para hoje estão concluídas. Bom trabalho!",
+    "arquivo": "conquistas/018-todas-as-tarefas-previstas-para-hoje-estao-concluidas-bom-trabalho.mp3"
+  },
+  {
+    "id": "019-obrigado-por-contar-como-foi-seu-dia-falar-sobre-o-que-sentimos-e-muito-",
+    "categoria": "conquistas",
+    "texto": "Obrigado por contar como foi seu dia. Falar sobre o que sentimos é muito importante!",
+    "arquivo": "conquistas/019-obrigado-por-contar-como-foi-seu-dia-falar-sobre-o-que-sentimos-e-muito-.mp3"
+  },
+  {
+    "id": "020-lele-esta-te-chamando",
+    "categoria": "lembretes",
+    "texto": "Lelê está te chamando.",
+    "arquivo": "lembretes/020-lele-esta-te-chamando.mp3"
+  },
+  {
+    "id": "021-voce-tem-um-alerta-no-lele",
+    "categoria": "lembretes",
+    "texto": "Você tem um alerta no Lelê.",
+    "arquivo": "lembretes/021-voce-tem-um-alerta-no-lele.mp3"
+  },
+  {
+    "id": "022-esta-na-hora-da-proxima-tarefa",
+    "categoria": "lembretes",
+    "texto": "Está na hora da próxima tarefa.",
+    "arquivo": "lembretes/022-esta-na-hora-da-proxima-tarefa.mp3"
+  },
+  {
+    "id": "023-tem-uma-tarefa-esperando-por-voce",
+    "categoria": "lembretes",
+    "texto": "Tem uma tarefa esperando por você.",
+    "arquivo": "lembretes/023-tem-uma-tarefa-esperando-por-voce.mp3"
+  },
+  {
+    "id": "024-vamos-fazer-a-proxima-atividade",
+    "categoria": "lembretes",
+    "texto": "Vamos fazer a próxima atividade?",
+    "arquivo": "lembretes/024-vamos-fazer-a-proxima-atividade.mp3"
+  },
+  {
+    "id": "025-lembrete-do-trabalho-escolar",
+    "categoria": "lembretes",
+    "texto": "Lembrete do trabalho escolar.",
+    "arquivo": "lembretes/025-lembrete-do-trabalho-escolar.mp3"
+  },
+  {
+    "id": "026-confira-a-data-de-entrega-do-seu-trabalho",
+    "categoria": "lembretes",
+    "texto": "Confira a data de entrega do seu trabalho.",
+    "arquivo": "lembretes/026-confira-a-data-de-entrega-do-seu-trabalho.mp3"
+  },
+  {
+    "id": "027-voce-tem-uma-atividade-da-escola-para-fazer",
+    "categoria": "lembretes",
+    "texto": "Você tem uma atividade da escola para fazer.",
+    "arquivo": "lembretes/027-voce-tem-uma-atividade-da-escola-para-fazer.mp3"
+  },
+  {
+    "id": "028-que-tal-tomar-um-pouco-de-agua",
+    "categoria": "lembretes",
+    "texto": "Que tal tomar um pouco de água?",
+    "arquivo": "lembretes/028-que-tal-tomar-um-pouco-de-agua.mp3"
+  },
+  {
+    "id": "029-hora-de-tomar-agua",
+    "categoria": "lembretes",
+    "texto": "Hora de tomar água.",
+    "arquivo": "lembretes/029-hora-de-tomar-agua.mp3"
+  },
+  {
+    "id": "030-faca-uma-pausa-e-tome-agua",
+    "categoria": "lembretes",
+    "texto": "Faça uma pausa e tome água.",
+    "arquivo": "lembretes/030-faca-uma-pausa-e-tome-agua.mp3"
+  },
+  {
+    "id": "031-nao-se-esqueca-de-preparar-o-que-vai-precisar-amanha",
+    "categoria": "lembretes",
+    "texto": "Não se esqueça de preparar o que vai precisar amanhã.",
+    "arquivo": "lembretes/031-nao-se-esqueca-de-preparar-o-que-vai-precisar-amanha.mp3"
+  },
+  {
+    "id": "032-confira-a-mochila-a-roupa-e-o-horario-da-escola",
+    "categoria": "lembretes",
+    "texto": "Confira a mochila, a roupa e o horário da escola.",
+    "arquivo": "lembretes/032-confira-a-mochila-a-roupa-e-o-horario-da-escola.mp3"
+  },
+  {
+    "id": "033-esta-quase-na-hora-vamos-nos-preparar",
+    "categoria": "lembretes",
+    "texto": "Está quase na hora. Vamos nos preparar?",
+    "arquivo": "lembretes/033-esta-quase-na-hora-vamos-nos-preparar.mp3"
+  },
+  {
+    "id": "034-essa-tarefa-esta-atrasada-quer-comecar-por-uma-parte-pequena",
+    "categoria": "lembretes",
+    "texto": "Essa tarefa está atrasada. Quer começar por uma parte pequena?",
+    "arquivo": "lembretes/034-essa-tarefa-esta-atrasada-quer-comecar-por-uma-parte-pequena.mp3"
+  },
+  {
+    "id": "035-escovar-os-dentes",
+    "categoria": "tarefas",
+    "texto": "Escovar os dentes.",
+    "arquivo": "tarefas/035-escovar-os-dentes.mp3"
+  },
+  {
+    "id": "036-tomar-banho",
+    "categoria": "tarefas",
+    "texto": "Tomar banho.",
+    "arquivo": "tarefas/036-tomar-banho.mp3"
+  },
+  {
+    "id": "037-pentear-o-cabelo",
+    "categoria": "tarefas",
+    "texto": "Pentear o cabelo.",
+    "arquivo": "tarefas/037-pentear-o-cabelo.mp3"
+  },
+  {
+    "id": "038-lavar-as-maos",
+    "categoria": "tarefas",
+    "texto": "Lavar as mãos.",
+    "arquivo": "tarefas/038-lavar-as-maos.mp3"
+  },
+  {
+    "id": "039-trocar-de-roupa",
+    "categoria": "tarefas",
+    "texto": "Trocar de roupa.",
+    "arquivo": "tarefas/039-trocar-de-roupa.mp3"
+  },
+  {
+    "id": "040-arrumar-a-cama",
+    "categoria": "tarefas",
+    "texto": "Arrumar a cama.",
+    "arquivo": "tarefas/040-arrumar-a-cama.mp3"
+  },
+  {
+    "id": "041-organizar-o-quarto",
+    "categoria": "tarefas",
+    "texto": "Organizar o quarto.",
+    "arquivo": "tarefas/041-organizar-o-quarto.mp3"
+  },
+  {
+    "id": "042-guardar-os-brinquedos",
+    "categoria": "tarefas",
+    "texto": "Guardar os brinquedos.",
+    "arquivo": "tarefas/042-guardar-os-brinquedos.mp3"
+  },
+  {
+    "id": "043-guardar-as-roupas",
+    "categoria": "tarefas",
+    "texto": "Guardar as roupas.",
+    "arquivo": "tarefas/043-guardar-as-roupas.mp3"
+  },
+  {
+    "id": "044-colocar-a-roupa-no-cesto",
+    "categoria": "tarefas",
+    "texto": "Colocar a roupa no cesto.",
+    "arquivo": "tarefas/044-colocar-a-roupa-no-cesto.mp3"
+  },
+  {
+    "id": "045-guardar-os-sapatos",
+    "categoria": "tarefas",
+    "texto": "Guardar os sapatos.",
+    "arquivo": "tarefas/045-guardar-os-sapatos.mp3"
+  },
+  {
+    "id": "046-levar-o-lixo-para-fora",
+    "categoria": "tarefas",
+    "texto": "Levar o lixo para fora.",
+    "arquivo": "tarefas/046-levar-o-lixo-para-fora.mp3"
+  },
+  {
+    "id": "047-lavar-a-louca",
+    "categoria": "tarefas",
+    "texto": "Lavar a louça.",
+    "arquivo": "tarefas/047-lavar-a-louca.mp3"
+  },
+  {
+    "id": "048-por-a-mesa",
+    "categoria": "tarefas",
+    "texto": "Pôr a mesa.",
+    "arquivo": "tarefas/048-por-a-mesa.mp3"
+  },
+  {
+    "id": "049-ajudar-em-casa",
+    "categoria": "tarefas",
+    "texto": "Ajudar em casa.",
+    "arquivo": "tarefas/049-ajudar-em-casa.mp3"
+  },
+  {
+    "id": "050-preparar-a-mochila",
+    "categoria": "tarefas",
+    "texto": "Preparar a mochila.",
+    "arquivo": "tarefas/050-preparar-a-mochila.mp3"
+  },
+  {
+    "id": "051-separar-o-material-escolar",
+    "categoria": "tarefas",
+    "texto": "Separar o material escolar.",
+    "arquivo": "tarefas/051-separar-o-material-escolar.mp3"
+  },
+  {
+    "id": "052-fazer-a-licao-de-casa",
+    "categoria": "tarefas",
+    "texto": "Fazer a lição de casa.",
+    "arquivo": "tarefas/052-fazer-a-licao-de-casa.mp3"
+  },
+  {
+    "id": "053-estudar-para-a-prova",
+    "categoria": "tarefas",
+    "texto": "Estudar para a prova.",
+    "arquivo": "tarefas/053-estudar-para-a-prova.mp3"
+  },
+  {
+    "id": "054-revisar-a-materia",
+    "categoria": "tarefas",
+    "texto": "Revisar a matéria.",
+    "arquivo": "tarefas/054-revisar-a-materia.mp3"
+  },
+  {
+    "id": "055-ler-um-livro",
+    "categoria": "tarefas",
+    "texto": "Ler um livro.",
+    "arquivo": "tarefas/055-ler-um-livro.mp3"
+  },
+  {
+    "id": "056-fazer-o-trabalho-escolar",
+    "categoria": "tarefas",
+    "texto": "Fazer o trabalho escolar.",
+    "arquivo": "tarefas/056-fazer-o-trabalho-escolar.mp3"
+  },
+  {
+    "id": "057-organizar-a-agenda",
+    "categoria": "tarefas",
+    "texto": "Organizar a agenda.",
+    "arquivo": "tarefas/057-organizar-a-agenda.mp3"
+  },
+  {
+    "id": "058-planejar-a-semana",
+    "categoria": "tarefas",
+    "texto": "Planejar a semana.",
+    "arquivo": "tarefas/058-planejar-a-semana.mp3"
+  },
+  {
+    "id": "059-separar-a-roupa-de-amanha",
+    "categoria": "tarefas",
+    "texto": "Separar a roupa de amanhã.",
+    "arquivo": "tarefas/059-separar-a-roupa-de-amanha.mp3"
+  },
+  {
+    "id": "060-encher-a-garrafa-de-agua",
+    "categoria": "tarefas",
+    "texto": "Encher a garrafa de água.",
+    "arquivo": "tarefas/060-encher-a-garrafa-de-agua.mp3"
+  },
+  {
+    "id": "061-tomar-agua",
+    "categoria": "tarefas",
+    "texto": "Tomar água.",
+    "arquivo": "tarefas/061-tomar-agua.mp3"
+  },
+  {
+    "id": "062-fazer-um-lanche",
+    "categoria": "tarefas",
+    "texto": "Fazer um lanche.",
+    "arquivo": "tarefas/062-fazer-um-lanche.mp3"
+  },
+  {
+    "id": "063-almocar",
+    "categoria": "tarefas",
+    "texto": "Almoçar.",
+    "arquivo": "tarefas/063-almocar.mp3"
+  },
+  {
+    "id": "064-jantar",
+    "categoria": "tarefas",
+    "texto": "Jantar.",
+    "arquivo": "tarefas/064-jantar.mp3"
+  },
+  {
+    "id": "065-alimentar-o-bichinho-de-estimacao",
+    "categoria": "tarefas",
+    "texto": "Alimentar o bichinho de estimação.",
+    "arquivo": "tarefas/065-alimentar-o-bichinho-de-estimacao.mp3"
+  },
+  {
+    "id": "066-brincar",
+    "categoria": "tarefas",
+    "texto": "Brincar.",
+    "arquivo": "tarefas/066-brincar.mp3"
+  },
+  {
+    "id": "067-fazer-uma-atividade-em-familia",
+    "categoria": "tarefas",
+    "texto": "Fazer uma atividade em família.",
+    "arquivo": "tarefas/067-fazer-uma-atividade-em-familia.mp3"
+  },
+  {
+    "id": "068-movimentar-o-corpo-por-quinze-minutos",
+    "categoria": "tarefas",
+    "texto": "Movimentar o corpo por quinze minutos.",
+    "arquivo": "tarefas/068-movimentar-o-corpo-por-quinze-minutos.mp3"
+  },
+  {
+    "id": "069-fazer-uma-pausa-das-telas",
+    "categoria": "tarefas",
+    "texto": "Fazer uma pausa das telas.",
+    "arquivo": "tarefas/069-fazer-uma-pausa-das-telas.mp3"
+  },
+  {
+    "id": "070-respirar-devagar-tres-vezes",
+    "categoria": "tarefas",
+    "texto": "Respirar devagar três vezes.",
+    "arquivo": "tarefas/070-respirar-devagar-tres-vezes.mp3"
+  },
+  {
+    "id": "071-contar-como-estou-me-sentindo",
+    "categoria": "tarefas",
+    "texto": "Contar como estou me sentindo.",
+    "arquivo": "tarefas/071-contar-como-estou-me-sentindo.mp3"
+  },
+  {
+    "id": "072-conversar-sobre-algo-que-preciso",
+    "categoria": "tarefas",
+    "texto": "Conversar sobre algo que preciso.",
+    "arquivo": "tarefas/072-conversar-sobre-algo-que-preciso.mp3"
+  },
+  {
+    "id": "073-organizar-os-arquivos-digitais",
+    "categoria": "tarefas",
+    "texto": "Organizar os arquivos digitais.",
+    "arquivo": "tarefas/073-organizar-os-arquivos-digitais.mp3"
+  },
+  {
+    "id": "074-planejar-as-prioridades-da-semana",
+    "categoria": "tarefas",
+    "texto": "Planejar as prioridades da semana.",
+    "arquivo": "tarefas/074-planejar-as-prioridades-da-semana.mp3"
+  },
+  {
+    "id": "075-criar-algo-sem-copiar",
+    "categoria": "tarefas",
+    "texto": "Criar algo sem copiar.",
+    "arquivo": "tarefas/075-criar-algo-sem-copiar.mp3"
+  },
+  {
+    "id": "076-vamos-fazer-juntos",
+    "categoria": "ajuda",
+    "texto": "Vamos fazer juntos.",
+    "arquivo": "ajuda/076-vamos-fazer-juntos.mp3"
+  },
+  {
+    "id": "077-vamos-por-uma-parte-pequena",
+    "categoria": "ajuda",
+    "texto": "Vamos por uma parte pequena.",
+    "arquivo": "ajuda/077-vamos-por-uma-parte-pequena.mp3"
+  },
+  {
+    "id": "078-escolha-apenas-uma-coisa-para-comecar",
+    "categoria": "ajuda",
+    "texto": "Escolha apenas uma coisa para começar.",
+    "arquivo": "ajuda/078-escolha-apenas-uma-coisa-para-comecar.mp3"
+  },
+  {
+    "id": "079-respire-fundo-voce-nao-precisa-fazer-tudo-de-uma-vez",
+    "categoria": "ajuda",
+    "texto": "Respire fundo. Você não precisa fazer tudo de uma vez.",
+    "arquivo": "ajuda/079-respire-fundo-voce-nao-precisa-fazer-tudo-de-uma-vez.mp3"
+  },
+  {
+    "id": "080-se-continuar-dificil-use-o-botao-preciso-de-ajuda",
+    "categoria": "ajuda",
+    "texto": "Se continuar difícil, use o botão Preciso de ajuda.",
+    "arquivo": "ajuda/080-se-continuar-dificil-use-o-botao-preciso-de-ajuda.mp3"
+  },
+  {
+    "id": "081-seu-pedido-de-ajuda-foi-enviado",
+    "categoria": "ajuda",
+    "texto": "Seu pedido de ajuda foi enviado.",
+    "arquivo": "ajuda/081-seu-pedido-de-ajuda-foi-enviado.mp3"
+  },
+  {
+    "id": "082-tudo-bem-pedir-ajuda",
+    "categoria": "ajuda",
+    "texto": "Tudo bem pedir ajuda.",
+    "arquivo": "ajuda/082-tudo-bem-pedir-ajuda.mp3"
+  },
+  {
+    "id": "083-conte-para-um-responsavel-o-que-aconteceu-e-diga-de-que-ajuda-precisa",
+    "categoria": "ajuda",
+    "texto": "Conte para um responsável o que aconteceu e diga de que ajuda precisa.",
+    "arquivo": "ajuda/083-conte-para-um-responsavel-o-que-aconteceu-e-diga-de-que-ajuda-precisa.mp3"
+  },
+  {
+    "id": "084-voce-nao-precisa-resolver-isso-sozinho",
+    "categoria": "ajuda",
+    "texto": "Você não precisa resolver isso sozinho.",
+    "arquivo": "ajuda/084-voce-nao-precisa-resolver-isso-sozinho.mp3"
+  },
+  {
+    "id": "085-eu-nao-entendi-pode-tentar-explicar-de-outro-jeito",
+    "categoria": "ajuda",
+    "texto": "Eu não entendi. Pode tentar explicar de outro jeito?",
+    "arquivo": "ajuda/085-eu-nao-entendi-pode-tentar-explicar-de-outro-jeito.mp3"
+  },
+  {
+    "id": "086-vamos-para-o-proximo-passo",
+    "categoria": "ajuda",
+    "texto": "Vamos para o próximo passo.",
+    "arquivo": "ajuda/086-vamos-para-o-proximo-passo.mp3"
+  },
+  {
+    "id": "087-entendi-vamos-tentar-juntos",
+    "categoria": "ajuda",
+    "texto": "Entendi. Vamos tentar juntos!",
+    "arquivo": "ajuda/087-entendi-vamos-tentar-juntos.mp3"
+  },
+  {
+    "id": "088-como-voce-esta-se-sentindo-hoje",
+    "categoria": "sentimentos",
+    "texto": "Como você está se sentindo hoje?",
+    "arquivo": "sentimentos/088-como-voce-esta-se-sentindo-hoje.mp3"
+  },
+  {
+    "id": "089-obrigado-por-contar",
+    "categoria": "sentimentos",
+    "texto": "Obrigado por contar.",
+    "arquivo": "sentimentos/089-obrigado-por-contar.mp3"
+  },
+  {
+    "id": "090-esta-tudo-bem-se-sentir-assim",
+    "categoria": "sentimentos",
+    "texto": "Está tudo bem se sentir assim.",
+    "arquivo": "sentimentos/090-esta-tudo-bem-se-sentir-assim.mp3"
+  },
+  {
+    "id": "091-escolha-uma-palavra-para-o-que-esta-sentindo",
+    "categoria": "sentimentos",
+    "texto": "Escolha uma palavra para o que está sentindo.",
+    "arquivo": "sentimentos/091-escolha-uma-palavra-para-o-que-esta-sentindo.mp3"
+  },
+  {
+    "id": "092-respire-devagar-e-conte-para-alguem-de-confianca",
+    "categoria": "sentimentos",
+    "texto": "Respire devagar e conte para alguém de confiança.",
+    "arquivo": "sentimentos/092-respire-devagar-e-conte-para-alguem-de-confianca.mp3"
+  },
+  {
+    "id": "093-voce-esta-feliz",
+    "categoria": "sentimentos",
+    "texto": "Você está feliz?",
+    "arquivo": "sentimentos/093-voce-esta-feliz.mp3"
+  },
+  {
+    "id": "094-voce-esta-triste",
+    "categoria": "sentimentos",
+    "texto": "Você está triste?",
+    "arquivo": "sentimentos/094-voce-esta-triste.mp3"
+  },
+  {
+    "id": "095-voce-esta-com-raiva",
+    "categoria": "sentimentos",
+    "texto": "Você está com raiva?",
+    "arquivo": "sentimentos/095-voce-esta-com-raiva.mp3"
+  },
+  {
+    "id": "096-voce-esta-preocupado",
+    "categoria": "sentimentos",
+    "texto": "Você está preocupado?",
+    "arquivo": "sentimentos/096-voce-esta-preocupado.mp3"
+  },
+  {
+    "id": "097-voce-esta-cansado",
+    "categoria": "sentimentos",
+    "texto": "Você está cansado?",
+    "arquivo": "sentimentos/097-voce-esta-cansado.mp3"
+  },
+  {
+    "id": "098-voce-esta-tranquilo",
+    "categoria": "sentimentos",
+    "texto": "Você está tranquilo?",
+    "arquivo": "sentimentos/098-voce-esta-tranquilo.mp3"
+  },
+  {
+    "id": "099-quer-conversar-sobre-o-que-aconteceu",
+    "categoria": "sentimentos",
+    "texto": "Quer conversar sobre o que aconteceu?",
+    "arquivo": "sentimentos/099-quer-conversar-sobre-o-que-aconteceu.mp3"
+  },
+  {
+    "id": "100-veja-o-que-voce-tem-para-hoje",
+    "categoria": "rotina",
+    "texto": "Veja o que você tem para hoje.",
+    "arquivo": "rotina/100-veja-o-que-voce-tem-para-hoje.mp3"
+  },
+  {
+    "id": "101-sua-proxima-acao-esta-pronta",
+    "categoria": "rotina",
+    "texto": "Sua próxima ação está pronta.",
+    "arquivo": "rotina/101-sua-proxima-acao-esta-pronta.mp3"
+  },
+  {
+    "id": "102-comece-quando-estiver-preparado",
+    "categoria": "rotina",
+    "texto": "Comece quando estiver preparado.",
+    "arquivo": "rotina/102-comece-quando-estiver-preparado.mp3"
+  },
+  {
+    "id": "103-tarefa-iniciada",
+    "categoria": "rotina",
+    "texto": "Tarefa iniciada.",
+    "arquivo": "rotina/103-tarefa-iniciada.mp3"
+  },
+  {
+    "id": "104-tarefa-concluida",
+    "categoria": "rotina",
+    "texto": "Tarefa concluída.",
+    "arquivo": "rotina/104-tarefa-concluida.mp3"
+  },
+  {
+    "id": "105-tarefa-adiada",
+    "categoria": "rotina",
+    "texto": "Tarefa adiada.",
+    "arquivo": "rotina/105-tarefa-adiada.mp3"
+  },
+  {
+    "id": "106-foto-recebida-agora-voce-pode-concluir-a-tarefa",
+    "categoria": "rotina",
+    "texto": "Foto recebida. Agora você pode concluir a tarefa.",
+    "arquivo": "rotina/106-foto-recebida-agora-voce-pode-concluir-a-tarefa.mp3"
+  },
+  {
+    "id": "107-tire-ou-escolha-uma-foto-para-mostrar-que-a-tarefa-foi-realizada",
+    "categoria": "rotina",
+    "texto": "Tire ou escolha uma foto para mostrar que a tarefa foi realizada.",
+    "arquivo": "rotina/107-tire-ou-escolha-uma-foto-para-mostrar-que-a-tarefa-foi-realizada.mp3"
+  },
+  {
+    "id": "108-confira-suas-tarefas-de-amanha",
+    "categoria": "rotina",
+    "texto": "Confira suas tarefas de amanhã.",
+    "arquivo": "rotina/108-confira-suas-tarefas-de-amanha.mp3"
+  },
+  {
+    "id": "109-voce-nao-tem-tarefas-para-amanha",
+    "categoria": "rotina",
+    "texto": "Você não tem tarefas para amanhã.",
+    "arquivo": "rotina/109-voce-nao-tem-tarefas-para-amanha.mp3"
+  },
+  {
+    "id": "110-no-seu-ritmo",
+    "categoria": "rotina",
+    "texto": "No seu ritmo.",
+    "arquivo": "rotina/110-no-seu-ritmo.mp3"
+  },
+  {
+    "id": "111-hora-de-descansar",
+    "categoria": "rotina",
+    "texto": "Hora de descansar.",
+    "arquivo": "rotina/111-hora-de-descansar.mp3"
+  },
+  {
+    "id": "112-boa-noite-amanha-a-gente-continua",
+    "categoria": "rotina",
+    "texto": "Boa noite! Amanhã a gente continua.",
+    "arquivo": "rotina/112-boa-noite-amanha-a-gente-continua.mp3"
+  },
+  {
+    "id": "113-isso-e-importante-procure-agora-um-responsavel-ou-outro-adulto-de-confia",
+    "categoria": "seguranca",
+    "texto": "Isso é importante. Procure agora um responsável ou outro adulto de confiança.",
+    "arquivo": "seguranca/113-isso-e-importante-procure-agora-um-responsavel-ou-outro-adulto-de-confia.mp3"
+  },
+  {
+    "id": "114-se-estiver-em-perigo-va-para-um-lugar-seguro-e-peca-ajuda-imediatamente",
+    "categoria": "seguranca",
+    "texto": "Se estiver em perigo, vá para um lugar seguro e peça ajuda imediatamente.",
+    "arquivo": "seguranca/114-se-estiver-em-perigo-va-para-um-lugar-seguro-e-peca-ajuda-imediatamente.mp3"
+  },
+  {
+    "id": "115-informacoes-pessoais-ficam-protegidas",
+    "categoria": "seguranca",
+    "texto": "Informações pessoais ficam protegidas.",
+    "arquivo": "seguranca/115-informacoes-pessoais-ficam-protegidas.mp3"
+  },
+  {
+    "id": "116-nao-compartilhe-endereco-telefone-escola-rotina-senhas-ou-fotos-sem-perm",
+    "categoria": "seguranca",
+    "texto": "Não compartilhe endereço, telefone, escola, rotina, senhas ou fotos sem permissão.",
+    "arquivo": "seguranca/116-nao-compartilhe-endereco-telefone-escola-rotina-senhas-ou-fotos-sem-perm.mp3"
+  },
+  {
+    "id": "117-antes-de-sair-ou-mudar-o-combinado-peca-permissao-ao-responsavel",
+    "categoria": "seguranca",
+    "texto": "Antes de sair ou mudar o combinado, peça permissão ao responsável.",
+    "arquivo": "seguranca/117-antes-de-sair-ou-mudar-o-combinado-peca-permissao-ao-responsavel.mp3"
+  },
+  {
+    "id": "118-diga-nao-quando-algo-causar-medo-ou-desconforto",
+    "categoria": "seguranca",
+    "texto": "Diga não quando algo causar medo ou desconforto.",
+    "arquivo": "seguranca/118-diga-nao-quando-algo-causar-medo-ou-desconforto.mp3"
+  },
+  {
+    "id": "119-afaste-se-e-conte-a-um-adulto-de-confianca",
+    "categoria": "seguranca",
+    "texto": "Afaste-se e conte a um adulto de confiança.",
+    "arquivo": "seguranca/119-afaste-se-e-conte-a-um-adulto-de-confianca.mp3"
+  },
+  {
+    "id": "120-se-a-primeira-pessoa-nao-ajudar-continue-contando-ate-alguem-agir-para-p",
+    "categoria": "seguranca",
+    "texto": "Se a primeira pessoa não ajudar, continue contando até alguém agir para proteger você.",
+    "arquivo": "seguranca/120-se-a-primeira-pessoa-nao-ajudar-continue-contando-ate-alguem-agir-para-p.mp3"
+  },
+  {
+    "id": "121-oi-posso-ajudar-com-tarefas-escola-amanha-e-sentimentos-sobre-o-que-quer",
+    "categoria": "assistente",
+    "texto": "Oi! Posso ajudar com tarefas, escola, amanhã e sentimentos. Sobre o que quer conversar?",
+    "arquivo": "assistente/121-oi-posso-ajudar-com-tarefas-escola-amanha-e-sentimentos-sobre-o-que-quer.mp3"
+  },
+  {
+    "id": "122-o-que-voce-precisa",
+    "categoria": "assistente",
+    "texto": "O que você precisa?",
+    "arquivo": "assistente/122-o-que-voce-precisa.mp3"
+  },
+  {
+    "id": "123-o-que-fazemos-agora",
+    "categoria": "assistente",
+    "texto": "O que fazemos agora?",
+    "arquivo": "assistente/123-o-que-fazemos-agora.mp3"
+  },
+  {
+    "id": "124-quer-saber-o-que-tem-para-amanha",
+    "categoria": "assistente",
+    "texto": "Quer saber o que tem para amanhã?",
+    "arquivo": "assistente/124-quer-saber-o-que-tem-para-amanha.mp3"
+  },
+  {
+    "id": "125-eu-so-converso-sobre-sua-rotina-tarefas-escola-sentimentos-e-seguranca",
+    "categoria": "assistente",
+    "texto": "Eu só converso sobre sua rotina, tarefas, escola, sentimentos e segurança.",
+    "arquivo": "assistente/125-eu-so-converso-sobre-sua-rotina-tarefas-escola-sentimentos-e-seguranca.mp3"
+  },
+  {
+    "id": "126-nao-encontrei-tarefas-para-amanha-mesmo-assim-vale-conferir-mochila-roup",
+    "categoria": "assistente",
+    "texto": "Não encontrei tarefas para amanhã. Mesmo assim, vale conferir mochila, roupa e horário da escola.",
+    "arquivo": "assistente/126-nao-encontrei-tarefas-para-amanha-mesmo-assim-vale-conferir-mochila-roup.mp3"
+  },
+  {
+    "id": "127-se-estiver-com-sede-faca-uma-pausa-e-tome-agua-depois-toque-em-tomei-agu",
+    "categoria": "assistente",
+    "texto": "Se estiver com sede, faça uma pausa e tome água. Depois toque em Tomei água para registrar.",
+    "arquivo": "assistente/127-se-estiver-com-sede-faca-uma-pausa-e-tome-agua-depois-toque-em-tomei-agu.mp3"
+  },
+  {
+    "id": "128-novo-pedido-de-ajuda-recebido",
+    "categoria": "pais",
+    "texto": "Novo pedido de ajuda recebido.",
+    "arquivo": "pais/128-novo-pedido-de-ajuda-recebido.mp3"
+  },
+  {
+    "id": "129-nova-tarefa-concluida",
+    "categoria": "pais",
+    "texto": "Nova tarefa concluída.",
+    "arquivo": "pais/129-nova-tarefa-concluida.mp3"
+  },
+  {
+    "id": "130-a-evidencia-da-tarefa-esta-pronta-para-visualizar",
+    "categoria": "pais",
+    "texto": "A evidência da tarefa está pronta para visualizar.",
+    "arquivo": "pais/130-a-evidencia-da-tarefa-esta-pronta-para-visualizar.mp3"
+  },
+  {
+    "id": "131-ha-uma-tarefa-atrasada",
+    "categoria": "pais",
+    "texto": "Há uma tarefa atrasada.",
+    "arquivo": "pais/131-ha-uma-tarefa-atrasada.mp3"
+  },
+  {
+    "id": "132-novo-recado-da-familia",
+    "categoria": "pais",
+    "texto": "Novo recado da família.",
+    "arquivo": "pais/132-novo-recado-da-familia.mp3"
+  },
+  {
+    "id": "133-o-registro-de-sentimento-foi-atualizado",
+    "categoria": "pais",
+    "texto": "O registro de sentimento foi atualizado.",
+    "arquivo": "pais/133-o-registro-de-sentimento-foi-atualizado.mp3"
+  },
+  {
+    "id": "134-os-alertas-estao-ativos",
+    "categoria": "pais",
+    "texto": "Os alertas estão ativos.",
+    "arquivo": "pais/134-os-alertas-estao-ativos.mp3"
+  },
+  {
+    "id": "135-pegue-a-escova-e-coloque-um-pouco-de-pasta",
+    "categoria": "passo-a-passo",
+    "texto": "Pegue a escova e coloque um pouco de pasta.",
+    "arquivo": "passo-a-passo/135-pegue-a-escova-e-coloque-um-pouco-de-pasta.mp3"
+  },
+  {
+    "id": "136-escove-por-fora-por-dentro-e-em-cima-dos-dentes",
+    "categoria": "passo-a-passo",
+    "texto": "Escove por fora, por dentro e em cima dos dentes.",
+    "arquivo": "passo-a-passo/136-escove-por-fora-por-dentro-e-em-cima-dos-dentes.mp3"
+  },
+  {
+    "id": "137-escove-a-lingua-com-cuidado",
+    "categoria": "passo-a-passo",
+    "texto": "Escove a língua com cuidado.",
+    "arquivo": "passo-a-passo/137-escove-a-lingua-com-cuidado.mp3"
+  },
+  {
+    "id": "138-enxague-a-boca-e-guarde-tudo-no-lugar",
+    "categoria": "passo-a-passo",
+    "texto": "Enxágue a boca e guarde tudo no lugar.",
+    "arquivo": "passo-a-passo/138-enxague-a-boca-e-guarde-tudo-no-lugar.mp3"
+  },
+  {
+    "id": "139-abra-a-cortina-e-deixe-o-quarto-claro-para-comecar",
+    "categoria": "passo-a-passo",
+    "texto": "Abra a cortina e deixe o quarto claro para começar.",
+    "arquivo": "passo-a-passo/139-abra-a-cortina-e-deixe-o-quarto-claro-para-comecar.mp3"
+  },
+  {
+    "id": "140-puxe-e-alise-o-lencol-para-tirar-as-partes-amassadas",
+    "categoria": "passo-a-passo",
+    "texto": "Puxe e alise o lençol para tirar as partes amassadas.",
+    "arquivo": "passo-a-passo/140-puxe-e-alise-o-lencol-para-tirar-as-partes-amassadas.mp3"
+  },
+  {
+    "id": "141-estenda-a-coberta-por-igual-e-acerte-as-laterais",
+    "categoria": "passo-a-passo",
+    "texto": "Estenda a coberta por igual e acerte as laterais.",
+    "arquivo": "passo-a-passo/141-estenda-a-coberta-por-igual-e-acerte-as-laterais.mp3"
+  },
+  {
+    "id": "142-coloque-os-travesseiros-no-lugar-e-confira-se-ficou-organizado",
+    "categoria": "passo-a-passo",
+    "texto": "Coloque os travesseiros no lugar e confira se ficou organizado.",
+    "arquivo": "passo-a-passo/142-coloque-os-travesseiros-no-lugar-e-confira-se-ficou-organizado.mp3"
+  },
+  {
+    "id": "143-feche-bem-o-saco-de-lixo-sem-apertar-objetos-que-possam-machucar",
+    "categoria": "passo-a-passo",
+    "texto": "Feche bem o saco de lixo, sem apertar objetos que possam machucar.",
+    "arquivo": "passo-a-passo/143-feche-bem-o-saco-de-lixo-sem-apertar-objetos-que-possam-machucar.mp3"
+  },
+  {
+    "id": "144-leve-o-saco-com-as-duas-maos-e-caminhe-com-cuidado",
+    "categoria": "passo-a-passo",
+    "texto": "Leve o saco com as duas mãos e caminhe com cuidado.",
+    "arquivo": "passo-a-passo/144-leve-o-saco-com-as-duas-maos-e-caminhe-com-cuidado.mp3"
+  },
+  {
+    "id": "145-coloque-o-saco-dentro-da-lixeira-correta-e-feche-a-tampa",
+    "categoria": "passo-a-passo",
+    "texto": "Coloque o saco dentro da lixeira correta e feche a tampa.",
+    "arquivo": "passo-a-passo/145-coloque-o-saco-dentro-da-lixeira-correta-e-feche-a-tampa.mp3"
+  },
+  {
+    "id": "146-lave-as-maos-com-agua-e-sabao-quando-terminar",
+    "categoria": "passo-a-passo",
+    "texto": "Lave as mãos com água e sabão quando terminar.",
+    "arquivo": "passo-a-passo/146-lave-as-maos-com-agua-e-sabao-quando-terminar.mp3"
+  },
+  {
+    "id": "147-separe-as-roupas-limpas-por-tipo",
+    "categoria": "passo-a-passo",
+    "texto": "Separe as roupas limpas por tipo.",
+    "arquivo": "passo-a-passo/147-separe-as-roupas-limpas-por-tipo.mp3"
+  },
+  {
+    "id": "148-dobre-cada-peca-com-calma-e-deixe-as-pilhas-pequenas",
+    "categoria": "passo-a-passo",
+    "texto": "Dobre cada peça com calma e deixe as pilhas pequenas.",
+    "arquivo": "passo-a-passo/148-dobre-cada-peca-com-calma-e-deixe-as-pilhas-pequenas.mp3"
+  },
+  {
+    "id": "149-guarde-as-roupas-dobradas-nas-gavetas-certas",
+    "categoria": "passo-a-passo",
+    "texto": "Guarde as roupas dobradas nas gavetas certas.",
+    "arquivo": "passo-a-passo/149-guarde-as-roupas-dobradas-nas-gavetas-certas.mp3"
+  },
+  {
+    "id": "150-confira-se-o-armario-ficou-organizado-e-facil-de-usar",
+    "categoria": "passo-a-passo",
+    "texto": "Confira se o armário ficou organizado e fácil de usar.",
+    "arquivo": "passo-a-passo/150-confira-se-o-armario-ficou-organizado-e-facil-de-usar.mp3"
+  },
+  {
+    "id": "151-junte-os-brinquedos-que-ficaram-no-chao",
+    "categoria": "passo-a-passo",
+    "texto": "Junte os brinquedos que ficaram no chão.",
+    "arquivo": "passo-a-passo/151-junte-os-brinquedos-que-ficaram-no-chao.mp3"
+  },
+  {
+    "id": "152-separe-carrinhos-bonecos-blocos-e-livros",
+    "categoria": "passo-a-passo",
+    "texto": "Separe carrinhos, bonecos, blocos e livros.",
+    "arquivo": "passo-a-passo/152-separe-carrinhos-bonecos-blocos-e-livros.mp3"
+  },
+  {
+    "id": "153-coloque-cada-grupo-na-caixa-ou-prateleira-certa",
+    "categoria": "passo-a-passo",
+    "texto": "Coloque cada grupo na caixa ou prateleira certa.",
+    "arquivo": "passo-a-passo/153-coloque-cada-grupo-na-caixa-ou-prateleira-certa.mp3"
+  },
+  {
+    "id": "154-confira-se-o-caminho-ficou-livre-e-seguro",
+    "categoria": "passo-a-passo",
+    "texto": "Confira se o caminho ficou livre e seguro.",
+    "arquivo": "passo-a-passo/154-confira-se-o-caminho-ficou-livre-e-seguro.mp3"
+  },
+  {
+    "id": "155-encontre-o-par-de-cada-sapato",
+    "categoria": "passo-a-passo",
+    "texto": "Encontre o par de cada sapato.",
+    "arquivo": "passo-a-passo/155-encontre-o-par-de-cada-sapato.mp3"
+  },
+  {
+    "id": "156-retire-a-sujeira-seca-com-um-pano-se-for-necessario",
+    "categoria": "passo-a-passo",
+    "texto": "Retire a sujeira seca com um pano, se for necessário.",
+    "arquivo": "passo-a-passo/156-retire-a-sujeira-seca-com-um-pano-se-for-necessario.mp3"
+  },
+  {
+    "id": "157-coloque-os-pares-lado-a-lado-na-sapateira",
+    "categoria": "passo-a-passo",
+    "texto": "Coloque os pares lado a lado na sapateira.",
+    "arquivo": "passo-a-passo/157-coloque-os-pares-lado-a-lado-na-sapateira.mp3"
+  },
+  {
+    "id": "158-deixe-o-caminho-livre-e-confira-se-tudo-ficou-no-lugar",
+    "categoria": "passo-a-passo",
+    "texto": "Deixe o caminho livre e confira se tudo ficou no lugar.",
+    "arquivo": "passo-a-passo/158-deixe-o-caminho-livre-e-confira-se-tudo-ficou-no-lugar.mp3"
+  },
+  {
+    "id": "159-confira-as-aulas-e-atividades-que-tera",
+    "categoria": "passo-a-passo",
+    "texto": "Confira as aulas e atividades que terá.",
+    "arquivo": "passo-a-passo/159-confira-as-aulas-e-atividades-que-tera.mp3"
+  },
+  {
+    "id": "160-separe-livros-cadernos-e-estojo",
+    "categoria": "passo-a-passo",
+    "texto": "Separe livros, cadernos e estojo.",
+    "arquivo": "passo-a-passo/160-separe-livros-cadernos-e-estojo.mp3"
+  },
+  {
+    "id": "161-coloque-os-livros-maiores-perto-das-costas-e-os-itens-menores-na-frente",
+    "categoria": "passo-a-passo",
+    "texto": "Coloque os livros maiores perto das costas e os itens menores na frente.",
+    "arquivo": "passo-a-passo/161-coloque-os-livros-maiores-perto-das-costas-e-os-itens-menores-na-frente.mp3"
+  },
+  {
+    "id": "162-feche-a-mochila-e-coloque-a-garrafa-no-bolso-lateral",
+    "categoria": "passo-a-passo",
+    "texto": "Feche a mochila e coloque a garrafa no bolso lateral.",
+    "arquivo": "passo-a-passo/162-feche-a-mochila-e-coloque-a-garrafa-no-bolso-lateral.mp3"
+  },
+  {
+    "id": "163-pegue-uma-garrafa-limpa-e-abra-a-tampa",
+    "categoria": "passo-a-passo",
+    "texto": "Pegue uma garrafa limpa e abra a tampa.",
+    "arquivo": "passo-a-passo/163-pegue-uma-garrafa-limpa-e-abra-a-tampa.mp3"
+  },
+  {
+    "id": "164-encha-com-agua-propria-para-beber-sem-encostar-a-garrafa-na-saida",
+    "categoria": "passo-a-passo",
+    "texto": "Encha com água própria para beber, sem encostar a garrafa na saída.",
+    "arquivo": "passo-a-passo/164-encha-com-agua-propria-para-beber-sem-encostar-a-garrafa-na-saida.mp3"
+  },
+  {
+    "id": "165-feche-bem-a-tampa-para-nao-vazar",
+    "categoria": "passo-a-passo",
+    "texto": "Feche bem a tampa para não vazar.",
+    "arquivo": "passo-a-passo/165-feche-bem-a-tampa-para-nao-vazar.mp3"
+  },
+  {
+    "id": "166-coloque-a-garrafa-em-pe-no-local-combinado",
+    "categoria": "passo-a-passo",
+    "texto": "Coloque a garrafa em pé no local combinado.",
+    "arquivo": "passo-a-passo/166-coloque-a-garrafa-em-pe-no-local-combinado.mp3"
+  },
+  {
+    "id": "167-escolha-um-livro-que-combine-com-sua-idade-e-curiosidade",
+    "categoria": "passo-a-passo",
+    "texto": "Escolha um livro que combine com sua idade e curiosidade.",
+    "arquivo": "passo-a-passo/167-escolha-um-livro-que-combine-com-sua-idade-e-curiosidade.mp3"
+  },
+  {
+    "id": "168-sente-se-em-um-lugar-confortavel-e-bem-iluminado",
+    "categoria": "passo-a-passo",
+    "texto": "Sente-se em um lugar confortável e bem iluminado.",
+    "arquivo": "passo-a-passo/168-sente-se-em-um-lugar-confortavel-e-bem-iluminado.mp3"
+  },
+  {
+    "id": "169-leia-no-seu-ritmo-e-observe-as-imagens-e-ideias-da-historia",
+    "categoria": "passo-a-passo",
+    "texto": "Leia no seu ritmo e observe as imagens e ideias da história.",
+    "arquivo": "passo-a-passo/169-leia-no-seu-ritmo-e-observe-as-imagens-e-ideias-da-historia.mp3"
+  },
+  {
+    "id": "170-quando-terminar-guarde-o-livro-com-cuidado",
+    "categoria": "passo-a-passo",
+    "texto": "Quando terminar, guarde o livro com cuidado.",
+    "arquivo": "passo-a-passo/170-quando-terminar-guarde-o-livro-com-cuidado.mp3"
+  },
+  {
+    "id": "171-escolha-uma-brincadeira-segura-e-prepare-o-espaco",
+    "categoria": "passo-a-passo",
+    "texto": "Escolha uma brincadeira segura e prepare o espaço.",
+    "arquivo": "passo-a-passo/171-escolha-uma-brincadeira-segura-e-prepare-o-espaco.mp3"
+  },
+  {
+    "id": "172-use-a-imaginacao-e-brinque-do-seu-jeito",
+    "categoria": "passo-a-passo",
+    "texto": "Use a imaginação e brinque do seu jeito.",
+    "arquivo": "passo-a-passo/172-use-a-imaginacao-e-brinque-do-seu-jeito.mp3"
+  },
+  {
+    "id": "173-se-outra-crianca-participar-compartilhe-e-espere-sua-vez",
+    "categoria": "passo-a-passo",
+    "texto": "Se outra criança participar, compartilhe e espere sua vez.",
+    "arquivo": "passo-a-passo/173-se-outra-crianca-participar-compartilhe-e-espere-sua-vez.mp3"
+  },
+  {
+    "id": "174-no-final-guarde-os-brinquedos-usados",
+    "categoria": "passo-a-passo",
+    "texto": "No final, guarde os brinquedos usados.",
+    "arquivo": "passo-a-passo/174-no-final-guarde-os-brinquedos-usados.mp3"
+  },
+  {
+    "id": "175-combine-com-um-responsavel-o-programa-e-o-tempo-para-assistir",
+    "categoria": "passo-a-passo",
+    "texto": "Combine com um responsável o programa e o tempo para assistir.",
+    "arquivo": "passo-a-passo/175-combine-com-um-responsavel-o-programa-e-o-tempo-para-assistir.mp3"
+  },
+  {
+    "id": "176-sente-se-a-uma-distancia-confortavel-e-mantenha-o-volume-moderado",
+    "categoria": "passo-a-passo",
+    "texto": "Sente-se a uma distância confortável e mantenha o volume moderado.",
+    "arquivo": "passo-a-passo/176-sente-se-a-uma-distancia-confortavel-e-mantenha-o-volume-moderado.mp3"
+  },
+  {
+    "id": "177-quando-o-tempo-estiver-acabando-prepare-se-para-encerrar",
+    "categoria": "passo-a-passo",
+    "texto": "Quando o tempo estiver acabando, prepare-se para encerrar.",
+    "arquivo": "passo-a-passo/177-quando-o-tempo-estiver-acabando-prepare-se-para-encerrar.mp3"
+  },
+  {
+    "id": "178-desligue-a-tv-e-escolha-a-proxima-atividade",
+    "categoria": "passo-a-passo",
+    "texto": "Desligue a TV e escolha a próxima atividade.",
+    "arquivo": "passo-a-passo/178-desligue-a-tv-e-escolha-a-proxima-atividade.mp3"
+  },
+  {
+    "id": "179-atividade-em-familia",
+    "categoria": "passo-a-passo",
+    "texto": "atividade em família",
+    "arquivo": "passo-a-passo/179-atividade-em-familia.mp3"
+  },
+  {
+    "id": "180-escolham-juntos-uma-atividade-que-todos-possam-aproveitar",
+    "categoria": "passo-a-passo",
+    "texto": "Escolham juntos uma atividade que todos possam aproveitar.",
+    "arquivo": "passo-a-passo/180-escolham-juntos-uma-atividade-que-todos-possam-aproveitar.mp3"
+  },
+  {
+    "id": "181-participem-da-brincadeira-ou-atividade-respeitando-a-vez-de-cada-um",
+    "categoria": "passo-a-passo",
+    "texto": "Participem da brincadeira ou atividade respeitando a vez de cada um.",
+    "arquivo": "passo-a-passo/181-participem-da-brincadeira-ou-atividade-respeitando-a-vez-de-cada-um.mp3"
+  },
+  {
+    "id": "182-conversem-e-escutem-com-atencao-o-que-cada-pessoa-quer-contar",
+    "categoria": "passo-a-passo",
+    "texto": "Conversem e escutem com atenção o que cada pessoa quer contar.",
+    "arquivo": "passo-a-passo/182-conversem-e-escutem-com-atencao-o-que-cada-pessoa-quer-contar.mp3"
+  },
+  {
+    "id": "183-guardem-o-que-usaram-e-encerrem-esse-momento-com-carinho",
+    "categoria": "passo-a-passo",
+    "texto": "Guardem o que usaram e encerrem esse momento com carinho.",
+    "arquivo": "passo-a-passo/183-guardem-o-que-usaram-e-encerrem-esse-momento-com-carinho.mp3"
+  },
+  {
+    "id": "184-separe-apenas-o-material-que-voce-vai-usar",
+    "categoria": "passo-a-passo",
+    "texto": "Separe apenas o material que você vai usar.",
+    "arquivo": "passo-a-passo/184-separe-apenas-o-material-que-voce-vai-usar.mp3"
+  },
+  {
+    "id": "185-leia-a-atividade-inteira-antes-de-comecar",
+    "categoria": "passo-a-passo",
+    "texto": "Leia a atividade inteira antes de começar.",
+    "arquivo": "passo-a-passo/185-leia-a-atividade-inteira-antes-de-comecar.mp3"
+  },
+  {
+    "id": "186-faca-uma-parte-pequena-de-cada-vez",
+    "categoria": "passo-a-passo",
+    "texto": "Faça uma parte pequena de cada vez.",
+    "arquivo": "passo-a-passo/186-faca-uma-parte-pequena-de-cada-vez.mp3"
+  },
+  {
+    "id": "187-revise-no-final-e-peca-ajuda-somente-no-que-ficou-dificil",
+    "categoria": "passo-a-passo",
+    "texto": "Revise no final e peça ajuda somente no que ficou difícil.",
+    "arquivo": "passo-a-passo/187-revise-no-final-e-peca-ajuda-somente-no-que-ficou-dificil.mp3"
+  },
+  {
+    "id": "188-escolha-uma-parte-pequena-para-comecar",
+    "categoria": "passo-a-passo",
+    "texto": "Escolha uma parte pequena para começar.",
+    "arquivo": "passo-a-passo/188-escolha-uma-parte-pequena-para-comecar.mp3"
+  },
+  {
+    "id": "189-separe-o-que-fica-o-que-vai-para-outro-lugar-e-o-que-e-lixo",
+    "categoria": "passo-a-passo",
+    "texto": "Separe o que fica, o que vai para outro lugar e o que é lixo.",
+    "arquivo": "passo-a-passo/189-separe-o-que-fica-o-que-vai-para-outro-lugar-e-o-que-e-lixo.mp3"
+  },
+  {
+    "id": "190-guarde-cada-grupo-no-lugar-certo",
+    "categoria": "passo-a-passo",
+    "texto": "Guarde cada grupo no lugar certo.",
+    "arquivo": "passo-a-passo/190-guarde-cada-grupo-no-lugar-certo.mp3"
+  },
+  {
+    "id": "191-olhe-novamente-e-veja-se-faltou-alguma-coisa",
+    "categoria": "passo-a-passo",
+    "texto": "Olhe novamente e veja se faltou alguma coisa.",
+    "arquivo": "passo-a-passo/191-olhe-novamente-e-veja-se-faltou-alguma-coisa.mp3"
+  },
+  {
+    "id": "192-confira-quais-aulas-ou-atividades-tera-amanha",
+    "categoria": "passo-a-passo",
+    "texto": "Confira quais aulas ou atividades terá amanhã.",
+    "arquivo": "passo-a-passo/192-confira-quais-aulas-ou-atividades-tera-amanha.mp3"
+  },
+  {
+    "id": "193-coloque-cada-item-na-mochila",
+    "categoria": "passo-a-passo",
+    "texto": "Coloque cada item na mochila.",
+    "arquivo": "passo-a-passo/193-coloque-cada-item-na-mochila.mp3"
+  },
+  {
+    "id": "194-faca-uma-ultima-conferencia-antes-de-fechar",
+    "categoria": "passo-a-passo",
+    "texto": "Faça uma última conferência antes de fechar.",
+    "arquivo": "passo-a-passo/194-faca-uma-ultima-conferencia-antes-de-fechar.mp3"
+  },
+  {
+    "id": "195-pare-por-um-instante-e-perceba-seu-corpo",
+    "categoria": "passo-a-passo",
+    "texto": "Pare por um instante e perceba seu corpo.",
+    "arquivo": "passo-a-passo/195-pare-por-um-instante-e-perceba-seu-corpo.mp3"
+  },
+  {
+    "id": "196-respire-devagar-tres-vezes",
+    "categoria": "passo-a-passo",
+    "texto": "Respire devagar três vezes.",
+    "arquivo": "passo-a-passo/196-respire-devagar-tres-vezes.mp3"
+  },
+  {
+    "id": "197-conte-para-um-adulto-se-precisar-de-companhia-ou-ajuda",
+    "categoria": "passo-a-passo",
+    "texto": "Conte para um adulto se precisar de companhia ou ajuda.",
+    "arquivo": "passo-a-passo/197-conte-para-um-adulto-se-precisar-de-companhia-ou-ajuda.mp3"
+  },
+  {
+    "id": "198-liste-tudo-o-que-precisa-de-atencao-sem-tentar-organizar-ainda",
+    "categoria": "passo-a-passo",
+    "texto": "Liste tudo o que precisa de atenção, sem tentar organizar ainda.",
+    "arquivo": "passo-a-passo/198-liste-tudo-o-que-precisa-de-atencao-sem-tentar-organizar-ainda.mp3"
+  },
+  {
+    "id": "199-marque-o-que-tem-prazo-e-o-que-e-mais-importante",
+    "categoria": "passo-a-passo",
+    "texto": "Marque o que tem prazo e o que é mais importante.",
+    "arquivo": "passo-a-passo/199-marque-o-que-tem-prazo-e-o-que-e-mais-importante.mp3"
+  },
+  {
+    "id": "200-escolha-no-maximo-tres-prioridades-reais",
+    "categoria": "passo-a-passo",
+    "texto": "Escolha no máximo três prioridades reais.",
+    "arquivo": "passo-a-passo/200-escolha-no-maximo-tres-prioridades-reais.mp3"
+  },
+  {
+    "id": "201-reserve-um-horario-para-comecar-e-revise-o-plano-no-fim-do-dia",
+    "categoria": "passo-a-passo",
+    "texto": "Reserve um horário para começar e revise o plano no fim do dia.",
+    "arquivo": "passo-a-passo/201-reserve-um-horario-para-comecar-e-revise-o-plano-no-fim-do-dia.mp3"
+  },
+  {
+    "id": "202-defina-claramente-o-que-precisa-ser-entregue",
+    "categoria": "passo-a-passo",
+    "texto": "Defina claramente o que precisa ser entregue.",
+    "arquivo": "passo-a-passo/202-defina-claramente-o-que-precisa-ser-entregue.mp3"
+  },
+  {
+    "id": "203-separe-pesquisa-producao-e-revisao-em-etapas",
+    "categoria": "passo-a-passo",
+    "texto": "Separe pesquisa, produção e revisão em etapas.",
+    "arquivo": "passo-a-passo/203-separe-pesquisa-producao-e-revisao-em-etapas.mp3"
+  },
+  {
+    "id": "204-de-um-prazo-curto-e-realista-para-cada-etapa",
+    "categoria": "passo-a-passo",
+    "texto": "Dê um prazo curto e realista para cada etapa.",
+    "arquivo": "passo-a-passo/204-de-um-prazo-curto-e-realista-para-cada-etapa.mp3"
+  },
+  {
+    "id": "205-comece-pela-primeira-acao-que-leva-menos-de-quinze-minutos",
+    "categoria": "passo-a-passo",
+    "texto": "Comece pela primeira ação que leva menos de quinze minutos.",
+    "arquivo": "passo-a-passo/205-comece-pela-primeira-acao-que-leva-menos-de-quinze-minutos.mp3"
+  },
+  {
+    "id": "206-escolha-uma-meta-especifica-para-esta-sessao",
+    "categoria": "passo-a-passo",
+    "texto": "Escolha uma meta específica para esta sessão.",
+    "arquivo": "passo-a-passo/206-escolha-uma-meta-especifica-para-esta-sessao.mp3"
+  },
+  {
+    "id": "207-afaste-notificacoes-e-deixe-somente-o-material-necessario",
+    "categoria": "passo-a-passo",
+    "texto": "Afaste notificações e deixe somente o material necessário.",
+    "arquivo": "passo-a-passo/207-afaste-notificacoes-e-deixe-somente-o-material-necessario.mp3"
+  },
+  {
+    "id": "208-estude-por-um-periodo-curto-com-atencao-total",
+    "categoria": "passo-a-passo",
+    "texto": "Estude por um período curto com atenção total.",
+    "arquivo": "passo-a-passo/208-estude-por-um-periodo-curto-com-atencao-total.mp3"
+  },
+  {
+    "id": "209-ao-terminar-explique-com-suas-palavras-o-que-aprendeu",
+    "categoria": "passo-a-passo",
+    "texto": "Ao terminar, explique com suas palavras o que aprendeu.",
+    "arquivo": "passo-a-passo/209-ao-terminar-explique-com-suas-palavras-o-que-aprendeu.mp3"
+  },
+  {
+    "id": "210-escolha-uma-receita-simples-e-confirme-se-um-adulto-precisa-acompanhar",
+    "categoria": "passo-a-passo",
+    "texto": "Escolha uma receita simples e confirme se um adulto precisa acompanhar.",
+    "arquivo": "passo-a-passo/210-escolha-uma-receita-simples-e-confirme-se-um-adulto-precisa-acompanhar.mp3"
+  },
+  {
+    "id": "211-separe-ingredientes-e-utensilios-antes-de-comecar",
+    "categoria": "passo-a-passo",
+    "texto": "Separe ingredientes e utensílios antes de começar.",
+    "arquivo": "passo-a-passo/211-separe-ingredientes-e-utensilios-antes-de-comecar.mp3"
+  },
+  {
+    "id": "212-siga-a-ordem-da-receita-e-cuide-do-fogo-e-de-objetos-cortantes",
+    "categoria": "passo-a-passo",
+    "texto": "Siga a ordem da receita e cuide do fogo e de objetos cortantes.",
+    "arquivo": "passo-a-passo/212-siga-a-ordem-da-receita-e-cuide-do-fogo-e-de-objetos-cortantes.mp3"
+  },
+  {
+    "id": "213-desligue-tudo-guarde-os-alimentos-e-organize-o-espaco",
+    "categoria": "passo-a-passo",
+    "texto": "Desligue tudo, guarde os alimentos e organize o espaço.",
+    "arquivo": "passo-a-passo/213-desligue-tudo-guarde-os-alimentos-e-organize-o-espaco.mp3"
+  },
+  {
+    "id": "214-anote-quanto-dinheiro-esta-disponivel",
+    "categoria": "passo-a-passo",
+    "texto": "Anote quanto dinheiro está disponível.",
+    "arquivo": "passo-a-passo/214-anote-quanto-dinheiro-esta-disponivel.mp3"
+  },
+  {
+    "id": "215-separe-o-que-e-necessario-do-que-e-apenas-vontade",
+    "categoria": "passo-a-passo",
+    "texto": "Separe o que é necessário do que é apenas vontade.",
+    "arquivo": "passo-a-passo/215-separe-o-que-e-necessario-do-que-e-apenas-vontade.mp3"
+  },
+  {
+    "id": "216-compare-valores-e-defina-um-limite",
+    "categoria": "passo-a-passo",
+    "texto": "Compare valores e defina um limite.",
+    "arquivo": "passo-a-passo/216-compare-valores-e-defina-um-limite.mp3"
+  },
+  {
+    "id": "217-registre-o-que-gastou-e-quanto-restou",
+    "categoria": "passo-a-passo",
+    "texto": "Registre o que gastou e quanto restou.",
+    "arquivo": "passo-a-passo/217-registre-o-que-gastou-e-quanto-restou.mp3"
+  },
+  {
+    "id": "218-escolha-uma-pasta-ou-area-pequena-para-organizar",
+    "categoria": "passo-a-passo",
+    "texto": "Escolha uma pasta ou área pequena para organizar.",
+    "arquivo": "passo-a-passo/218-escolha-uma-pasta-ou-area-pequena-para-organizar.mp3"
+  },
+  {
+    "id": "219-apague-apenas-duplicados-e-arquivos-que-reconhece-como-desnecessarios",
+    "categoria": "passo-a-passo",
+    "texto": "Apague apenas duplicados e arquivos que reconhece como desnecessários.",
+    "arquivo": "passo-a-passo/219-apague-apenas-duplicados-e-arquivos-que-reconhece-como-desnecessarios.mp3"
+  },
+  {
+    "id": "220-crie-nomes-e-pastas-faceis-de-encontrar-depois",
+    "categoria": "passo-a-passo",
+    "texto": "Crie nomes e pastas fáceis de encontrar depois.",
+    "arquivo": "passo-a-passo/220-crie-nomes-e-pastas-faceis-de-encontrar-depois.mp3"
+  },
+  {
+    "id": "221-confira-se-documentos-importantes-estao-protegidos-ou-salvos",
+    "categoria": "passo-a-passo",
+    "texto": "Confira se documentos importantes estão protegidos ou salvos.",
+    "arquivo": "passo-a-passo/221-confira-se-documentos-importantes-estao-protegidos-ou-salvos.mp3"
+  },
+  {
+    "id": "222-proteger-informacoes-pessoais",
+    "categoria": "passo-a-passo",
+    "texto": "proteger informações pessoais",
+    "arquivo": "passo-a-passo/222-proteger-informacoes-pessoais.mp3"
+  },
+  {
+    "id": "223-lembre-quais-dados-nao-devem-ser-contados-sem-permissao-endereco-telefon",
+    "categoria": "passo-a-passo",
+    "texto": "Lembre quais dados não devem ser contados sem permissão: endereço, telefone, escola, rotina, senhas, fotos e informações da família.",
+    "arquivo": "passo-a-passo/223-lembre-quais-dados-nao-devem-ser-contados-sem-permissao-endereco-telefon.mp3"
+  },
+  {
+    "id": "224-se-um-adulto-perguntar-sobre-um-amigo-colega-ou-outra-pessoa-nao-tente-r",
+    "categoria": "passo-a-passo",
+    "texto": "Se um adulto perguntar sobre um amigo, colega ou outra pessoa, não tente responder por ela.",
+    "arquivo": "passo-a-passo/224-se-um-adulto-perguntar-sobre-um-amigo-colega-ou-outra-pessoa-nao-tente-r.mp3"
+  },
+  {
+    "id": "225-diga-procure-a-escola-ou-o-adulto-responsavel-por-essa-pessoa",
+    "categoria": "passo-a-passo",
+    "texto": "Diga: procure a escola ou o adulto responsável por essa pessoa.",
+    "arquivo": "passo-a-passo/225-diga-procure-a-escola-ou-o-adulto-responsavel-por-essa-pessoa.mp3"
+  },
+  {
+    "id": "226-conte-a-um-responsavel-se-alguem-insistir-pedir-segredo-ou-fizer-voce-se",
+    "categoria": "passo-a-passo",
+    "texto": "Conte a um responsável se alguém insistir, pedir segredo ou fizer você se sentir desconfortável.",
+    "arquivo": "passo-a-passo/226-conte-a-um-responsavel-se-alguem-insistir-pedir-segredo-ou-fizer-voce-se.mp3"
+  },
+  {
+    "id": "227-antes-de-sair-ou-mudar-o-lugar-combinado-peca-permissao-ao-responsavel",
+    "categoria": "passo-a-passo",
+    "texto": "Antes de sair ou mudar o lugar combinado, peça permissão ao responsável.",
+    "arquivo": "passo-a-passo/227-antes-de-sair-ou-mudar-o-lugar-combinado-peca-permissao-ao-responsavel.mp3"
+  },
+  {
+    "id": "228-avise-com-quem-estara-para-onde-vai-e-como-pretende-voltar",
+    "categoria": "passo-a-passo",
+    "texto": "Avise com quem estará, para onde vai e como pretende voltar.",
+    "arquivo": "passo-a-passo/228-avise-com-quem-estara-para-onde-vai-e-como-pretende-voltar.mp3"
+  },
+  {
+    "id": "229-se-o-plano-mudar-avise-antes-de-seguir-para-outro-lugar",
+    "categoria": "passo-a-passo",
+    "texto": "Se o plano mudar, avise antes de seguir para outro lugar.",
+    "arquivo": "passo-a-passo/229-se-o-plano-mudar-avise-antes-de-seguir-para-outro-lugar.mp3"
+  },
+  {
+    "id": "230-se-nao-conseguir-falar-com-o-responsavel-fique-em-um-local-seguro-e-proc",
+    "categoria": "passo-a-passo",
+    "texto": "Se não conseguir falar com o responsável, fique em um local seguro e procure um adulto de confiança.",
+    "arquivo": "passo-a-passo/230-se-nao-conseguir-falar-com-o-responsavel-fique-em-um-local-seguro-e-proc.mp3"
+  },
+  {
+    "id": "231-com-quem-posso-pedir-ajuda",
+    "categoria": "passo-a-passo",
+    "texto": "com quem posso pedir ajuda",
+    "arquivo": "passo-a-passo/231-com-quem-posso-pedir-ajuda.mp3"
+  },
+  {
+    "id": "232-escolha-com-a-familia-tres-adultos-de-confianca-que-voce-pode-procurar",
+    "categoria": "passo-a-passo",
+    "texto": "Escolha com a família três adultos de confiança que você pode procurar.",
+    "arquivo": "passo-a-passo/232-escolha-com-a-familia-tres-adultos-de-confianca-que-voce-pode-procurar.mp3"
+  },
+  {
+    "id": "233-saiba-como-encontrar-um-responsavel-da-escola-quando-precisar",
+    "categoria": "passo-a-passo",
+    "texto": "Saiba como encontrar um responsável da escola quando precisar.",
+    "arquivo": "passo-a-passo/233-saiba-como-encontrar-um-responsavel-da-escola-quando-precisar.mp3"
+  },
+  {
+    "id": "234-se-algo-parecer-estranho-conte-mesmo-que-alguem-tenha-pedido-segredo",
+    "categoria": "passo-a-passo",
+    "texto": "Se algo parecer estranho, conte mesmo que alguém tenha pedido segredo.",
+    "arquivo": "passo-a-passo/234-se-algo-parecer-estranho-conte-mesmo-que-alguem-tenha-pedido-segredo.mp3"
+  },
+  {
+    "id": "235-em-perigo-imediato-va-para-um-local-movimentado-e-peca-ajuda-a-um-respon",
+    "categoria": "passo-a-passo",
+    "texto": "Em perigo imediato, vá para um local movimentado e peça ajuda a um responsável identificado.",
+    "arquivo": "passo-a-passo/235-em-perigo-imediato-va-para-um-local-movimentado-e-peca-ajuda-a-um-respon.mp3"
+  },
+  {
+    "id": "236-dizer-nao-e-pedir-ajuda",
+    "categoria": "passo-a-passo",
+    "texto": "dizer não e pedir ajuda",
+    "arquivo": "passo-a-passo/236-dizer-nao-e-pedir-ajuda.mp3"
+  },
+  {
+    "id": "237-perceba-quando-um-pedido-deixa-voce-desconfortavel-ou-confuso",
+    "categoria": "passo-a-passo",
+    "texto": "Perceba quando um pedido deixa você desconfortável ou confuso.",
+    "arquivo": "passo-a-passo/237-perceba-quando-um-pedido-deixa-voce-desconfortavel-ou-confuso.mp3"
+  },
+  {
+    "id": "238-diga-nao-afaste-se-e-nao-aceite-guardar-segredos-que-causem-medo-ou-preo",
+    "categoria": "passo-a-passo",
+    "texto": "Diga não, afaste-se e não aceite guardar segredos que causem medo ou preocupação.",
+    "arquivo": "passo-a-passo/238-diga-nao-afaste-se-e-nao-aceite-guardar-segredos-que-causem-medo-ou-preo.mp3"
+  },
+  {
+    "id": "239-procure-um-adulto-de-confianca-e-conte-o-que-aconteceu-com-suas-palavras",
+    "categoria": "passo-a-passo",
+    "texto": "Procure um adulto de confiança e conte o que aconteceu com suas palavras.",
+    "arquivo": "passo-a-passo/239-procure-um-adulto-de-confianca-e-conte-o-que-aconteceu-com-suas-palavras.mp3"
+  },
+  {
+    "id": "240-preparar-o-que-vou-precisar",
+    "categoria": "passo-a-passo",
+    "texto": "Preparar o que vou precisar",
+    "arquivo": "passo-a-passo/240-preparar-o-que-vou-precisar.mp3"
+  },
+  {
+    "id": "241-olhar-o-dia-seguinte-separar-os-materiais-e-conferir-tudo-com-calma",
+    "categoria": "passo-a-passo",
+    "texto": "Olhar o dia seguinte, separar os materiais e conferir tudo com calma.",
+    "arquivo": "passo-a-passo/241-olhar-o-dia-seguinte-separar-os-materiais-e-conferir-tudo-com-calma.mp3"
+  },
+  {
+    "id": "242-organizar-a-mochila",
+    "categoria": "passo-a-passo",
+    "texto": "Organizar a mochila",
+    "arquivo": "passo-a-passo/242-organizar-a-mochila.mp3"
+  },
+  {
+    "id": "243-veja-o-que-voce-fara-amanha",
+    "categoria": "passo-a-passo",
+    "texto": "Veja o que você fará amanhã.",
+    "arquivo": "passo-a-passo/243-veja-o-que-voce-fara-amanha.mp3"
+  },
+  {
+    "id": "244-entender-o-que-estou-sentindo",
+    "categoria": "passo-a-passo",
+    "texto": "Entender o que estou sentindo",
+    "arquivo": "passo-a-passo/244-entender-o-que-estou-sentindo.mp3"
+  },
+  {
+    "id": "245-dar-nome-ao-sentimento-ajuda-a-explicar-o-que-aconteceu-e-pedir-ajuda",
+    "categoria": "passo-a-passo",
+    "texto": "Dar nome ao sentimento ajuda a explicar o que aconteceu e pedir ajuda.",
+    "arquivo": "passo-a-passo/245-dar-nome-ao-sentimento-ajuda-a-explicar-o-que-aconteceu-e-pedir-ajuda.mp3"
+  },
+  {
+    "id": "246-contar-como-estou-me-sentindo",
+    "categoria": "passo-a-passo",
+    "texto": "Contar como estou me sentindo",
+    "arquivo": "passo-a-passo/246-contar-como-estou-me-sentindo.mp3"
+  },
+  {
+    "id": "247-pare-um-pouquinho-e-perceba-seu-corpo",
+    "categoria": "passo-a-passo",
+    "texto": "Pare um pouquinho e perceba seu corpo.",
+    "arquivo": "passo-a-passo/247-pare-um-pouquinho-e-perceba-seu-corpo.mp3"
+  },
+  {
+    "id": "248-cuidar-das-amizades",
+    "categoria": "passo-a-passo",
+    "texto": "Cuidar das amizades",
+    "arquivo": "passo-a-passo/248-cuidar-das-amizades.mp3"
+  },
+  {
+    "id": "249-amizade-boa-tem-respeito-escuta-brincadeira-segura-e-espaco-para-dizer-n",
+    "categoria": "passo-a-passo",
+    "texto": "Amizade boa tem respeito, escuta, brincadeira segura e espaço para dizer não.",
+    "arquivo": "passo-a-passo/249-amizade-boa-tem-respeito-escuta-brincadeira-segura-e-espaco-para-dizer-n.mp3"
+  },
+  {
+    "id": "250-conversar-sobre-algo-que-preciso",
+    "categoria": "passo-a-passo",
+    "texto": "Conversar sobre algo que preciso",
+    "arquivo": "passo-a-passo/250-conversar-sobre-algo-que-preciso.mp3"
+  },
+  {
+    "id": "251-observe-se-todos-estao-sendo-respeitados",
+    "categoria": "passo-a-passo",
+    "texto": "Observe se todos estão sendo respeitados.",
+    "arquivo": "passo-a-passo/251-observe-se-todos-estao-sendo-respeitados.mp3"
+  },
+  {
+    "id": "252-resolver-uma-coisa-por-vez",
+    "categoria": "passo-a-passo",
+    "texto": "Resolver uma coisa por vez",
+    "arquivo": "passo-a-passo/252-resolver-uma-coisa-por-vez.mp3"
+  },
+  {
+    "id": "253-uma-tarefa-grande-fica-mais-facil-quando-vira-tres-passos-pequenos",
+    "categoria": "passo-a-passo",
+    "texto": "Uma tarefa grande fica mais fácil quando vira três passos pequenos.",
+    "arquivo": "passo-a-passo/253-uma-tarefa-grande-fica-mais-facil-quando-vira-tres-passos-pequenos.mp3"
+  },
+  {
+    "id": "254-planejar-as-prioridades-da-semana",
+    "categoria": "passo-a-passo",
+    "texto": "Planejar as prioridades da semana",
+    "arquivo": "passo-a-passo/254-planejar-as-prioridades-da-semana.mp3"
+  },
+  {
+    "id": "255-informacoes-pessoais-ficam-protegidas",
+    "categoria": "passo-a-passo",
+    "texto": "Informações pessoais ficam protegidas",
+    "arquivo": "passo-a-passo/255-informacoes-pessoais-ficam-protegidas.mp3"
+  },
+  {
+    "id": "256-avisar-onde-vai-e-onde-esta",
+    "categoria": "passo-a-passo",
+    "texto": "Avisar onde vai e onde está",
+    "arquivo": "passo-a-passo/256-avisar-onde-vai-e-onde-esta.mp3"
+  },
+  {
+    "id": "257-saber-a-quem-pedir-ajuda",
+    "categoria": "passo-a-passo",
+    "texto": "Saber a quem pedir ajuda",
+    "arquivo": "passo-a-passo/257-saber-a-quem-pedir-ajuda.mp3"
+  },
+  {
+    "id": "258-dizer-nao-sair-e-contar",
+    "categoria": "passo-a-passo",
+    "texto": "Dizer não, sair e contar",
+    "arquivo": "passo-a-passo/258-dizer-nao-sair-e-contar.mp3"
+  },
+  {
+    "id": "259-decisoes-e-prioridades",
+    "categoria": "passo-a-passo",
+    "texto": "Decisões e prioridades",
+    "arquivo": "passo-a-passo/259-decisoes-e-prioridades.mp3"
+  },
+  {
+    "id": "260-emocoes-e-comunicacao",
+    "categoria": "passo-a-passo",
+    "texto": "Emoções e comunicação",
+    "arquivo": "passo-a-passo/260-emocoes-e-comunicacao.mp3"
+  },
+  {
+    "id": "261-dinheiro-na-vida-real",
+    "categoria": "passo-a-passo",
+    "texto": "Dinheiro na vida real",
+    "arquivo": "passo-a-passo/261-dinheiro-na-vida-real.mp3"
+  }
+]

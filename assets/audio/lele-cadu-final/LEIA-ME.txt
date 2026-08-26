@@ -1,0 +1,11 @@
+PACOTE DE VOZ DO LELÊ
+
+Total: 261 arquivos MP3.
+Idioma: português brasileiro.
+Voz: pt_BR-cadu-medium, ajustada para ritmo jovem e animado.
+Fonte do modelo: Piper Voices / rhasspy.
+Licença informada do dataset Nabu Casa Voice Datasets: CC0.
+Licença do repositório do modelo: MIT.
+
+Os arquivos estão separados por categoria. O manifesto.json relaciona cada texto ao MP3 correspondente.
+Frases com nomes, horários e tarefas criadas pelos pais continuam dinâmicas e devem usar a síntese do aparelho ou montagem por trechos.
