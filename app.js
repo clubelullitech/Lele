@@ -4170,6 +4170,48 @@ function parentTaskStatusRow(task) {
   `;
 }
 
+function dailyJourneyForChild(tasks) {
+  const sorted = [...tasks].sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+  const firstPendingIndex = sorted.findIndex(task => !task.done && task.lastCompletedDate !== todayKey());
+  const remaining = firstPendingIndex === -1 ? [] : sorted.slice(firstPendingIndex);
+  return [
+    { label: "Agora", icon: "▶️", task: remaining[0] || null, state: "now" },
+    { label: "Depois", icon: "⏭️", task: remaining[1] || null, state: "next" },
+    { label: "Mais tarde", icon: "🌙", task: remaining[2] || null, state: "later" }
+  ];
+}
+
+function familyRewardKey(childId) {
+  return `lele-family-rewards-${childId}`;
+}
+
+function familyRewardsForChild(targetChild) {
+  try {
+    const stored = JSON.parse(localStorage.getItem(familyRewardKey(targetChild.id)) || "null");
+    if (Array.isArray(stored) && stored.length) return stored.slice(0, 4);
+  } catch (_) {}
+  return ["Escolher o filme", "Brincar juntos", "Escolher o jantar", "Momento especial em família"];
+}
+
+function renderDailyJourney(tasks) {
+  return `
+    <section class="section daily-journey-section">
+      <div class="section-head"><div><h2>🧭 Minha jornada de hoje</h2><div class="muted">Uma coisa de cada vez: agora, depois e mais tarde.</div></div></div>
+      <div class="daily-journey-grid">
+        ${dailyJourneyForChild(tasks).map(item => `
+          <article class="journey-step ${item.state}">
+            <span class="journey-marker">${item.icon}</span>
+            <small>${item.label}</small>
+            ${item.task
+              ? `<b>${getTaskEmoji(item.task)} ${escapeHtml(item.task.title)}</b><span>${item.task.time || "No seu ritmo"}</span><button class="ghost speak-journey-btn" data-phrase="${escapeHtml(`${item.label}: ${item.task.title}`)}" type="button">🔊 Ouvir</button>`
+              : `<b>Tempo livre</b><span>Nada programado</span>`}
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
 function renderParentHome() {
   const c = child();
   if (!c) return;
@@ -4375,6 +4417,29 @@ function renderHome() {
       </span>
       <span class="attention-audio">🔊</span>
     </button>
+
+    ${renderDailyJourney(tasks)}
+
+    <section class="section quick-help-section">
+      <div class="quick-help-copy">
+        <span>🙋</span>
+        <div><h2>Preciso de ajuda</h2><p>Escolha o assunto e o Lelê avisa um responsável.</p></div>
+      </div>
+      <div class="quick-help-options">
+        ${[
+          ["📋", "Tarefa"], ["🎒", "Escola"], ["💛", "Sentimento"],
+          ["🛡️", "Segurança"], ["💬", "Quero conversar"]
+        ].map(([icon, label]) => `<button class="quick-help-btn" data-help-topic="${label}" type="button">${icon} ${label}</button>`).join("")}
+      </div>
+      <p id="quickHelpStatus" class="muted" aria-live="polite"></p>
+    </section>
+
+    <section class="section achievement-vault">
+      <div class="section-head"><div><h2>🏅 Meu cofrinho de conquistas</h2><div class="muted">Aqui vale esforço, autonomia e pedir ajuda.</div></div></div>
+      <div class="achievement-vault-row">
+        ${achievementBadgesForChild(c, indicatorSummaryForChild(c)).map(item => `<span>${item.icon}<b>${escapeHtml(item.label)}</b></span>`).join("") || `<div class="callout">Sua primeira conquista de hoje está esperando por você.</div>`}
+      </div>
+    </section>
 
 
     <section class="section">
@@ -7585,6 +7650,14 @@ function renderIndicators() {
               ${achievements.map(item => `<span title="${escapeHtml(item.label)}">${item.icon} ${escapeHtml(item.label)}</span>`).join("") || `<small>As conquistas aparecerão conforme o dia avançar.</small>`}
             </div>
 
+            ${membroAtual?.role !== "child" ? `
+              <div class="family-reward-box">
+                <div><b>🎁 Recompensas combinadas</b><small>Reconhecimento sem dinheiro e sem competição.</small></div>
+                <div>${familyRewardsForChild(targetChild).map(item => `<span>${escapeHtml(item)}</span>`).join("")}</div>
+                <button class="ghost edit-family-rewards-btn" data-child-id="${targetChild.id}" type="button">Personalizar</button>
+              </div>
+            ` : ""}
+
             <div class="indicator-skills">
               <b>Habilidades em prática</b>
               <div>${info.strongestSkills.length
@@ -7768,6 +7841,60 @@ function bindDynamicEvents() {
   $$("[data-indicator-period]").forEach(button => {
     button.addEventListener("click", () => {
       localStorage.setItem("lele-parent-indicator-period", button.dataset.indicatorPeriod);
+      render();
+      showView("indicatorsView");
+    });
+  });
+
+  $$(".speak-journey-btn").forEach(button => {
+    button.addEventListener("click", () => speak(button.dataset.phrase || "Vamos para o próximo passo."));
+  });
+
+  $$(".quick-help-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+      const c = child();
+      if (!c || membroAtual?.role !== "child") return;
+      const topic = button.dataset.helpTopic || "Outro assunto";
+      const parents = state.familyMembers.filter(member => member.role !== "child");
+      const recipientId = parents.length === 1 ? parents[0].id : "all";
+      const status = $("#quickHelpStatus");
+      button.disabled = true;
+      if (status) status.textContent = "Avisando um responsável…";
+      try {
+        await sendChatMessage({
+          text: `${c.name} pediu ajuda: ${topic}.`,
+          recipientId,
+          kind: "system",
+          navigate: false
+        });
+        if (status) status.textContent = "✅ Pedido enviado. Um responsável já pode ver o aviso.";
+        showLeleReaction("Você fez certo em pedir ajuda. Eu já avisei um responsável!", "heart");
+      } catch (error) {
+        console.error("Erro no pedido rápido de ajuda:", error);
+        if (status) status.textContent = "Não consegui enviar agora. Tente novamente quando a internet voltar.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+
+  $$(".edit-family-rewards-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      if (membroAtual?.role === "child") return;
+      const targetChild = state.children.find(item => sameProfileId(item.id, button.dataset.childId));
+      if (!targetChild) return;
+      const current = familyRewardsForChild(targetChild).join("; ");
+      const answer = prompt(
+        `Recompensas para ${targetChild.name}. Separe por ponto e vírgula:`,
+        current
+      );
+      if (answer === null) return;
+      const rewards = answer.split(";").map(item => item.trim()).filter(Boolean).slice(0, 4);
+      if (!rewards.length) {
+        alert("Informe pelo menos uma recompensa.");
+        return;
+      }
+      localStorage.setItem(familyRewardKey(targetChild.id), JSON.stringify(rewards));
       render();
       showView("indicatorsView");
     });

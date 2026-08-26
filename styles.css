@@ -2313,3 +2313,17 @@ body.mode-child .child-only.block-display{
 .indicator-period-filter{display:flex;gap:8px;margin-top:14px}.indicator-period-filter button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:inherit;border-radius:999px;padding:8px 15px}.indicator-period-filter button.active{background:#fff;color:#31466e}
 @media(max-width:820px){.parent-action-grid{grid-template-columns:repeat(2,1fr)}.parent-dashboard-columns{grid-template-columns:1fr}.parent-rule-grid{grid-template-columns:repeat(2,1fr)}.parent-task-row{grid-template-columns:auto 1fr auto}.parent-task-row .edit{grid-column:2/-1}.parent-status-badge{font-size:11px}}
 @media(max-width:480px){.parent-action-grid,.parent-rule-grid{grid-template-columns:1fr}.parent-config-toolbar{align-items:stretch;flex-direction:column}.parent-task-row{grid-template-columns:auto 1fr}.parent-status-badge,.parent-task-row .edit{grid-column:2}.parent-child-chip{min-width:130px}}
+
+/* Jornada, ajuda e conquistas */
+.daily-journey-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.journey-step{position:relative;display:grid;gap:6px;min-height:150px;padding:16px;border:1px solid #e0e5ef;border-radius:18px;background:#fbfcff;overflow:hidden}
+.journey-step.now{border:2px solid #7567e8;background:linear-gradient(145deg,#f4f1ff,#fff)}
+.journey-step.now:before{content:"";position:absolute;inset:auto -25px -35px auto;width:90px;height:90px;border-radius:50%;background:rgba(117,103,232,.1)}
+.journey-marker{font-size:25px}.journey-step small{font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#6558ca}.journey-step b{font-size:16px;line-height:1.35}.journey-step>span:not(.journey-marker){color:var(--muted)}
+.journey-step button{justify-self:start;margin-top:auto}
+.quick-help-section{background:linear-gradient(135deg,#fff8e8,#fff);border-color:#f1d99f}
+.quick-help-copy{display:flex;gap:12px;align-items:center}.quick-help-copy>span{font-size:34px}.quick-help-copy h2,.quick-help-copy p{margin:0}.quick-help-copy p{color:var(--muted);margin-top:3px}
+.quick-help-options{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.quick-help-btn{border:1px solid #e2c97f;background:#fff;border-radius:999px;padding:10px 13px;font-weight:700}.quick-help-btn:hover{background:#fff4d1}.quick-help-btn:disabled{opacity:.55}
+.achievement-vault{background:linear-gradient(135deg,#f7fbff,#fff7fc)}.achievement-vault-row{display:flex;gap:10px;flex-wrap:wrap}.achievement-vault-row>span{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:7px;padding:11px 13px;border:1px solid #dedff0;border-radius:15px;background:#fff}.achievement-vault-row>span:first-letter{font-size:22px}
+.family-reward-box{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:14px;padding:14px;border:1px solid #eadba7;border-radius:16px;background:#fffaf0}.family-reward-box>div:first-child{display:grid}.family-reward-box small{color:var(--muted)}.family-reward-box>div:nth-child(2){grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px}.family-reward-box>div:nth-child(2) span{padding:7px 10px;border-radius:999px;background:#fff;border:1px solid #eadba7;font-size:12px;font-weight:700}.family-reward-box button{grid-column:2;grid-row:1}
+@media(max-width:720px){.daily-journey-grid{grid-template-columns:1fr}.journey-step{min-height:auto}.family-reward-box{grid-template-columns:1fr}.family-reward-box button{grid-column:1;grid-row:auto;justify-self:start}}
