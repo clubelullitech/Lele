@@ -17,7 +17,7 @@
 
   <link
     rel="stylesheet"
-    href="styles.css?v=44"
+    href="styles.css?v=45"
   />
 </head>
 
@@ -38,6 +38,7 @@
         src="assets/lele-boas-vindas-v1.webp"
         alt=""
       />
+      <span class="auth-mascot-wave">👋</span>
     </div>
 
     <div class="brand">
@@ -103,22 +104,33 @@
 
   <header class="topbar">
 
-    <div class="topbar-brand">
+    <div class="topbar-profile">
 
-      <div class="brand">
-        Lelê
-      </div>
+      <div id="topbarAvatar" class="topbar-avatar" aria-hidden="true">🧒</div>
 
-      <div
-        id="subtitle"
-        class="muted"
-      >
-        Sua família no Lelê
+      <div class="topbar-brand">
+
+        <div id="topbarName" class="topbar-name">Lelê</div>
+
+        <div id="subtitle" class="muted">
+          Sua família no Lelê
+        </div>
+
+        <div id="topbarDate" class="topbar-date"></div>
       </div>
 
     </div>
 
     <div class="top-actions">
+
+      <button
+        id="topbarAlertsBtn"
+        class="topbar-alert-btn ghost"
+        type="button"
+        aria-label="Abrir avisos e recados"
+      >
+        🔔<span id="topbarAlertCount" class="topbar-alert-count hidden">0</span>
+      </button>
 
       <button
         id="installBtn"
@@ -191,79 +203,15 @@
       class="view"
     ></section>
 
+    <section
+      id="moreView"
+      class="view"
+    ></section>
+
   </main>
 
 
-  <nav
-    class="bottomnav"
-    aria-label="Navegação principal"
-  >
-
-    <button
-      data-view="homeView"
-      class="nav-btn active"
-      type="button"
-    >
-      Hoje
-    </button>
-
-    <button
-      data-view="routineView"
-      class="nav-btn"
-      type="button"
-    >
-      Rotina
-    </button>
-
-    <button
-      data-view="schoolView"
-      class="nav-btn"
-      type="button"
-    >
-      Escola
-    </button>
-
-    <button
-      data-view="developmentView"
-      class="nav-btn"
-      type="button"
-    >
-      Crescer
-    </button>
-
-    <button
-      data-view="indicatorsView"
-      class="nav-btn"
-      type="button"
-    >
-      Indicadores
-    </button>
-
-    <button
-      data-view="familyView"
-      class="nav-btn"
-      type="button"
-    >
-      Família
-    </button>
-
-    <button
-      data-view="messagesView"
-      class="nav-btn"
-      type="button"
-    >
-      Recados
-    </button>
-
-    <button
-      data-view="settingsView"
-      class="nav-btn"
-      type="button"
-    >
-      Ajustes
-    </button>
-
-  </nav>
+  <nav id="bottomNavigation" class="bottomnav" aria-label="Navegação principal"></nav>
 
 </div>
 
@@ -1029,8 +977,8 @@
 
 <!-- LELÊ -->
 
-<script src="app.js?v=44"></script>
-<script src="notifications.js?v=44"></script>
+<script src="app.js?v=45"></script>
+<script src="notifications.js?v=45"></script>
 <script src="school.js?v=1"></script>
 
 </body>

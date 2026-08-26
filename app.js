@@ -3714,6 +3714,8 @@ function showView(
   viewId
 ) {
 
+  if (!document.getElementById(viewId)) viewId = "homeView";
+
   $$(".view")
     .forEach(
       view =>
@@ -3728,14 +3730,16 @@ function showView(
 
   $$(".nav-btn")
     .forEach(
-      button =>
+      button => {
+        const childSecondaryView = !isParentControlView() && ["schoolView", "indicatorsView", "messagesView", "settingsView"].includes(viewId);
         button.classList
           .toggle(
             "active",
             button.dataset
               .view ===
-              viewId
-          )
+              viewId || (childSecondaryView && button.dataset.view === "moreView")
+          );
+      }
     );
 
 
@@ -3743,6 +3747,8 @@ function showView(
     "lele-last-view",
     viewId
   );
+
+  window.scrollTo({ top: 0, behavior: document.body.classList.contains("reduce-motion") ? "auto" : "smooth" });
 }
 /* =============================================
    SUGESTÕES DE TAREFAS
@@ -6952,6 +6958,14 @@ function renderSettings() {
         </div>
       ` : ""}
 
+      <div class="callout accessibility-card" style="margin-top:10px;">
+        <b>♿ Acessibilidade</b>
+        <p>Ajuste a experiência neste aparelho.</p>
+        <label><input id="largeTextToggle" type="checkbox" ${localStorage.getItem("lele-large-text") === "true" ? "checked" : ""}> Texto e botões maiores</label>
+        <label><input id="reduceMotionToggle" type="checkbox" ${localStorage.getItem("lele-reduce-motion") === "true" ? "checked" : ""}> Reduzir animações</label>
+        <label><input id="readingModeToggle" type="checkbox" ${localStorage.getItem("lele-reading-mode") === "true" ? "checked" : ""}> Destacar botões de áudio</label>
+      </div>
+
       <div
         class="callout"
         style="margin-top:10px;"
@@ -7706,6 +7720,67 @@ function renderIndicators() {
   `;
 }
 
+function renderMore() {
+  const view = $("#moreView");
+  if (!view) return;
+  const c = child();
+  view.innerHTML = `
+    <div class="hero more-hero">
+      <span class="age-pill">☰ Tudo do Lelê</span>
+      <h1>Mais opções</h1>
+      <p>Encontre escola, evolução, recados e configurações sem deixar o menu principal cheio.</p>
+    </div>
+    <section class="more-menu-grid">
+      ${[
+        ["🎒", "Escola", `Horários e trabalhos de ${escapeHtml(c?.name || "hoje")}`, "schoolView"],
+        ["📊", "Minha evolução", "Conquistas e habilidades praticadas", "indicatorsView"],
+        ["📌", "Recados", "Mural e pedidos de ajuda da família", "messagesView"],
+        ["⚙️", "Ajustes", "Áudio, acessibilidade e funcionamento", "settingsView"]
+      ].map(([icon, title, text, target]) => `
+        <button class="more-menu-card" data-more-view="${target}" type="button">
+          <span>${icon}</span><div><b>${title}</b><small>${text}</small></div><strong>›</strong>
+        </button>
+      `).join("")}
+    </section>
+  `;
+}
+
+function navigationItems() {
+  if (isParentControlView()) {
+    return [
+      ["🏠", "Visão geral", "homeView"],
+      ["🗓️", "Planejar", "routineView"],
+      ["📊", "Indicadores", "indicatorsView"],
+      ["📌", "Mural", "messagesView"],
+      ["⚙️", "Ajustes", "settingsView"]
+    ];
+  }
+  return [
+    ["☀️", "Hoje", "homeView"],
+    ["✅", "Rotina", "routineView"],
+    ["🌱", "Crescer", "developmentView"],
+    ["👨‍👩‍👧", "Família", "familyView"],
+    ["☰", "Mais", "moreView"]
+  ];
+}
+
+function renderNavigation() {
+  const nav = $("#bottomNavigation");
+  if (!nav) return;
+  nav.innerHTML = navigationItems().map(([icon, label, view], index) => `
+    <button data-view="${view}" class="nav-btn ${index === 0 ? "active" : ""}" type="button">
+      <span aria-hidden="true">${icon}</span><small>${label}</small>
+    </button>
+  `).join("");
+  $$(".nav-btn").forEach(button => button.addEventListener("click", () => showView(button.dataset.view)));
+}
+
+function applyAccessibilityPreferences() {
+  document.body.classList.toggle("large-text", localStorage.getItem("lele-large-text") === "true");
+  document.body.classList.toggle("reduce-motion", localStorage.getItem("lele-reduce-motion") === "true");
+  document.body.classList.toggle("reading-mode", localStorage.getItem("lele-reading-mode") === "true");
+}
+
 
 /* =============================================
    RENDER PRINCIPAL
@@ -7731,6 +7806,22 @@ function render() {
 
   const c = child();
 
+  document.body.classList.toggle("age-young", !!c && c.age <= 9);
+  document.body.classList.toggle("age-tween", !!c && c.age >= 10 && c.age <= 12);
+  document.body.classList.toggle("age-teen", !!c && c.age >= 13);
+  applyAccessibilityPreferences();
+
+  if ($("#topbarAvatar")) $("#topbarAvatar").textContent = isParentControlView() ? "👤" : c?.age >= 13 ? "🧑" : "🧒";
+  if ($("#topbarName")) $("#topbarName").textContent = isParentControlView()
+    ? (membroAtual?.display_name || "Responsável")
+    : (c?.name || "Lelê");
+  if ($("#topbarDate")) $("#topbarDate").textContent = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+  const alertCount = (state.messages || []).filter(message => message.kind === "system").length;
+  if ($("#topbarAlertCount")) {
+    $("#topbarAlertCount").textContent = String(Math.min(alertCount, 99));
+    $("#topbarAlertCount").classList.toggle("hidden", !alertCount);
+  }
+
   if ($("#subtitle")) {
     $("#subtitle").textContent =
       c
@@ -7747,29 +7838,7 @@ function render() {
         : "Sair da prévia";
   }
 
-  const parentLabels = {
-    homeView: "Painel",
-    routineView: "Planejar",
-    schoolView: "Escola",
-    developmentView: "Orientações",
-    indicatorsView: "Indicadores",
-    familyView: "Família",
-    messagesView: "Comunicação",
-    settingsView: "Configurações"
-  };
-  const childLabels = {
-    homeView: "Hoje",
-    routineView: "Rotina",
-    schoolView: "Escola",
-    developmentView: "Crescer",
-    indicatorsView: "Evolução",
-    familyView: "Família",
-    messagesView: "Recados",
-    settingsView: "Ajustes"
-  };
-  $$(".nav-btn").forEach(button => {
-    button.textContent = (isParentControlView() ? parentLabels : childLabels)[button.dataset.view] || button.textContent;
-  });
+  renderNavigation();
 
   renderHome();
   renderRoutine();
@@ -7779,6 +7848,7 @@ function render() {
   renderFamily();
   renderMessages();
   renderSettings();
+  renderMore();
   ensureLeleCompanion();
 
   if (!sessionStorage.getItem("lele-companion-greeted")) {
@@ -7791,10 +7861,12 @@ function render() {
     ), 700);
   }
 
-  const lastView =
+  let lastView =
     localStorage.getItem(
       "lele-last-view"
     ) || "homeView";
+
+  if (isParentControlView() && lastView === "moreView") lastView = "homeView";
 
   showView(lastView);
 
@@ -7852,6 +7924,20 @@ function bindChatEvents() {
 ============================================= */
 
 function bindDynamicEvents() {
+
+  $$("[data-more-view]").forEach(button => {
+    button.addEventListener("click", () => showView(button.dataset.moreView));
+  });
+
+  $("#topbarAlertsBtn")?.addEventListener("click", () => showView("messagesView"));
+
+  [["#largeTextToggle", "lele-large-text"], ["#reduceMotionToggle", "lele-reduce-motion"], ["#readingModeToggle", "lele-reading-mode"]]
+    .forEach(([selector, key]) => {
+      $(selector)?.addEventListener("change", event => {
+        localStorage.setItem(key, String(event.currentTarget.checked));
+        applyAccessibilityPreferences();
+      });
+    });
 
   $$(".parent-child-chip").forEach(button => {
     button.addEventListener("click", () => {
