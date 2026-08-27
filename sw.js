@@ -1,11 +1,11 @@
-const CACHE_NAME = "lele-v45";
+const CACHE_NAME = "lele-v46";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./styles.css?v=45",
-  "./app.js?v=45",
-  "./notifications.js?v=45",
+  "./styles.css?v=46",
+  "./app.js?v=46",
+  "./notifications.js?v=46",
   "./assets/audio/lele-cadu-final/manifesto.json",
   "./assets/audio/lele-cadu-final/boas-vindas/001-oi-eu-sou-o-lele-vamos-fazer-uma-coisa-de-cada-vez-no-seu-ritmo.mp3",
   "./assets/audio/lele-cadu-final/boas-vindas/002-oi-eu-estou-aqui-para-fazer-tudo-com-voce-um-passo-de-cada-vez.mp3",
