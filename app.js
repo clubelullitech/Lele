@@ -7074,7 +7074,7 @@ async function clearTestData() {
 
 
 /* =============================================
-   CRESCER — DESENVOLVIMENTO 5 A 16 ANOS
+   CRESCER — JORNADA ANUAL DE 3 A 17 ANOS
 ============================================= */
 
 function developmentStage(age) {
@@ -7231,6 +7231,59 @@ const childGrowthTracks = [
   }
 ];
 
+const annualGrowthCategories = [
+  { id: "emotions", icon: "💛", title: "Emoções", color: "#fff0c9", topics: ["Dar nome ao que sinto", "Acalmar o corpo", "Lidar com frustração", "Pedir ajuda", "Falar sobre preocupações", "Reconhecer minhas qualidades", "Cuidar de mim em dias difíceis"] },
+  { id: "relationships", icon: "🤝", title: "Amizades e convivência", color: "#e8f5ff", topics: ["Escutar de verdade", "Discordar com respeito", "Fazer e receber convites", "Resolver conflitos", "Perceber pressão do grupo", "Respeitar limites", "Ser gentil sem se anular"] },
+  { id: "autonomy", icon: "🧭", title: "Autonomia", color: "#eeeaff", topics: ["Escolher uma prioridade", "Começar sem adiar", "Organizar meus materiais", "Dividir uma tarefa", "Conferir o que fiz", "Cumprir combinados", "Aprender com um erro"] },
+  { id: "study", icon: "📚", title: "Estudos e futuro", color: "#e7f7ed", topics: ["Descobrir como aprendo", "Montar um plano de estudos", "Fazer uma revisão curta", "Preparar uma prova", "Pesquisar com segurança", "Explorar profissões", "Criar uma meta para o futuro"] },
+  { id: "safety", icon: "🛡️", title: "Segurança", color: "#ffe9e7", topics: ["Proteger informações pessoais", "Reconhecer adultos de confiança", "Dizer não e sair", "Avisar onde estou", "Agir em uma emergência", "Navegar com segurança", "Contar um segredo que assusta"] },
+  { id: "digital", icon: "📱", title: "Vida digital", color: "#e9f2ff", topics: ["Criar uma senha forte", "Checar antes de compartilhar", "Reconhecer golpes", "Cuidar do tempo de tela", "Respeitar pessoas na internet", "Proteger fotos e localização", "Usar tecnologia para criar"] },
+  { id: "practical", icon: "🍳", title: "Vida prática", color: "#fff1df", topics: ["Cuidar do meu espaço", "Preparar algo simples", "Organizar roupas", "Entender dinheiro", "Comparar escolhas de compra", "Planejar uma saída", "Ajudar em casa com segurança"] },
+  { id: "wellbeing", icon: "🌿", title: "Corpo e bem-estar", color: "#e5f7f0", topics: ["Perceber sinais do corpo", "Criar uma rotina de sono", "Movimentar o corpo", "Fazer pausas", "Cuidar da higiene", "Comer e beber com atenção", "Equilibrar esforço e descanso"] }
+];
+
+function growthAgeBand(age) {
+  if (age <= 5) return { id: "3-5", label: "3 a 5 anos", intro: "Vamos descobrir brincando!", suffix: "com a ajuda de um adulto", tone: "bem simples" };
+  if (age <= 8) return { id: "6-8", label: "6 a 8 anos", intro: "Uma pequena missão por vez!", suffix: "praticando em passos pequenos", tone: "de um jeito fácil" };
+  if (age <= 12) return { id: "9-12", label: "9 a 12 anos", intro: "Mais autonomia a cada semana!", suffix: "fazendo escolhas e conferindo o resultado", tone: "com exemplos do dia a dia" };
+  if (age <= 15) return { id: "13-15", label: "13 a 15 anos", intro: "Ideias úteis para a vida real.", suffix: "com autonomia, metas e preparação para provas", tone: "sem enrolação" };
+  return { id: "16-17", label: "16 a 17 anos", intro: "Planejamento para o presente e o futuro.", suffix: "incluindo Enem, vestibular, trabalho e vida adulta", tone: "de forma prática" };
+}
+
+function annualGrowthLessons(age) {
+  const band = growthAgeBand(age);
+  const lessons = [];
+  for (let topicIndex = 0; topicIndex < 7; topicIndex += 1) {
+    annualGrowthCategories.forEach(category => {
+      const topic = category.topics[topicIndex];
+      lessons.push({
+        ...category,
+        title: topic,
+        text: `${topic} ${band.suffix}.`,
+        action: `Praticar: ${topic}`,
+        steps: [
+          `O Lelê explica ${topic.toLowerCase()} ${band.tone}.`,
+          `Escolha uma situação desta semana em que isso pode ajudar.`,
+          age <= 8 ? "Pratique com um adulto e conte como foi." : "Faça uma ação pequena, avalie o resultado e ajuste o plano."
+        ],
+        week: lessons.length + 1
+      });
+    });
+  }
+  return lessons.slice(0, 52);
+}
+
+function currentGrowthWeek() {
+  const start = new Date(new Date().getFullYear(), 0, 1);
+  return Math.min(52, Math.max(1, Math.ceil((Date.now() - start.getTime() + 86400000) / 604800000)));
+}
+
+function growthProgressKey(c) { return `lele-growth-progress-${c?.id || "child"}`; }
+function growthCompletedWeeks(c) {
+  try { return JSON.parse(localStorage.getItem(growthProgressKey(c)) || "[]"); }
+  catch { return []; }
+}
+
 const growthLessonSteps = {
   "Informações pessoais ficam protegidas": ["Pare antes de responder perguntas pessoais.", "Não informe endereço, escola, rotina, senhas ou fotos.", "Chame um responsável ou profissional da escola."],
   "Avisar onde vai e onde está": ["Conte para onde quer ir e com quem estará.", "Peça permissão antes de mudar o combinado.", "Avise se o plano ou o horário mudar."],
@@ -7352,15 +7405,18 @@ function renderDevelopment() {
   const stage = developmentStage(c.age);
   const summary = developmentSummary(tasks);
   const reflection = localStorage.getItem(reflectionKey(c)) || "";
-  const ageIsSupported = c.age >= 5 && c.age <= 16;
+  const ageIsSupported = c.age >= 3 && c.age <= 17;
   const isTeen = c.age >= 13;
   const canSendReflection = state.mode === "child";
-  const featuredTracks = isTeen ? teenGrowthTracks : childGrowthTracks;
-  const featuredTrack = featuredTracks[0];
+  const annualLessons = annualGrowthLessons(c.age);
+  const growthWeek = currentGrowthWeek();
+  const completedGrowthWeeks = growthCompletedWeeks(c);
+  const featuredTrack = annualLessons[growthWeek - 1] || annualLessons[0];
+  const ageBand = growthAgeBand(c.age);
 
   $("#developmentView").innerHTML = `
     <div class="hero development-hero">
-      <span class="age-pill">5 a 16 anos</span>
+      <span class="age-pill">Conteúdo para ${ageBand.label}</span>
       <h1>🌱 Crescer fazendo</h1>
       <p>
         ${
@@ -7376,32 +7432,46 @@ function renderDevelopment() {
       ${
         ageIsSupported
           ? ""
-          : `<div class="callout age-warning">O perfil está com ${c.age} anos. Esta experiência foi planejada dos 5 aos 16 anos.</div>`
+          : `<div class="callout age-warning">O perfil está com ${c.age} anos. Esta experiência foi planejada dos 3 aos 17 anos.</div>`
       }
     </div>
+
+    <section class="annual-growth-summary">
+      <div><span>Jornada anual</span><strong>${completedGrowthWeeks.length}/52</strong><small>lições concluídas</small></div>
+      <div class="annual-growth-copy"><b>${ageBand.intro}</b><p>Uma nova experiência por semana, com áudio, vídeo curto do Lelê e cards passo a passo.</p></div>
+      <div class="annual-growth-bar"><i style="width:${Math.round(completedGrowthWeeks.length / 52 * 100)}%"></i></div>
+    </section>
 
     <section class="growth-video-feature">
       <img src="assets/lele-explica-v1.webp" alt="Lelê apresentando uma pílula de conhecimento" />
       <div class="growth-video-copy">
-        <span class="growth-now-badge">▶ Lelê explica</span>
+        <span class="growth-now-badge">▶ Lição da semana ${growthWeek}</span>
         <h2>${escapeHtml(featuredTrack.title)}</h2>
         <p>${escapeHtml(featuredTrack.text)}</p>
-        <button class="primary growth-explainer-btn" data-growth-title="${escapeHtml(featuredTrack.title)}" type="button">Assistir em 3 passos</button>
+        <div class="growth-feature-actions">
+          <button class="primary growth-explainer-btn" data-growth-week="${featuredTrack.week}" type="button">▶ Assistir com o Lelê</button>
+          <button class="ghost growth-speak-btn" data-growth-week="${featuredTrack.week}" type="button">🔊 Ouvir</button>
+        </div>
       </div>
     </section>
 
-    <section class="section teen-growth-section">
-      <div class="section-head"><div><h2>✨ Pílulas para crescer</h2><div class="muted">Toque para o Lelê mostrar e explicar cada ideia.</div></div></div>
-      <div class="teen-growth-grid">
-        ${featuredTracks.map(track => `
-          <article class="teen-growth-card knowledge-pill">
-            <span class="teen-growth-icon">${track.icon}</span>
-            <span class="pill-duration">3 passos</span>
-            <h3>${track.title}</h3>
-            <p>${track.text}</p>
-            <button class="ghost growth-explainer-btn" data-growth-title="${escapeHtml(track.title)}" type="button">▶ Lelê explica</button>
-          </article>
-        `).join("")}
+    <section class="section annual-growth-section">
+      <div class="section-head"><div><h2>🗂️ Escolha uma categoria</h2><div class="muted">52 dicas e conselhos para acompanhar ${escapeHtml(c.name)} durante o ano inteiro.</div></div></div>
+      <div class="growth-category-tabs">
+        <button class="active" data-growth-category="all" type="button">✨ Todas</button>
+        ${annualGrowthCategories.map(category => `<button data-growth-category="${category.id}" type="button">${category.icon} ${category.title}</button>`).join("")}
+      </div>
+      <div class="annual-growth-grid">
+        ${annualLessons.map(track => `
+          <article class="annual-growth-card ${completedGrowthWeeks.includes(track.week) ? "is-complete" : ""}" data-growth-card-category="${track.id}" style="--category-color:${track.color}">
+            <div class="annual-growth-card-head"><span>${track.icon}</span><small>Semana ${track.week}</small></div>
+            <b>${escapeHtml(track.title)}</b><p>${escapeHtml(track.text)}</p>
+            <div class="annual-growth-actions">
+              <button class="ghost growth-explainer-btn" data-growth-week="${track.week}" type="button">▶ Ver passos</button>
+              <button class="ghost growth-speak-btn" data-growth-week="${track.week}" type="button" aria-label="Ouvir ${escapeHtml(track.title)}">🔊</button>
+              <button class="ghost growth-complete-btn" data-growth-week="${track.week}" type="button">${completedGrowthWeeks.includes(track.week) ? "✓ Feito" : "Marcar feito"}</button>
+            </div>
+          </article>`).join("")}
       </div>
     </section>
 
@@ -8152,9 +8222,42 @@ function bindDynamicEvents() {
 
   $$(".growth-explainer-btn").forEach(button => {
     button.addEventListener("click", () => {
-      const allTracks = [...childGrowthTracks, ...teenGrowthTracks, ...safetyGrowthTracks];
-      const track = allTracks.find(item => item.title === button.dataset.growthTitle);
+      const annualTrack = button.dataset.growthWeek
+        ? annualGrowthLessons(child()?.age || 8).find(item => item.week === Number(button.dataset.growthWeek))
+        : null;
+      const allTracks = [...annualGrowthLessons(child()?.age || 8), ...childGrowthTracks, ...teenGrowthTracks, ...safetyGrowthTracks];
+      const track = annualTrack || allTracks.find(item => item.title === button.dataset.growthTitle);
       if (track) openGrowthExplainer(track);
+    });
+  });
+
+  $$("[data-growth-category]").forEach(button => {
+    button.addEventListener("click", () => {
+      const category = button.dataset.growthCategory;
+      $$("[data-growth-category]").forEach(item => item.classList.toggle("active", item === button));
+      $$("[data-growth-card-category]").forEach(card => {
+        card.hidden = category !== "all" && card.dataset.growthCardCategory !== category;
+      });
+    });
+  });
+
+  $$(".growth-speak-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const track = annualGrowthLessons(child()?.age || 8).find(item => item.week === Number(button.dataset.growthWeek));
+      if (track) speak(`${track.title}. ${track.text}`);
+    });
+  });
+
+  $$(".growth-complete-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const c = child();
+      if (!c) return;
+      const week = Number(button.dataset.growthWeek);
+      const completed = new Set(growthCompletedWeeks(c));
+      completed.has(week) ? completed.delete(week) : completed.add(week);
+      localStorage.setItem(growthProgressKey(c), JSON.stringify([...completed].sort((a, b) => a - b)));
+      renderDevelopment();
+      bindDynamicEvents();
     });
   });
 
